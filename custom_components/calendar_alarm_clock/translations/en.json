@@ -1,0 +1,34 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Calendar Alarm Clock",
+        "description": "Select the calendar to use for storing alarms.",
+        "data": {
+          "calendar_entity": "Calendar"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This calendar is already configured.",
+      "no_calendars": "No calendar entities found. Please set up a calendar integration first."
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the calendar."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alarm Clock Options",
+        "description": "Configure default alarm settings.",
+        "data": {
+          "default_snooze_duration": "Default Snooze Duration",
+          "default_alarm_timeout": "Default Alarm Timeout",
+          "default_max_snoozes": "Default Max Snoozes (0 = infinite)"
+        }
+      }
+    }
+  }
+}
+

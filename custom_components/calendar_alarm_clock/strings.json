@@ -1,0 +1,157 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Calendar Alarm Clock",
+        "description": "Select the calendar to use for storing alarms.",
+        "data": {
+          "calendar_entity": "Calendar"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This calendar is already configured.",
+      "no_calendars": "No calendar entities found. Please set up a calendar integration first."
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the calendar."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alarm Clock Options",
+        "description": "Configure default alarm settings.",
+        "data": {
+          "default_snooze_duration": "Default Snooze Duration",
+          "default_alarm_timeout": "Default Alarm Timeout",
+          "default_max_snoozes": "Default Max Snoozes (0 = infinite)"
+        }
+      }
+    }
+  },
+  "services": {
+    "create_alarm": {
+      "name": "Create Alarm",
+      "description": "Create a new alarm.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Name of the alarm."
+        },
+        "time": {
+          "name": "Time",
+          "description": "Time for the alarm (HH:MM format)."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Date for the alarm (YYYY-MM-DD format). Defaults to today."
+        },
+        "repeat": {
+          "name": "Repeat",
+          "description": "Repeat pattern: none, daily, weekdays, weekends, weekly, or custom RRULE."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether the alarm is enabled."
+        }
+      }
+    },
+    "delete_alarm": {
+      "name": "Delete Alarm",
+      "description": "Delete an alarm.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The alarm entity to delete."
+        },
+        "alarm_id": {
+          "name": "Alarm ID",
+          "description": "The ID of the alarm to delete."
+        }
+      }
+    },
+    "enable_alarm": {
+      "name": "Enable Alarm",
+      "description": "Enable an alarm.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The alarm entity to enable."
+        }
+      }
+    },
+    "disable_alarm": {
+      "name": "Disable Alarm",
+      "description": "Disable an alarm.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The alarm entity to disable."
+        }
+      }
+    },
+    "snooze_alarm": {
+      "name": "Snooze Alarm",
+      "description": "Snooze a ringing alarm.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The alarm entity to snooze."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "Snooze duration in minutes."
+        }
+      }
+    },
+    "dismiss_alarm": {
+      "name": "Dismiss Alarm",
+      "description": "Dismiss a ringing alarm.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The alarm entity to dismiss."
+        }
+      }
+    },
+    "trigger_alarm": {
+      "name": "Trigger Alarm",
+      "description": "Manually trigger an alarm for testing.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The alarm entity to trigger."
+        }
+      }
+    },
+    "edit_alarm": {
+      "name": "Edit Alarm",
+      "description": "Edit an existing alarm.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The alarm entity to edit."
+        },
+        "name": {
+          "name": "Name",
+          "description": "New name for the alarm."
+        },
+        "time": {
+          "name": "Time",
+          "description": "New time for the alarm."
+        },
+        "repeat": {
+          "name": "Repeat",
+          "description": "New repeat pattern."
+        }
+      }
+    },
+    "list_alarms": {
+      "name": "List Alarms",
+      "description": "List all alarms.",
+      "fields": {}
+    }
+  }
+}
+
