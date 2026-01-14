@@ -72,3 +72,14 @@ There's also global next and previous entities, which represent the next and pre
 When an alarm is ringing, the user shall be able to stop/snooze it via the notification, or via the entity (set state to snooze or dismissed).
 
 Write me the code for this plugin.
+
+—————————
+
+start.
+Make a markdown file in the ai folder, outlining what to do in detail.
+
+————————
+
+It shall be in vue, and you're missing the non-list view in the lovelace frontend.
+Create ai/progress.md, and keep it updated when you complete steps.
+After creating that file, start implementing!
