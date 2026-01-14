@@ -1,0 +1,224 @@
+create_alarm:
+  name: Create Alarm
+  description: Create a new alarm.
+  fields:
+    name:
+      name: Name
+      description: Name of the alarm.
+      required: false
+      default: "Alarm"
+      example: "Wake up"
+      selector:
+        text:
+    time:
+      name: Time
+      description: Time for the alarm (HH:MM format).
+      required: false
+      example: "07:30"
+      selector:
+        time:
+    date:
+      name: Date
+      description: Date for the alarm (YYYY-MM-DD format). Defaults to today.
+      required: false
+      example: "2026-01-15"
+      selector:
+        date:
+    repeat:
+      name: Repeat
+      description: Repeat pattern.
+      required: false
+      default: "none"
+      selector:
+        select:
+          options:
+            - "none"
+            - "daily"
+            - "weekdays"
+            - "weekends"
+            - "weekly"
+    enabled:
+      name: Enabled
+      description: Whether the alarm is enabled.
+      required: false
+      default: true
+      selector:
+        boolean:
+
+delete_alarm:
+  name: Delete Alarm
+  description: Delete an alarm.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to delete.
+      required: false
+      selector:
+        entity:
+          domain: sensor
+          integration: calendar_alarm_clock
+    alarm_id:
+      name: Alarm ID
+      description: The ID of the alarm to delete.
+      required: false
+      example: "abc123"
+      selector:
+        text:
+
+enable_alarm:
+  name: Enable Alarm
+  description: Enable an alarm.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to enable.
+      required: false
+      selector:
+        entity:
+          domain: sensor
+          integration: calendar_alarm_clock
+    alarm_id:
+      name: Alarm ID
+      description: The ID of the alarm to enable.
+      required: false
+      selector:
+        text:
+
+disable_alarm:
+  name: Disable Alarm
+  description: Disable an alarm.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to disable.
+      required: false
+      selector:
+        entity:
+          domain: sensor
+          integration: calendar_alarm_clock
+    alarm_id:
+      name: Alarm ID
+      description: The ID of the alarm to disable.
+      required: false
+      selector:
+        text:
+
+snooze_alarm:
+  name: Snooze Alarm
+  description: Snooze a ringing alarm.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to snooze.
+      required: false
+      selector:
+        entity:
+          domain: sensor
+          integration: calendar_alarm_clock
+    alarm_id:
+      name: Alarm ID
+      description: The ID of the alarm to snooze.
+      required: false
+      selector:
+        text:
+    duration:
+      name: Duration
+      description: Snooze duration in minutes.
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: minutes
+
+dismiss_alarm:
+  name: Dismiss Alarm
+  description: Dismiss a ringing alarm.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to dismiss.
+      required: false
+      selector:
+        entity:
+          domain: sensor
+          integration: calendar_alarm_clock
+    alarm_id:
+      name: Alarm ID
+      description: The ID of the alarm to dismiss.
+      required: false
+      selector:
+        text:
+
+trigger_alarm:
+  name: Trigger Alarm
+  description: Manually trigger an alarm for testing.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to trigger.
+      required: false
+      selector:
+        entity:
+          domain: sensor
+          integration: calendar_alarm_clock
+    alarm_id:
+      name: Alarm ID
+      description: The ID of the alarm to trigger.
+      required: false
+      selector:
+        text:
+
+edit_alarm:
+  name: Edit Alarm
+  description: Edit an existing alarm.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to edit.
+      required: false
+      selector:
+        entity:
+          domain: sensor
+          integration: calendar_alarm_clock
+    alarm_id:
+      name: Alarm ID
+      description: The ID of the alarm to edit.
+      required: false
+      selector:
+        text:
+    name:
+      name: Name
+      description: New name for the alarm.
+      required: false
+      selector:
+        text:
+    time:
+      name: Time
+      description: New time for the alarm.
+      required: false
+      selector:
+        time:
+    repeat:
+      name: Repeat
+      description: New repeat pattern.
+      required: false
+      selector:
+        select:
+          options:
+            - "none"
+            - "daily"
+            - "weekdays"
+            - "weekends"
+            - "weekly"
+    enabled:
+      name: Enabled
+      description: Enable or disable the alarm.
+      required: false
+      selector:
+        boolean:
+
+list_alarms:
+  name: List Alarms
+  description: List all alarms.
+
