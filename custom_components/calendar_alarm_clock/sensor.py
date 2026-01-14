@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
@@ -11,20 +10,19 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import (
-    DOMAIN,
-    ATTR_ALARM_ID,
-    ATTR_NAME,
-    ATTR_TIME,
-    ATTR_ENABLED,
-    ATTR_REPEAT,
-    ATTR_NEXT_SNOOZE_TIME,
-    ATTR_SNOOZE_COUNT,
-    ATTR_TIMEOUT,
-    ATTR_MAX_SNOOZES,
-    STATE_BEFORE,
-)
 from .alarm_manager import AlarmManager
+from .const import (
+    ATTR_ALARM_ID,
+    ATTR_ENABLED,
+    ATTR_MAX_SNOOZES,
+    ATTR_NAME,
+    ATTR_NEXT_SNOOZE_TIME,
+    ATTR_REPEAT,
+    ATTR_SNOOZE_COUNT,
+    ATTR_TIME,
+    ATTR_TIMEOUT,
+    DOMAIN,
+)
 from .models import Alarm
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,17 +45,17 @@ async def async_setup_entry(
     async_add_entities([next_alarm_sensor, previous_alarm_sensor])
 
     @callback
-    def async_update_entities():
+    def async_update_entities() -> None:
         """Update entities when alarms change."""
-        current_alarm_ids = set(manager.alarms.keys())
-        existing_ids = set(entities.keys())
+        current_alarm_ids: set[str] = set(manager.alarms.keys())
+        existing_ids: set[str] = set(entities.keys())
 
         # Add new entities
-        new_ids = current_alarm_ids - existing_ids
+        new_ids: set[str] = current_alarm_ids - existing_ids
         if new_ids:
-            new_entities = []
+            new_entities: list[AlarmSensor] = []
             for alarm_id in new_ids:
-                alarm = manager.alarms[alarm_id]
+                alarm: Alarm = manager.alarms[alarm_id]
                 sensor = AlarmSensor(manager, entry, alarm)
                 entities[alarm_id] = sensor
                 new_entities.append(sensor)
@@ -82,8 +80,8 @@ async def async_setup_entry(
 class AlarmSensor(SensorEntity):
     """Sensor representing an alarm."""
 
-    _attr_has_entity_name = True
-    _attr_icon = "mdi:alarm"
+    _attr_has_entity_name: bool = True
+    _attr_icon: str = "mdi:alarm"
 
     def __init__(
         self,
@@ -92,13 +90,13 @@ class AlarmSensor(SensorEntity):
         alarm: Alarm,
     ) -> None:
         """Initialize the alarm sensor."""
-        self._manager = manager
-        self._entry = entry
-        self._alarm = alarm
-        self._attr_unique_id = f"{entry.entry_id}_{alarm.id}"
-        self._attr_name = alarm.name
-        self._attr_native_value = alarm.state
-        self._available = True
+        self._manager: AlarmManager = manager
+        self._entry: ConfigEntry = entry
+        self._alarm: Alarm = alarm
+        self._attr_unique_id: str = f"{entry.entry_id}_{alarm.id}"
+        self._attr_name: str | None = alarm.name
+        self._attr_native_value: str | None = alarm.state
+        self._available: bool = True
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -164,15 +162,15 @@ class AlarmSensor(SensorEntity):
 class NextAlarmSensor(SensorEntity):
     """Sensor for the next upcoming alarm."""
 
-    _attr_has_entity_name = True
-    _attr_name = "Next Alarm"
-    _attr_icon = "mdi:alarm"
+    _attr_has_entity_name: bool = True
+    _attr_name: str | None = "Next Alarm"
+    _attr_icon: str = "mdi:alarm"
 
     def __init__(self, manager: AlarmManager, entry: ConfigEntry) -> None:
         """Initialize the next alarm sensor."""
-        self._manager = manager
-        self._entry = entry
-        self._attr_unique_id = f"{entry.entry_id}_next_alarm"
+        self._manager: AlarmManager = manager
+        self._entry: ConfigEntry = entry
+        self._attr_unique_id: str = f"{entry.entry_id}_next_alarm"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -187,7 +185,7 @@ class NextAlarmSensor(SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the state (time of next alarm)."""
-        alarm = self._manager.next_alarm
+        alarm: Alarm | None = self._manager.next_alarm
         if alarm and alarm.time:
             return alarm.time.strftime("%Y-%m-%d %H:%M")
         return None
@@ -195,7 +193,7 @@ class NextAlarmSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
-        alarm = self._manager.next_alarm
+        alarm: Alarm | None = self._manager.next_alarm
         if not alarm:
             return {}
 
@@ -218,15 +216,15 @@ class NextAlarmSensor(SensorEntity):
 class PreviousAlarmSensor(SensorEntity):
     """Sensor for the previous alarm."""
 
-    _attr_has_entity_name = True
-    _attr_name = "Previous Alarm"
-    _attr_icon = "mdi:alarm-check"
+    _attr_has_entity_name: bool = True
+    _attr_name: str | None = "Previous Alarm"
+    _attr_icon: str = "mdi:alarm-check"
 
     def __init__(self, manager: AlarmManager, entry: ConfigEntry) -> None:
         """Initialize the previous alarm sensor."""
-        self._manager = manager
-        self._entry = entry
-        self._attr_unique_id = f"{entry.entry_id}_previous_alarm"
+        self._manager: AlarmManager = manager
+        self._entry: ConfigEntry = entry
+        self._attr_unique_id: str = f"{entry.entry_id}_previous_alarm"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -241,7 +239,7 @@ class PreviousAlarmSensor(SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the state (time of previous alarm)."""
-        alarm = self._manager.previous_alarm
+        alarm: Alarm | None = self._manager.previous_alarm
         if alarm and alarm.time:
             return alarm.time.strftime("%Y-%m-%d %H:%M")
         return None
@@ -249,7 +247,7 @@ class PreviousAlarmSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
-        alarm = self._manager.previous_alarm
+        alarm: Alarm | None = self._manager.previous_alarm
         if not alarm:
             return {}
 

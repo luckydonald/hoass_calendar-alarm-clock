@@ -9,18 +9,18 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
+from .alarm_manager import AlarmManager
 from .const import (
-    DOMAIN,
     CONF_CALENDAR_ENTITY,
-    CONF_DEFAULT_SNOOZE_DURATION,
     CONF_DEFAULT_ALARM_TIMEOUT,
     CONF_DEFAULT_MAX_SNOOZES,
-    DEFAULT_SNOOZE_DURATION,
+    CONF_DEFAULT_SNOOZE_DURATION,
     DEFAULT_ALARM_TIMEOUT,
     DEFAULT_MAX_SNOOZES,
+    DEFAULT_SNOOZE_DURATION,
+    DOMAIN,
     UPDATE_INTERVAL,
 )
-from .alarm_manager import AlarmManager
 from .services import async_setup_services, async_unload_services
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,16 +32,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Calendar Alarm Clock from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    calendar_entity = entry.data[CONF_CALENDAR_ENTITY]
+    calendar_entity: str = entry.data[CONF_CALENDAR_ENTITY]
 
     # Get configuration options with defaults
-    snooze_duration = entry.options.get(
+    snooze_duration: int = entry.options.get(
         CONF_DEFAULT_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION
     )
-    alarm_timeout = entry.options.get(
+    alarm_timeout: float = entry.options.get(
         CONF_DEFAULT_ALARM_TIMEOUT, DEFAULT_ALARM_TIMEOUT
     )
-    max_snoozes = entry.options.get(
+    max_snoozes: int = entry.options.get(
         CONF_DEFAULT_MAX_SNOOZES, DEFAULT_MAX_SNOOZES
     )
 
@@ -63,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await manager.async_update()
 
     # Set up periodic updates
-    async def async_update_alarms(_now):
+    async def async_update_alarms(_now) -> None:
         """Update alarms periodically."""
         await manager.async_update()
 
@@ -84,7 +84,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok: bool = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)

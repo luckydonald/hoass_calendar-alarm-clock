@@ -2,34 +2,34 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import Any, Callable
+from typing import Any
 
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.event import async_track_point_in_time
 from homeassistant.util import dt as dt_util
 
 from .const import (
-    DOMAIN,
-    STATE_BEFORE,
-    STATE_RINGING,
-    STATE_SNOOZED,
-    STATE_DISMISSED,
-    STATE_RINGING_SNOOZE,
-    STATE_TIMED_OUT,
-    PREFIX_SNOOZE,
-    PREFIX_DISMISSED,
-    PREFIX_DISABLED,
-    SUFFIX_SNOOZE,
-    EVENT_ALARM_RINGING,
-    EVENT_ALARM_SNOOZED,
-    EVENT_ALARM_DISMISSED,
-    EVENT_ALARM_TIMED_OUT,
     EVENT_ALARM_CREATED,
     EVENT_ALARM_DELETED,
+    EVENT_ALARM_DISABLED,
+    EVENT_ALARM_DISMISSED,
     EVENT_ALARM_EDITED,
     EVENT_ALARM_ENABLED,
-    EVENT_ALARM_DISABLED,
+    EVENT_ALARM_RINGING,
+    EVENT_ALARM_SNOOZED,
+    EVENT_ALARM_TIMED_OUT,
+    PREFIX_DISABLED,
+    PREFIX_DISMISSED,
+    PREFIX_SNOOZE,
+    STATE_BEFORE,
+    STATE_DISMISSED,
+    STATE_RINGING,
+    STATE_RINGING_SNOOZE,
+    STATE_SNOOZED,
+    STATE_TIMED_OUT,
+    SUFFIX_SNOOZE,
 )
 from .models import Alarm
 
@@ -48,15 +48,15 @@ class AlarmManager:
         default_max_snoozes: int = 3,
     ) -> None:
         """Initialize the alarm manager."""
-        self.hass = hass
-        self.calendar_entity = calendar_entity
-        self.default_snooze_duration = default_snooze_duration
-        self.default_alarm_timeout = default_alarm_timeout
-        self.default_max_snoozes = default_max_snoozes
+        self.hass: HomeAssistant = hass
+        self.calendar_entity: str = calendar_entity
+        self.default_snooze_duration: int = default_snooze_duration
+        self.default_alarm_timeout: float = default_alarm_timeout
+        self.default_max_snoozes: int = default_max_snoozes
 
         self._alarms: dict[str, Alarm] = {}
         self._listeners: list[Callable[[], None]] = []
-        self._timeout_unsubs: dict[str, Callable] = {}
+        self._timeout_unsubs: dict[str, CALLBACK_TYPE] = {}
         self._next_alarm: Alarm | None = None
         self._previous_alarm: Alarm | None = None
 
@@ -79,7 +79,7 @@ class AlarmManager:
         """Add a listener for alarm updates."""
         self._listeners.append(callback_fn)
 
-        def remove_listener():
+        def remove_listener() -> None:
             self._listeners.remove(callback_fn)
 
         return remove_listener
@@ -91,13 +91,13 @@ class AlarmManager:
 
     async def async_update(self) -> None:
         """Update alarms from the calendar."""
-        now = dt_util.now()
-        start = now - timedelta(hours=1)  # Include recent past alarms
-        end = now + timedelta(days=7)  # Look ahead one week
+        now: datetime = dt_util.now()
+        start: datetime = now - timedelta(hours=1)  # Include recent past alarms
+        end: datetime = now + timedelta(days=7)  # Look ahead one week
 
         try:
             # Call calendar.list_events service
-            result = await self.hass.services.async_call(
+            result: dict[str, Any] | None = await self.hass.services.async_call(
                 "calendar",
                 "list_events",
                 {
@@ -109,12 +109,17 @@ class AlarmManager:
                 return_response=True,
             )
 
-            events = result.get(self.calendar_entity, {}).get("events", [])
+            if result is None:
+                result = {}
+
+            events: list[dict[str, Any]] = result.get(
+                self.calendar_entity, {}
+            ).get("events", [])
 
             # Convert events to alarms
             new_alarms: dict[str, Alarm] = {}
             for event in events:
-                alarm = Alarm.from_calendar_event(event)
+                alarm: Alarm = Alarm.from_calendar_event(event)
 
                 # Apply defaults
                 if alarm.timeout is None:
@@ -126,7 +131,7 @@ class AlarmManager:
 
                 # Preserve existing state if alarm already exists
                 if alarm.id in self._alarms:
-                    existing = self._alarms[alarm.id]
+                    existing: Alarm = self._alarms[alarm.id]
                     if existing.state in (STATE_RINGING, STATE_RINGING_SNOOZE, STATE_SNOOZED):
                         alarm.state = existing.state
 
@@ -147,7 +152,7 @@ class AlarmManager:
 
     async def _update_alarm_states(self) -> None:
         """Update alarm states based on current time."""
-        now = dt_util.now()
+        now: datetime = dt_util.now()
 
         for alarm in self._alarms.values():
             if alarm.state == STATE_DISMISSED:
@@ -186,10 +191,11 @@ class AlarmManager:
         if alarm.id in self._timeout_unsubs:
             self._timeout_unsubs[alarm.id]()
 
-        timeout_time = dt_util.now() + timedelta(minutes=alarm.timeout or self.default_alarm_timeout)
+        timeout_minutes: float = alarm.timeout or self.default_alarm_timeout
+        timeout_time: datetime = dt_util.now() + timedelta(minutes=timeout_minutes)
 
         @callback
-        def timeout_callback(_now):
+        def timeout_callback(_now: datetime) -> None:
             """Handle alarm timeout."""
             if alarm.id in self._alarms:
                 alarm.state = STATE_TIMED_OUT
@@ -208,7 +214,11 @@ class AlarmManager:
                 "create",
                 {
                     "title": f"⏰ {alarm.name}",
-                    "message": f"Alarm '{alarm.name}' is ringing!\n\nTime: {alarm.time.strftime('%H:%M')}\n\nUse services to snooze or dismiss.",
+                    "message": (
+                        f"Alarm '{alarm.name}' is ringing!\n\n"
+                        f"Time: {alarm.time.strftime('%H:%M')}\n\n"
+                        "Use services to snooze or dismiss."
+                    ),
                     "notification_id": f"alarm_clock_{alarm.id}",
                 },
             )
@@ -228,15 +238,17 @@ class AlarmManager:
 
     def _update_next_previous(self) -> None:
         """Update next and previous alarm references."""
-        now = dt_util.now()
+        now: datetime = dt_util.now()
 
-        future_alarms = [
-            a for a in self._alarms.values()
-            if a.time > now and a.enabled and a.state not in (STATE_DISMISSED, STATE_TIMED_OUT)
+        future_alarms: list[Alarm] = [
+            a
+            for a in self._alarms.values()
+            if a.time > now
+            and a.enabled
+            and a.state not in (STATE_DISMISSED, STATE_TIMED_OUT)
         ]
-        past_alarms = [
-            a for a in self._alarms.values()
-            if a.time <= now
+        past_alarms: list[Alarm] = [
+            a for a in self._alarms.values() if a.time <= now
         ]
 
         future_alarms.sort(key=lambda a: a.time)
@@ -260,30 +272,35 @@ class AlarmManager:
         enabled: bool = True,
     ) -> Alarm | None:
         """Create a new alarm."""
-        now = dt_util.now()
+        now: datetime = dt_util.now()
 
         # Parse time
+        hour: int
+        minute: int
         if time:
             hour, minute = map(int, time.split(":"))
         else:
             hour, minute = now.hour, now.minute
 
         # Parse date
+        alarm_date: datetime
         if date:
-            alarm_date = datetime.strptime(date, "%Y-%m-%d").date()
+            alarm_date = datetime.strptime(date, "%Y-%m-%d")
         else:
-            alarm_date = now.date()
+            alarm_date = datetime.combine(now.date(), datetime.min.time())
 
-        alarm_datetime = datetime.combine(alarm_date, datetime.min.time().replace(hour=hour, minute=minute))
-        alarm_datetime = dt_util.as_local(alarm_datetime.replace(tzinfo=now.tzinfo))
+        alarm_datetime: datetime = alarm_date.replace(hour=hour, minute=minute)
+        alarm_datetime = dt_util.as_local(
+            alarm_datetime.replace(tzinfo=now.tzinfo)
+        )
 
         # Build event summary
-        summary = name
+        summary: str = name
         if not enabled:
             summary = f"{PREFIX_DISABLED}{name}"
 
         # Build recurrence rule
-        rrule = None
+        rrule: str | None = None
         if repeat == "daily":
             rrule = "FREQ=DAILY"
         elif repeat == "weekdays":
@@ -296,7 +313,7 @@ class AlarmManager:
             rrule = repeat  # Custom RRULE
 
         # Create calendar event
-        service_data = {
+        service_data: dict[str, Any] = {
             "entity_id": self.calendar_entity,
             "summary": summary,
             "start_date_time": alarm_datetime.isoformat(),
@@ -319,7 +336,10 @@ class AlarmManager:
 
             # Find the newly created alarm
             for alarm in self._alarms.values():
-                if alarm.name == name and abs((alarm.time - alarm_datetime).total_seconds()) < 60:
+                if (
+                    alarm.name == name
+                    and abs((alarm.time - alarm_datetime).total_seconds()) < 60
+                ):
                     self._fire_event(EVENT_ALARM_CREATED, alarm)
                     return alarm
 
@@ -330,7 +350,7 @@ class AlarmManager:
 
     async def async_delete_alarm(self, alarm_id: str) -> bool:
         """Delete an alarm."""
-        alarm = self._alarms.get(alarm_id)
+        alarm: Alarm | None = self._alarms.get(alarm_id)
         if not alarm:
             _LOGGER.warning("Alarm not found: %s", alarm_id)
             return False
@@ -355,9 +375,11 @@ class AlarmManager:
             _LOGGER.error("Error deleting alarm: %s", e)
             return False
 
-    async def async_snooze_alarm(self, alarm_id: str, duration: int | None = None) -> bool:
+    async def async_snooze_alarm(
+        self, alarm_id: str, duration: int | None = None
+    ) -> bool:
         """Snooze an alarm."""
-        alarm = self._alarms.get(alarm_id)
+        alarm: Alarm | None = self._alarms.get(alarm_id)
         if not alarm:
             _LOGGER.warning("Alarm not found: %s", alarm_id)
             return False
@@ -372,13 +394,15 @@ class AlarmManager:
                 _LOGGER.warning("Max snoozes reached for alarm: %s", alarm_id)
                 return False
 
-        snooze_duration = duration or alarm.snooze_duration or self.default_snooze_duration
-        snooze_time = dt_util.now() + timedelta(minutes=snooze_duration)
-        new_snooze_count = alarm.snooze_count + 1
+        snooze_duration: int = (
+            duration or alarm.snooze_duration or self.default_snooze_duration
+        )
+        snooze_time: datetime = dt_util.now() + timedelta(minutes=snooze_duration)
+        new_snooze_count: int = alarm.snooze_count + 1
 
         # Create snoozed event in calendar
-        snooze_summary = f"{PREFIX_SNOOZE.format(new_snooze_count)}{alarm.name}"
-        snooze_id = f"{alarm.base_id}{SUFFIX_SNOOZE.format(new_snooze_count)}"
+        snooze_summary: str = f"{PREFIX_SNOOZE.format(new_snooze_count)}{alarm.name}"
+        snooze_id: str = f"{alarm.base_id}{SUFFIX_SNOOZE.format(new_snooze_count)}"
 
         try:
             await self.hass.services.async_call(
@@ -418,13 +442,13 @@ class AlarmManager:
 
     async def async_dismiss_alarm(self, alarm_id: str) -> bool:
         """Dismiss an alarm."""
-        alarm = self._alarms.get(alarm_id)
+        alarm: Alarm | None = self._alarms.get(alarm_id)
         if not alarm:
             _LOGGER.warning("Alarm not found: %s", alarm_id)
             return False
 
         # Update calendar event with dismissed prefix
-        dismissed_summary = f"{PREFIX_DISMISSED}{alarm.name}"
+        dismissed_summary: str = f"{PREFIX_DISMISSED}{alarm.name}"
 
         try:
             # Note: Updating calendar events may vary by integration
@@ -458,7 +482,7 @@ class AlarmManager:
 
     async def async_enable_alarm(self, alarm_id: str) -> bool:
         """Enable an alarm."""
-        alarm = self._alarms.get(alarm_id)
+        alarm: Alarm | None = self._alarms.get(alarm_id)
         if not alarm:
             return False
 
@@ -488,7 +512,7 @@ class AlarmManager:
 
     async def async_disable_alarm(self, alarm_id: str) -> bool:
         """Disable an alarm."""
-        alarm = self._alarms.get(alarm_id)
+        alarm: Alarm | None = self._alarms.get(alarm_id)
         if not alarm:
             return False
 
@@ -496,7 +520,7 @@ class AlarmManager:
             return True
 
         # Add DISABLED prefix to calendar event
-        disabled_summary = f"{PREFIX_DISABLED}{alarm.name}"
+        disabled_summary: str = f"{PREFIX_DISABLED}{alarm.name}"
 
         try:
             await self.hass.services.async_call(
@@ -520,7 +544,7 @@ class AlarmManager:
 
     async def async_trigger_alarm(self, alarm_id: str) -> bool:
         """Manually trigger an alarm for testing."""
-        alarm = self._alarms.get(alarm_id)
+        alarm: Alarm | None = self._alarms.get(alarm_id)
         if not alarm:
             return False
 
@@ -538,20 +562,20 @@ class AlarmManager:
         enabled: bool | None = None,
     ) -> bool:
         """Edit an existing alarm."""
-        alarm = self._alarms.get(alarm_id)
+        alarm: Alarm | None = self._alarms.get(alarm_id)
         if not alarm:
             return False
 
         # Build updated summary
-        new_name = name if name is not None else alarm.name
-        new_enabled = enabled if enabled is not None else alarm.enabled
+        new_name: str = name if name is not None else alarm.name
+        new_enabled: bool = enabled if enabled is not None else alarm.enabled
 
-        summary = new_name
+        summary: str = new_name
         if not new_enabled:
             summary = f"{PREFIX_DISABLED}{new_name}"
 
         # Build service data
-        service_data = {
+        service_data: dict[str, Any] = {
             "entity_id": self.calendar_entity,
             "uid": alarm.calendar_event_uid or alarm.id,
             "summary": summary,
@@ -559,9 +583,11 @@ class AlarmManager:
 
         if time:
             hour, minute = map(int, time.split(":"))
-            new_time = alarm.time.replace(hour=hour, minute=minute)
+            new_time: datetime = alarm.time.replace(hour=hour, minute=minute)
             service_data["start_date_time"] = new_time.isoformat()
-            service_data["end_date_time"] = (new_time + timedelta(minutes=1)).isoformat()
+            service_data["end_date_time"] = (
+                new_time + timedelta(minutes=1)
+            ).isoformat()
 
         if repeat is not None:
             if repeat == "daily":

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
 
 @dataclass
@@ -51,17 +51,20 @@ class Alarm:
             "max_snoozes": self.max_snoozes,
             "snooze_duration": self.snooze_duration,
             "state": self.state,
-            "next_snooze_time": self.next_snooze_time.isoformat() if self.next_snooze_time else None,
+            "next_snooze_time": (
+                self.next_snooze_time.isoformat() if self.next_snooze_time else None
+            ),
         }
 
     @classmethod
-    def from_calendar_event(cls, event: dict[str, Any]) -> Alarm:
+    def from_calendar_event(cls, event: dict[str, Any]) -> Self:
         """Create an Alarm from a calendar event."""
-        summary = event.get("summary", "Alarm")
-        uid = event.get("uid", "")
+        summary: str = event.get("summary", "Alarm")
+        uid: str = event.get("uid", "")
         start = event.get("start")
 
         # Parse time from event
+        alarm_time: datetime
         if isinstance(start, str):
             try:
                 alarm_time = datetime.fromisoformat(start.replace("Z", "+00:00"))
@@ -73,9 +76,9 @@ class Alarm:
             alarm_time = datetime.now()
 
         # Check for snooze prefix
-        snooze_count = 0
-        name = summary
-        enabled = True
+        snooze_count: int = 0
+        name: str = summary
+        enabled: bool = True
 
         if summary.startswith("[SNOOZE "):
             # Parse snooze count: [SNOOZE 1] Alarm Name
@@ -93,14 +96,14 @@ class Alarm:
             name = summary[11:]
 
         # Check for dismissed prefix
-        state = "before"
+        state: str = "before"
         if summary.startswith("[DISMISSED] "):
             state = "dismissed"
             name = summary[12:]
 
         # Parse repeat from rrule if present
-        repeat = "none"
-        rrule = event.get("rrule")
+        repeat: str = "none"
+        rrule: str | None = event.get("rrule")
         if rrule:
             if "FREQ=DAILY" in rrule:
                 repeat = "daily"
@@ -114,7 +117,7 @@ class Alarm:
             else:
                 repeat = rrule  # Store custom rrule
 
-        alarm_id = uid
+        alarm_id: str = uid
         if "-snooze-" in uid:
             # Already has snooze suffix
             pass

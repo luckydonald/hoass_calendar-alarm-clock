@@ -6,33 +6,33 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 
+from .alarm_manager import AlarmManager
 from .const import (
-    DOMAIN,
     ATTR_ALARM_ID,
-    ATTR_NAME,
-    ATTR_TIME,
     ATTR_ENABLED,
+    ATTR_NAME,
     ATTR_REPEAT,
-    ATTR_SNOOZE_DURATION,
+    ATTR_TIME,
+    DEFAULT_NAME,
+    DOMAIN,
     SERVICE_CREATE_ALARM,
     SERVICE_DELETE_ALARM,
-    SERVICE_ENABLE_ALARM,
     SERVICE_DISABLE_ALARM,
-    SERVICE_LIST_ALARMS,
-    SERVICE_EDIT_ALARM,
-    SERVICE_TRIGGER_ALARM,
-    SERVICE_SNOOZE_ALARM,
     SERVICE_DISMISS_ALARM,
-    DEFAULT_NAME,
+    SERVICE_EDIT_ALARM,
+    SERVICE_ENABLE_ALARM,
+    SERVICE_LIST_ALARMS,
+    SERVICE_SNOOZE_ALARM,
+    SERVICE_TRIGGER_ALARM,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 # Service schemas
-SERVICE_CREATE_ALARM_SCHEMA = vol.Schema(
+SERVICE_CREATE_ALARM_SCHEMA: vol.Schema = vol.Schema(
     {
         vol.Optional(ATTR_NAME, default=DEFAULT_NAME): cv.string,
         vol.Optional(ATTR_TIME): cv.string,
@@ -42,14 +42,14 @@ SERVICE_CREATE_ALARM_SCHEMA = vol.Schema(
     }
 )
 
-SERVICE_ALARM_BY_ID_SCHEMA = vol.Schema(
+SERVICE_ALARM_BY_ID_SCHEMA: vol.Schema = vol.Schema(
     {
         vol.Optional("entity_id"): cv.entity_id,
         vol.Optional(ATTR_ALARM_ID): cv.string,
     }
 )
 
-SERVICE_SNOOZE_ALARM_SCHEMA = vol.Schema(
+SERVICE_SNOOZE_ALARM_SCHEMA: vol.Schema = vol.Schema(
     {
         vol.Optional("entity_id"): cv.entity_id,
         vol.Optional(ATTR_ALARM_ID): cv.string,
@@ -57,7 +57,7 @@ SERVICE_SNOOZE_ALARM_SCHEMA = vol.Schema(
     }
 )
 
-SERVICE_EDIT_ALARM_SCHEMA = vol.Schema(
+SERVICE_EDIT_ALARM_SCHEMA: vol.Schema = vol.Schema(
     {
         vol.Optional("entity_id"): cv.entity_id,
         vol.Optional(ATTR_ALARM_ID): cv.string,
@@ -69,7 +69,7 @@ SERVICE_EDIT_ALARM_SCHEMA = vol.Schema(
 )
 
 
-def _get_manager(hass: HomeAssistant):
+def _get_manager(hass: HomeAssistant) -> AlarmManager | None:
     """Get the alarm manager."""
     for entry_data in hass.data.get(DOMAIN, {}).values():
         if "manager" in entry_data:
@@ -79,11 +79,11 @@ def _get_manager(hass: HomeAssistant):
 
 def _get_alarm_id_from_call(hass: HomeAssistant, call: ServiceCall) -> str | None:
     """Extract alarm ID from service call."""
-    alarm_id = call.data.get(ATTR_ALARM_ID)
+    alarm_id: str | None = call.data.get(ATTR_ALARM_ID)
     if alarm_id:
         return alarm_id
 
-    entity_id = call.data.get("entity_id")
+    entity_id: str | None = call.data.get("entity_id")
     if entity_id:
         # Extract alarm ID from entity ID
         # Entity ID format: sensor.alarm_clock_ALARM_ID
@@ -98,7 +98,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def handle_create_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle create_alarm service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             _LOGGER.error("No alarm manager found")
             return {"success": False, "error": "No alarm manager"}
@@ -117,94 +117,94 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def handle_delete_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle delete_alarm service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             return {"success": False, "error": "No alarm manager"}
 
-        alarm_id = _get_alarm_id_from_call(hass, call)
+        alarm_id: str | None = _get_alarm_id_from_call(hass, call)
         if not alarm_id:
             return {"success": False, "error": "No alarm ID provided"}
 
-        result = await manager.async_delete_alarm(alarm_id)
+        result: bool = await manager.async_delete_alarm(alarm_id)
         return {"success": result}
 
     async def handle_enable_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle enable_alarm service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             return {"success": False, "error": "No alarm manager"}
 
-        alarm_id = _get_alarm_id_from_call(hass, call)
+        alarm_id: str | None = _get_alarm_id_from_call(hass, call)
         if not alarm_id:
             return {"success": False, "error": "No alarm ID provided"}
 
-        result = await manager.async_enable_alarm(alarm_id)
+        result: bool = await manager.async_enable_alarm(alarm_id)
         return {"success": result}
 
     async def handle_disable_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle disable_alarm service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             return {"success": False, "error": "No alarm manager"}
 
-        alarm_id = _get_alarm_id_from_call(hass, call)
+        alarm_id: str | None = _get_alarm_id_from_call(hass, call)
         if not alarm_id:
             return {"success": False, "error": "No alarm ID provided"}
 
-        result = await manager.async_disable_alarm(alarm_id)
+        result: bool = await manager.async_disable_alarm(alarm_id)
         return {"success": result}
 
     async def handle_snooze_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle snooze_alarm service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             return {"success": False, "error": "No alarm manager"}
 
-        alarm_id = _get_alarm_id_from_call(hass, call)
+        alarm_id: str | None = _get_alarm_id_from_call(hass, call)
         if not alarm_id:
             return {"success": False, "error": "No alarm ID provided"}
 
-        duration = call.data.get("duration")
-        result = await manager.async_snooze_alarm(alarm_id, duration)
+        duration: int | None = call.data.get("duration")
+        result: bool = await manager.async_snooze_alarm(alarm_id, duration)
         return {"success": result}
 
     async def handle_dismiss_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle dismiss_alarm service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             return {"success": False, "error": "No alarm manager"}
 
-        alarm_id = _get_alarm_id_from_call(hass, call)
+        alarm_id: str | None = _get_alarm_id_from_call(hass, call)
         if not alarm_id:
             return {"success": False, "error": "No alarm ID provided"}
 
-        result = await manager.async_dismiss_alarm(alarm_id)
+        result: bool = await manager.async_dismiss_alarm(alarm_id)
         return {"success": result}
 
     async def handle_trigger_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle trigger_alarm service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             return {"success": False, "error": "No alarm manager"}
 
-        alarm_id = _get_alarm_id_from_call(hass, call)
+        alarm_id: str | None = _get_alarm_id_from_call(hass, call)
         if not alarm_id:
             return {"success": False, "error": "No alarm ID provided"}
 
-        result = await manager.async_trigger_alarm(alarm_id)
+        result: bool = await manager.async_trigger_alarm(alarm_id)
         return {"success": result}
 
     async def handle_edit_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle edit_alarm service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             return {"success": False, "error": "No alarm manager"}
 
-        alarm_id = _get_alarm_id_from_call(hass, call)
+        alarm_id: str | None = _get_alarm_id_from_call(hass, call)
         if not alarm_id:
             return {"success": False, "error": "No alarm ID provided"}
 
-        result = await manager.async_edit_alarm(
+        result: bool = await manager.async_edit_alarm(
             alarm_id=alarm_id,
             name=call.data.get(ATTR_NAME),
             time=call.data.get(ATTR_TIME),
@@ -215,11 +215,11 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def handle_list_alarms(call: ServiceCall) -> dict[str, Any]:
         """Handle list_alarms service call."""
-        manager = _get_manager(hass)
+        manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             return {"success": False, "error": "No alarm manager", "alarms": []}
 
-        alarms = manager.list_alarms()
+        alarms: list[dict[str, Any]] = manager.list_alarms()
         return {"success": True, "alarms": alarms}
 
     # Register services
@@ -289,7 +289,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
 async def async_unload_services(hass: HomeAssistant) -> None:
     """Unload services for Calendar Alarm Clock."""
-    services = [
+    services: list[str] = [
         SERVICE_CREATE_ALARM,
         SERVICE_DELETE_ALARM,
         SERVICE_ENABLE_ALARM,

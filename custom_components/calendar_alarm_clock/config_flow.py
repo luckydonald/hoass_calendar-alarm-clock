@@ -1,15 +1,32 @@
+"""Config flow for Calendar Alarm Clock integration."""
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+import voluptuous as vol
+
+from homeassistant import config_entries
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.selector import (
+    EntitySelector,
+    EntitySelectorConfig,
+    NumberSelector,
+    NumberSelectorConfig,
     NumberSelectorMode,
 )
 
 from .const import (
-    DOMAIN,
     CONF_CALENDAR_ENTITY,
-    CONF_DEFAULT_SNOOZE_DURATION,
     CONF_DEFAULT_ALARM_TIMEOUT,
     CONF_DEFAULT_MAX_SNOOZES,
-    DEFAULT_SNOOZE_DURATION,
+    CONF_DEFAULT_SNOOZE_DURATION,
     DEFAULT_ALARM_TIMEOUT,
     DEFAULT_MAX_SNOOZES,
+    DEFAULT_SNOOZE_DURATION,
+    DOMAIN,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,7 +45,7 @@ def get_calendar_entities(hass: HomeAssistant) -> list[str]:
 class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Calendar Alarm Clock."""
 
-    VERSION = 1
+    VERSION: int = 1
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -37,7 +54,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            calendar_entity = user_input[CONF_CALENDAR_ENTITY]
+            calendar_entity: str = user_input[CONF_CALENDAR_ENTITY]
 
             # Check if this calendar is already configured
             await self.async_set_unique_id(calendar_entity)
@@ -49,12 +66,12 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         # Get available calendar entities
-        calendar_entities = get_calendar_entities(self.hass)
+        calendar_entities: list[str] = get_calendar_entities(self.hass)
 
         if not calendar_entities:
             return self.async_abort(reason="no_calendars")
 
-        data_schema = vol.Schema(
+        data_schema: vol.Schema = vol.Schema(
             {
                 vol.Required(CONF_CALENDAR_ENTITY): EntitySelector(
                     EntitySelectorConfig(domain="calendar")
@@ -82,7 +99,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
+        self.config_entry: config_entries.ConfigEntry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -91,9 +108,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        options = self.config_entry.options
+        options: dict[str, Any] = dict(self.config_entry.options)
 
-        data_schema = vol.Schema(
+        data_schema: vol.Schema = vol.Schema(
             {
                 vol.Optional(
                     CONF_DEFAULT_SNOOZE_DURATION,
@@ -143,21 +160,4 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=data_schema,
         )
-"""Config flow for Calendar Alarm Clock integration."""
-from __future__ import annotations
-
-import logging
-from typing import Any
-
-import voluptuous as vol
-
-from homeassistant import config_entries
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.selector import (
-    EntitySelector,
-    EntitySelectorConfig,
-    NumberSelector,
-    NumberSelectorConfig,
 
