@@ -1,8 +1,277 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import type { Alarm, AlarmState, AlarmDialogData, NextAlarmInfo, RepeatPattern } from './types';
+
+// Props
+const props = defineProps<{
+  hass: HomeAssistant | null;
+  config: {
+    entity?: string;
+    title?: string;
+  };
+}>();
+
+// State
+const showDialog = ref(false);
+const isEditing = ref(false);
+const editingAlarmId = ref<string | null>(null);
+const dialogData = ref<AlarmDialogData>({
+  name: 'Alarm',
+  time: '07:00',
+  date: '',
+  repeat: 'none',
+  enabled: true,
+});
+
+// Computed
+const cardTitle = computed(() => props.config.title || 'Alarm Clock');
+
+const isSingleAlarmView = computed(() => !!props.config.entity);
+
+const alarms = computed<Alarm[]>(() => {
+  if (!props.hass) return [];
+
+  const result: Alarm[] = [];
+  const states = props.hass.states;
+
+  for (const entityId in states) {
+    const state = states[entityId];
+    if (
+      entityId.startsWith('sensor.') &&
+      state.attributes.alarm_id &&
+      !entityId.includes('_next_alarm') &&
+      !entityId.includes('_previous_alarm')
+    ) {
+      result.push({
+        entity_id: entityId,
+        alarm_id: state.attributes.alarm_id as string,
+        name: (state.attributes.name as string) || 'Alarm',
+        time: (state.attributes.time as string) || null,
+        enabled: state.attributes.enabled !== false,
+        repeat: (state.attributes.repeat as string) || 'none',
+        snooze_count: (state.attributes.snooze_count as number) || 0,
+        timeout: (state.attributes.timeout as number) || null,
+        max_snoozes: (state.attributes.max_snoozes as number) || null,
+        snooze_duration: (state.attributes.snooze_duration as number) || null,
+        next_snooze_time: (state.attributes.next_snooze_time as string) || null,
+        state: state.state as AlarmState,
+      });
+    }
+  }
+
+  return result;
+});
+
+const sortedAlarms = computed<Alarm[]>(() => {
+  return [...alarms.value].sort((a, b) => {
+    const timeA = a.time ? new Date(a.time).getTime() : 0;
+    const timeB = b.time ? new Date(b.time).getTime() : 0;
+    return timeA - timeB;
+  });
+});
+
+const selectedAlarm = computed<Alarm | null>(() => {
+  if (!props.config.entity || !props.hass) return null;
+
+  const state = props.hass.states[props.config.entity];
+  if (!state) return null;
+
+  return {
+    entity_id: props.config.entity,
+    alarm_id: state.attributes.alarm_id as string,
+    name: (state.attributes.name as string) || 'Alarm',
+    time: (state.attributes.time as string) || null,
+    enabled: state.attributes.enabled !== false,
+    repeat: (state.attributes.repeat as string) || 'none',
+    snooze_count: (state.attributes.snooze_count as number) || 0,
+    timeout: (state.attributes.timeout as number) || null,
+    max_snoozes: (state.attributes.max_snoozes as number) || null,
+    snooze_duration: (state.attributes.snooze_duration as number) || null,
+    next_snooze_time: (state.attributes.next_snooze_time as string) || null,
+    state: state.state as AlarmState,
+  };
+});
+
+const nextAlarm = computed<NextAlarmInfo | null>(() => {
+  if (!props.hass) return null;
+
+  for (const entityId in props.hass.states) {
+    if (entityId.includes('_next_alarm')) {
+      const state = props.hass.states[entityId];
+      if (state.state && state.state !== 'unknown') {
+        return {
+          time: (state.attributes.time as string) || null,
+          name: (state.attributes.name as string) || 'Alarm',
+          state: (state.attributes.state as AlarmState) || 'before',
+        };
+      }
+    }
+  }
+
+  return null;
+});
+
+const isNextAlarmRinging = computed(() => {
+  return (
+    nextAlarm.value &&
+    (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
+  );
+});
+
+// Methods
+function formatTime(isoTime: string | null): string {
+  if (!isoTime) return '--:--';
+  try {
+    const date = new Date(isoTime);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return isoTime;
+  }
+}
+
+function formatRepeat(repeat: string): string {
+  const labels: Record<string, string> = {
+    none: 'Once',
+    daily: 'Daily',
+    weekdays: 'Weekdays',
+    weekends: 'Weekends',
+    weekly: 'Weekly',
+  };
+  return labels[repeat] || repeat;
+}
+
+function getAlarmIcon(alarm: Alarm): string {
+  if (isAlarmRinging(alarm)) return 'mdi:alarm-note';
+  if (alarm.state === 'snoozed') return 'mdi:alarm-snooze';
+  if (!alarm.enabled) return 'mdi:alarm-off';
+  return 'mdi:alarm';
+}
+
+function getStatusText(alarm: Alarm): string {
+  const states: Record<AlarmState, string> = {
+    before: 'Scheduled',
+    ringing: '🔔 Ringing!',
+    ringing_snooze: '🔔 Ringing (Snoozed)!',
+    snoozed: 'Snoozed',
+    dismissed: 'Dismissed',
+    timed_out: 'Timed Out',
+  };
+  return states[alarm.state] || alarm.state;
+}
+
+function isAlarmRinging(alarm: Alarm): boolean {
+  return alarm.state === 'ringing' || alarm.state === 'ringing_snooze';
+}
+
+async function toggleAlarm(alarm: Alarm): Promise<void> {
+  if (!props.hass) return;
+
+  const service = alarm.enabled ? 'disable_alarm' : 'enable_alarm';
+  await props.hass.callService('calendar_alarm_clock', service, {
+    alarm_id: alarm.alarm_id,
+  });
+}
+
+async function snoozeAlarm(alarm: Alarm): Promise<void> {
+  if (!props.hass) return;
+
+  await props.hass.callService('calendar_alarm_clock', 'snooze_alarm', {
+    alarm_id: alarm.alarm_id,
+  });
+}
+
+async function dismissAlarm(alarm: Alarm): Promise<void> {
+  if (!props.hass) return;
+
+  await props.hass.callService('calendar_alarm_clock', 'dismiss_alarm', {
+    alarm_id: alarm.alarm_id,
+  });
+}
+
+async function deleteAlarm(alarm: Alarm): Promise<void> {
+  if (!props.hass) return;
+
+  if (confirm(`Delete alarm "${alarm.name}"?`)) {
+    await props.hass.callService('calendar_alarm_clock', 'delete_alarm', {
+      alarm_id: alarm.alarm_id,
+    });
+  }
+}
+
+function openAddDialog(): void {
+  isEditing.value = false;
+  editingAlarmId.value = null;
+  dialogData.value = {
+    name: 'Alarm',
+    time: '07:00',
+    date: new Date().toISOString().split('T')[0],
+    repeat: 'none',
+    enabled: true,
+  };
+  showDialog.value = true;
+}
+
+function openEditDialog(alarm: Alarm): void {
+  isEditing.value = true;
+  editingAlarmId.value = alarm.alarm_id;
+
+  let time = '07:00';
+  let date = new Date().toISOString().split('T')[0];
+
+  if (alarm.time) {
+    try {
+      const d = new Date(alarm.time);
+      time = d.toTimeString().slice(0, 5);
+      date = d.toISOString().split('T')[0];
+    } catch {
+      // Use defaults
+    }
+  }
+
+  dialogData.value = {
+    name: alarm.name,
+    time,
+    date,
+    repeat: alarm.repeat as RepeatPattern,
+    enabled: alarm.enabled,
+  };
+  showDialog.value = true;
+}
+
+function closeDialog(): void {
+  showDialog.value = false;
+}
+
+async function saveAlarm(): Promise<void> {
+  if (!props.hass) return;
+
+  if (isEditing.value && editingAlarmId.value) {
+    await props.hass.callService('calendar_alarm_clock', 'edit_alarm', {
+      alarm_id: editingAlarmId.value,
+      name: dialogData.value.name,
+      time: dialogData.value.time,
+      repeat: dialogData.value.repeat,
+      enabled: dialogData.value.enabled,
+    });
+  } else {
+    await props.hass.callService('calendar_alarm_clock', 'create_alarm', {
+      name: dialogData.value.name,
+      time: dialogData.value.time,
+      date: dialogData.value.date,
+      repeat: dialogData.value.repeat,
+      enabled: dialogData.value.enabled,
+    });
+  }
+
+  closeDialog();
+}
+</script>
+
 <template>
   <ha-card :header="cardTitle">
     <div class="card-content">
       <!-- Header with next alarm -->
-      <div class="next-alarm-header" v-if="nextAlarm && !isSingleAlarmView">
+      <div v-if="nextAlarm && !isSingleAlarmView" class="next-alarm-header" :class="{ ringing: isNextAlarmRinging }">
         <div class="next-alarm-icon" :class="{ ringing: isNextAlarmRinging }">
           <ha-icon icon="mdi:alarm"></ha-icon>
         </div>
@@ -15,14 +284,17 @@
 
       <!-- Single Alarm View -->
       <div v-if="isSingleAlarmView && selectedAlarm" class="single-alarm-view">
-        <div class="single-alarm-icon" :class="{ ringing: isAlarmRinging(selectedAlarm), disabled: !selectedAlarm.enabled }">
+        <div
+          class="single-alarm-icon"
+          :class="{ ringing: isAlarmRinging(selectedAlarm), disabled: !selectedAlarm.enabled }"
+        >
           <ha-icon :icon="getAlarmIcon(selectedAlarm)"></ha-icon>
         </div>
         <div class="single-alarm-time">{{ formatTime(selectedAlarm.time) }}</div>
         <div class="single-alarm-name">{{ selectedAlarm.name }}</div>
         <div class="single-alarm-status">{{ getStatusText(selectedAlarm) }}</div>
 
-        <div class="single-alarm-actions" v-if="isAlarmRinging(selectedAlarm)">
+        <div v-if="isAlarmRinging(selectedAlarm)" class="single-alarm-actions">
           <button class="btn btn-snooze" @click="snoozeAlarm(selectedAlarm)">
             <ha-icon icon="mdi:alarm-snooze"></ha-icon>
             Snooze
@@ -33,7 +305,7 @@
           </button>
         </div>
 
-        <div class="single-alarm-toggle" v-else>
+        <div v-else class="single-alarm-toggle">
           <label class="toggle-label">
             <input type="checkbox" :checked="selectedAlarm.enabled" @change="toggleAlarm(selectedAlarm)" />
             <span class="toggle-slider"></span>
@@ -46,7 +318,7 @@
             <span class="detail-label">Repeat:</span>
             <span class="detail-value">{{ formatRepeat(selectedAlarm.repeat) }}</span>
           </div>
-          <div class="detail-row" v-if="selectedAlarm.snooze_count > 0">
+          <div v-if="selectedAlarm.snooze_count > 0" class="detail-row">
             <span class="detail-label">Snooze Count:</span>
             <span class="detail-value">{{ selectedAlarm.snooze_count }}</span>
           </div>
@@ -73,7 +345,7 @@
 
         <div
           v-for="alarm in sortedAlarms"
-          :key="alarm.id"
+          :key="alarm.alarm_id"
           class="alarm-item"
           :class="{ ringing: isAlarmRinging(alarm), disabled: !alarm.enabled }"
         >
@@ -84,17 +356,17 @@
           <div class="alarm-info">
             <div class="alarm-time">{{ formatTime(alarm.time) }}</div>
             <div class="alarm-name">{{ alarm.name }}</div>
-            <div class="alarm-repeat" v-if="alarm.repeat !== 'none'">
+            <div v-if="alarm.repeat !== 'none'" class="alarm-repeat">
               {{ formatRepeat(alarm.repeat) }}
             </div>
           </div>
 
           <div class="alarm-actions">
             <template v-if="isAlarmRinging(alarm)">
-              <button class="btn-icon" @click="snoozeAlarm(alarm)" title="Snooze">
+              <button class="btn-icon" title="Snooze" @click="snoozeAlarm(alarm)">
                 <ha-icon icon="mdi:alarm-snooze"></ha-icon>
               </button>
-              <button class="btn-icon" @click="dismissAlarm(alarm)" title="Dismiss">
+              <button class="btn-icon" title="Dismiss" @click="dismissAlarm(alarm)">
                 <ha-icon icon="mdi:alarm-off"></ha-icon>
               </button>
             </template>
@@ -103,10 +375,10 @@
                 <input type="checkbox" :checked="alarm.enabled" @change="toggleAlarm(alarm)" />
                 <span class="toggle-slider"></span>
               </label>
-              <button class="btn-icon" @click="openEditDialog(alarm)" title="Edit">
+              <button class="btn-icon" title="Edit" @click="openEditDialog(alarm)">
                 <ha-icon icon="mdi:pencil"></ha-icon>
               </button>
-              <button class="btn-icon" @click="deleteAlarm(alarm)" title="Delete">
+              <button class="btn-icon" title="Delete" @click="deleteAlarm(alarm)">
                 <ha-icon icon="mdi:delete"></ha-icon>
               </button>
             </template>
@@ -115,7 +387,7 @@
       </div>
 
       <!-- Add Alarm Button -->
-      <div class="add-alarm" v-if="!isSingleAlarmView">
+      <div v-if="!isSingleAlarmView" class="add-alarm">
         <button class="btn btn-add" @click="openAddDialog">
           <ha-icon icon="mdi:plus"></ha-icon>
           Add Alarm
@@ -135,15 +407,15 @@
         <div class="dialog-content">
           <div class="form-row">
             <label>Name</label>
-            <input type="text" v-model="dialogData.name" placeholder="Alarm" />
+            <input v-model="dialogData.name" type="text" placeholder="Alarm" />
           </div>
           <div class="form-row">
             <label>Time</label>
-            <input type="time" v-model="dialogData.time" />
+            <input v-model="dialogData.time" type="time" />
           </div>
           <div class="form-row">
             <label>Date</label>
-            <input type="date" v-model="dialogData.date" />
+            <input v-model="dialogData.date" type="date" />
           </div>
           <div class="form-row">
             <label>Repeat</label>
@@ -157,7 +429,7 @@
           </div>
           <div class="form-row">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="dialogData.enabled" />
+              <input v-model="dialogData.enabled" type="checkbox" />
               Enabled
             </label>
           </div>
@@ -170,254 +442,6 @@
     </div>
   </ha-card>
 </template>
-
-<script>
-export default {
-  name: 'AlarmClockCard',
-  props: {
-    hass: {
-      type: Object,
-      default: null,
-    },
-    config: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-  data() {
-    return {
-      showDialog: false,
-      isEditing: false,
-      editingAlarmId: null,
-      dialogData: {
-        name: 'Alarm',
-        time: '07:00',
-        date: '',
-        repeat: 'none',
-        enabled: true,
-      },
-    };
-  },
-  computed: {
-    cardTitle() {
-      return this.config.title || 'Alarm Clock';
-    },
-    isSingleAlarmView() {
-      return !!this.config.entity;
-    },
-    alarms() {
-      if (!this.hass) return [];
-
-      const alarms = [];
-      const states = this.hass.states;
-
-      for (const entityId in states) {
-        const state = states[entityId];
-        if (entityId.startsWith('sensor.') &&
-            state.attributes.alarm_id &&
-            !entityId.includes('_next_alarm') &&
-            !entityId.includes('_previous_alarm')) {
-          alarms.push({
-            entity_id: entityId,
-            id: state.attributes.alarm_id,
-            name: state.attributes.name || 'Alarm',
-            time: state.attributes.time,
-            enabled: state.attributes.enabled !== false,
-            repeat: state.attributes.repeat || 'none',
-            snooze_count: state.attributes.snooze_count || 0,
-            state: state.state,
-          });
-        }
-      }
-
-      return alarms;
-    },
-    sortedAlarms() {
-      return [...this.alarms].sort((a, b) => {
-        const timeA = new Date(a.time).getTime();
-        const timeB = new Date(b.time).getTime();
-        return timeA - timeB;
-      });
-    },
-    selectedAlarm() {
-      if (!this.config.entity || !this.hass) return null;
-
-      const state = this.hass.states[this.config.entity];
-      if (!state) return null;
-
-      return {
-        entity_id: this.config.entity,
-        id: state.attributes.alarm_id,
-        name: state.attributes.name || 'Alarm',
-        time: state.attributes.time,
-        enabled: state.attributes.enabled !== false,
-        repeat: state.attributes.repeat || 'none',
-        snooze_count: state.attributes.snooze_count || 0,
-        state: state.state,
-      };
-    },
-    nextAlarm() {
-      if (!this.hass) return null;
-
-      // Find the next_alarm sensor
-      for (const entityId in this.hass.states) {
-        if (entityId.includes('_next_alarm')) {
-          const state = this.hass.states[entityId];
-          if (state.state && state.state !== 'unknown') {
-            return {
-              time: state.attributes.time,
-              name: state.attributes.name || 'Alarm',
-              state: state.attributes.state,
-            };
-          }
-        }
-      }
-
-      return null;
-    },
-    isNextAlarmRinging() {
-      return this.nextAlarm &&
-        (this.nextAlarm.state === 'ringing' || this.nextAlarm.state === 'ringing_snooze');
-    },
-  },
-  methods: {
-    formatTime(isoTime) {
-      if (!isoTime) return '--:--';
-      try {
-        const date = new Date(isoTime);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      } catch {
-        return isoTime;
-      }
-    },
-    formatRepeat(repeat) {
-      const labels = {
-        none: 'Once',
-        daily: 'Daily',
-        weekdays: 'Weekdays',
-        weekends: 'Weekends',
-        weekly: 'Weekly',
-      };
-      return labels[repeat] || repeat;
-    },
-    getAlarmIcon(alarm) {
-      if (this.isAlarmRinging(alarm)) return 'mdi:alarm-note';
-      if (alarm.state === 'snoozed') return 'mdi:alarm-snooze';
-      if (!alarm.enabled) return 'mdi:alarm-off';
-      return 'mdi:alarm';
-    },
-    getStatusText(alarm) {
-      const states = {
-        before: 'Scheduled',
-        ringing: '🔔 Ringing!',
-        ringing_snooze: '🔔 Ringing (Snoozed)!',
-        snoozed: 'Snoozed',
-        dismissed: 'Dismissed',
-        timed_out: 'Timed Out',
-      };
-      return states[alarm.state] || alarm.state;
-    },
-    isAlarmRinging(alarm) {
-      return alarm.state === 'ringing' || alarm.state === 'ringing_snooze';
-    },
-    async toggleAlarm(alarm) {
-      if (!this.hass) return;
-
-      const service = alarm.enabled ? 'disable_alarm' : 'enable_alarm';
-      await this.hass.callService('calendar_alarm_clock', service, {
-        alarm_id: alarm.id,
-      });
-    },
-    async snoozeAlarm(alarm) {
-      if (!this.hass) return;
-
-      await this.hass.callService('calendar_alarm_clock', 'snooze_alarm', {
-        alarm_id: alarm.id,
-      });
-    },
-    async dismissAlarm(alarm) {
-      if (!this.hass) return;
-
-      await this.hass.callService('calendar_alarm_clock', 'dismiss_alarm', {
-        alarm_id: alarm.id,
-      });
-    },
-    async deleteAlarm(alarm) {
-      if (!this.hass) return;
-
-      if (confirm(`Delete alarm "${alarm.name}"?`)) {
-        await this.hass.callService('calendar_alarm_clock', 'delete_alarm', {
-          alarm_id: alarm.id,
-        });
-      }
-    },
-    openAddDialog() {
-      this.isEditing = false;
-      this.editingAlarmId = null;
-      this.dialogData = {
-        name: 'Alarm',
-        time: '07:00',
-        date: new Date().toISOString().split('T')[0],
-        repeat: 'none',
-        enabled: true,
-      };
-      this.showDialog = true;
-    },
-    openEditDialog(alarm) {
-      this.isEditing = true;
-      this.editingAlarmId = alarm.id;
-
-      let time = '07:00';
-      let date = new Date().toISOString().split('T')[0];
-
-      if (alarm.time) {
-        try {
-          const d = new Date(alarm.time);
-          time = d.toTimeString().slice(0, 5);
-          date = d.toISOString().split('T')[0];
-        } catch {
-          // Use defaults
-        }
-      }
-
-      this.dialogData = {
-        name: alarm.name,
-        time: time,
-        date: date,
-        repeat: alarm.repeat,
-        enabled: alarm.enabled,
-      };
-      this.showDialog = true;
-    },
-    closeDialog() {
-      this.showDialog = false;
-    },
-    async saveAlarm() {
-      if (!this.hass) return;
-
-      if (this.isEditing) {
-        await this.hass.callService('calendar_alarm_clock', 'edit_alarm', {
-          alarm_id: this.editingAlarmId,
-          name: this.dialogData.name,
-          time: this.dialogData.time,
-          repeat: this.dialogData.repeat,
-          enabled: this.dialogData.enabled,
-        });
-      } else {
-        await this.hass.callService('calendar_alarm_clock', 'create_alarm', {
-          name: this.dialogData.name,
-          time: this.dialogData.time,
-          date: this.dialogData.date,
-          repeat: this.dialogData.repeat,
-          enabled: this.dialogData.enabled,
-        });
-      }
-
-      this.closeDialog();
-    },
-  },
-};
-</script>
 
 <style scoped>
 .card-content {
