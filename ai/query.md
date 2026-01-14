@@ -70,3 +70,5 @@ The following events shall be fired:
 There's also global next and previous entities, which represent the next and previous alarm in the system, with the same attributes events and functions as above.
 
 When an alarm is ringing, the user shall be able to stop/snooze it via the notification, or via the entity (set state to snooze or dismissed).
+
+Write me the code for this plugin.
