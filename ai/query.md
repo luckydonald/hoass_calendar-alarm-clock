@@ -83,3 +83,7 @@ Make a markdown file in the ai folder, outlining what to do in detail.
 It shall be in vue, and you're missing the non-list view in the lovelace frontend.
 Create ai/progress.md, and keep it updated when you complete steps.
 After creating that file, start implementing!
+
+—————————
+
+use yarn, vue 3 <script setup lang="ts">, typescript, full types in python 3.12.
