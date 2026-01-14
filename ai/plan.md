@@ -64,12 +64,17 @@ Fire events on the bus `hass.bus.async_fire(...)`:
 
 ## 3. Frontend (Lovelace)
 A custom Lovelace card (or panel) to manage alarms.
-- **Micro-frontend**: Vue or LitElement based.
+- **Framework**: Vue.js (compiled to Web Component)
+- **Views**:
+    1. **List View**: Shows all alarms for the week in a list format.
+    2. **Single Alarm View**: Detailed view for a single alarm entity (when entity is configured).
 - **Features**:
-    - List view of `alarm_clock` entities.
+    - List view of `alarm_clock` entities (filterable by entity if set).
+    - Single alarm detail view with large time display and controls.
     - Add/Edit dialogs.
-    - "Ringing" visual state (shake animation).
-    - Header with next alarm.
+    - "Ringing" visual state (shake animation on alarm icon).
+    - Header with next alarm time.
+    - Snooze/Dismiss buttons when alarm is ringing.
 
 ## 4. Implementation Steps
 
