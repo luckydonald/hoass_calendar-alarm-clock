@@ -38,32 +38,40 @@
 ## Files Created
 ```
 custom_components/calendar_alarm_clock/
-├── __init__.py           # Component setup
+├── __init__.py           # Component setup (fully typed)
 ├── manifest.json         # Component metadata
-├── const.py              # Constants and defaults
-├── config_flow.py        # UI configuration
-├── models.py             # Alarm data model
-├── alarm_manager.py      # Core alarm logic
-├── sensor.py             # Entity definitions
-├── services.py           # Service handlers
+├── const.py              # Constants and defaults (with Literal types)
+├── config_flow.py        # UI configuration (fully typed)
+├── models.py             # Alarm data model (with Self type)
+├── alarm_manager.py      # Core alarm logic (fully typed)
+├── sensor.py             #xk Entity definitions (fully typed)
+├── services.py           # Service handlers (fully typed)
 ├── services.yaml         # Service definitions
 ├── strings.json          # UI strings
 ├── translations/
 │   └── en.json           # English translations
 └── www/
-    └── alarm-clock-card.js  # (placeholder)
+    └── alarm-clock-card.js  # (placexkholder)
 
 frontend/
-├── package.json          # NPM config
-├── vite.config.js        # Build config
+├── package.json          # Yarn config
+├── tsconfig.json         # TypeScript config
+├── tsconfig.node.json    # Node TypeScript config
+├── vite.config.ts        # Vite build config (TypeScript)
 ├── index.html            # Dev entry
 └── src/
-    ├── main.js           # Web component wrapper
-    └── AlarmClockCard.vue  # Vue component
+    ├── main.ts           # Web component wrapper (TypeScript)
+    ├── types.ts          # TypeScript types
+    ├── env.d.ts          # Type declarations
+    └── AlarmClockCard.vue  # Vue component (<script setup lang="ts">)
 
 hacs.json                 # HACS configuration
 README.md                 # Documentation
 ```
+
+**Note:** Remove old JS files before building:
+- `frontend/vite.config.js` (replaced by `vite.config.ts`)
+- `frontend/src/main.js` (replaced by `main.ts`)
 
 ## Next Steps for User
 1. Run `cd frontend && npm install && npm run build` to build the card
