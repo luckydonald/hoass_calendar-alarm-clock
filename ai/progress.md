@@ -3,19 +3,18 @@
 **Project**: Calendar backed Alarm Clock for Home Assistant
 **Repository**: https://github.com/luckydonald/hoass_calendar-alarm-clock
 
-## Status: 🔧 TypeScript Build Configuration In Progress
+## Status: ✅ Implementation Complete
 
 ## Recent Changes
+- Added GitHub Actions workflows:
+  - `ci.yml` - Runs on push/PR: Python lint (ruff), frontend build, HACS validation, hassfest
+  - `release.yml` - Runs on tags (v*): Builds frontend, creates release zip, publishes to GitHub Releases
+- Added `pyproject.toml` for Python tooling (ruff, mypy)
+- Added `LICENSE` file (MIT)
+- Updated `hacs.json` with `zip_release` config
+- Added CI badge to README
 - Added "Open in HACS" button to README for one-click installation
-- Updated repository URL in all files:
-  - `manifest.json` - documentation and issue_tracker URLs
-  - `package.json` - added repository, author, license fields
-  - `README.md` - complete rewrite with proper URLs and badges
-  - `ai/overview.md` - added repo links
-- Fixed `tsconfig.node.json` - added `emitDeclarationOnly: true` for composite mode
-- Fixed `HomeAssistant` type not found - moved to `types.ts` and properly imported
-- Fixed type casting in `main.ts` using `ComponentPublicInstance & AppData`
-- Separated HA element declarations into `env.d.ts`, types into `types.ts`
+- Updated repository URL in all files
 
 ## Completed Steps
 - [x] Project planning (plan.md created)

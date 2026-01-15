@@ -2,6 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub Release](https://img.shields.io/github/release/luckydonald/hoass_calendar-alarm-clock.svg)](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
+[![CI](https://github.com/luckydonald/hoass_calendar-alarm-clock/actions/workflows/ci.yml/badge.svg)](https://github.com/luckydonald/hoass_calendar-alarm-clock/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/luckydonald/hoass_calendar-alarm-clock.svg)](LICENSE)
 
 A Home Assistant custom component that provides phone-like alarm clock functionality, storing alarms in your CalDAV calendar.

@@ -1,0 +1,44 @@
+[project]
+name = "hoass_calendar-alarm-clock"
+version = "1.0.0"
+description = "Calendar backed Alarm Clock for Home Assistant"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "luckydonald" }]
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "ARG001", # unused function argument (common in HA)
+    "ARG002", # unused method argument (common in HA)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["custom_components.calendar_alarm_clock"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+

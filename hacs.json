@@ -1,7 +1,9 @@
 {
-  "name": "Calendar Alarm Clock",
+  "name": "Calendar backed Alarm Clock for Home Assistant",
   "render_readme": true,
   "domains": ["sensor"],
-  "homeassistant": "2024.1.0"
+  "homeassistant": "2024.1.0",
+  "zip_release": true,
+  "filename": "calendar_alarm_clock.zip"
 }
 
