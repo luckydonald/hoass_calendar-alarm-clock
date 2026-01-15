@@ -5,6 +5,7 @@ import logging
 from datetime import timedelta
 from pathlib import Path
 
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.components.lovelace.resources import ResourceStorageCollection
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_STATE_CHANGED, Platform
@@ -38,10 +39,14 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     # Register the www folder as static path
-    hass.http.register_static_path(
-        f"/local/community/{DOMAIN}",
-        str(Path(__file__).parent / "www"),
-        cache_headers=False,
+    await hass.http.async_register_static_paths(
+        [
+            StaticPathConfig(
+                f"/local/community/{DOMAIN}",
+                str(Path(__file__).parent / "www"),
+                cache_headers=False,
+            )
+        ]
     )
 
     # Set up discovery when HA is fully started
