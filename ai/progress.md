@@ -6,17 +6,17 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
+- **Added automatic discovery**: When a calendar is set up in Home Assistant, the integration is automatically suggested in the Notifications panel
+  - Listens for new calendar entities via `EVENT_STATE_CHANGED`
+  - Triggers discovery on HA startup via `async_at_started`
+  - Shows confirmation dialog before setting up
 - Fixed config_flow.py:
-  - Now checks both `hass.states` and entity registry for calendars
-  - Removed abort when no calendars found (shows form anyway)
-  - Added debug logging for calendar discovery
+  - Added `async_step_integration_discovery` for automatic discovery
+  - Added `async_step_discovery_confirm` for user confirmation
+  - Better calendar detection from `hass.states`
 - Added `integration_type: service` to manifest.json
-- Updated strings.json and translations/en.json with better descriptions
-- Fixed Ruff linting errors:
-  - SIM102: Combined nested if statements in `alarm_manager.py` and `services.py`
-  - I001: Fixed import sorting in `config_flow.py` and `services.py`
-  - Fixed unreachable code in `async_snooze_alarm`
-- Fixed HACS JSON: Removed invalid `domains` key
+- Updated strings.json and translations with discovery confirmation
+- Fixed Ruff linting errors
 - Added GitHub Actions workflows
 - Added `pyproject.toml`, `LICENSE`, CI badge
 

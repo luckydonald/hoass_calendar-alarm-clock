@@ -5,9 +5,10 @@ import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.const import EVENT_STATE_CHANGED, Platform
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.start import async_at_started
 
 from .alarm_manager import AlarmManager
 from .const import (
@@ -28,6 +29,41 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Set up the Calendar Alarm Clock component."""
+    hass.data.setdefault(DOMAIN, {})
+
+    # Set up discovery when HA is fully started
+    async def async_discover_on_start(_: HomeAssistant) -> None:
+        """Discover calendars when HA starts."""
+        await _async_discover_calendars(hass)
+
+    async_at_started(hass, async_discover_on_start)
+
+    # Also listen for new calendar entities being added
+    @callback
+    def async_state_changed(event: Event) -> None:
+        """Handle state changed events to discover new calendars."""
+        entity_id: str | None = event.data.get("entity_id")
+        if entity_id and entity_id.startswith("calendar."):
+            old_state = event.data.get("old_state")
+            new_state = event.data.get("new_state")
+            # Only trigger discovery if this is a new entity (old_state was None)
+            if old_state is None and new_state is not None:
+                hass.async_create_task(_async_discover_calendars(hass))
+
+    hass.bus.async_listen(EVENT_STATE_CHANGED, async_state_changed)
+
+    return True
+
+
+async def _async_discover_calendars(hass: HomeAssistant) -> None:
+    """Discover calendars and offer to set up alarm clock."""
+    from .config_flow import async_discover_calendars
+
+    await async_discover_calendars(hass)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Calendar Alarm Clock from a config entry."""
     hass.data.setdefault(DOMAIN, {})
@@ -41,9 +77,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     alarm_timeout: float = entry.options.get(
         CONF_DEFAULT_ALARM_TIMEOUT, DEFAULT_ALARM_TIMEOUT
     )
-    max_snoozes: int = entry.options.get(
-        CONF_DEFAULT_MAX_SNOOZES, DEFAULT_MAX_SNOOZES
-    )
+    max_snoozes: int = entry.options.get(CONF_DEFAULT_MAX_SNOOZES, DEFAULT_MAX_SNOOZES)
 
     # Create alarm manager
     manager = AlarmManager(

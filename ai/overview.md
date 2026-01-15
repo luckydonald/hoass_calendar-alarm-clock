@@ -5,14 +5,21 @@
 ## Description
 A Home Assistant custom component (HACS compatible) that provides phone-like alarm clock functionality, storing alarms in a CalDAV calendar.
 
+## Setup Flow
+1. **Automatic Discovery**: When a calendar integration is set up, this integration is automatically suggested
+2. **Manual Setup**: Go to Settings → Devices & Services → Add Integration → "Calendar backed Alarm Clock"
+3. **Select Calendar**: Choose which calendar to store alarms in
+4. **Configure Options**: Set default snooze duration, timeout, max snoozes
+
 ## Architecture
 
 ### Backend (Python 3.12)
 - **Domain**: `calendar_alarm_clock`
 - **Storage**: CalDAV calendar events via Home Assistant's `calendar` integration
+- **Auto-Discovery**: Listens for new calendar entities and offers setup
 - **Components**:
-  - `__init__.py` - Entry setup, platform forwarding
-  - `config_flow.py` - UI configuration (calendar selection, defaults)
+  - `__init__.py` - Entry setup, platform forwarding, discovery listener
+  - `config_flow.py` - UI configuration with auto-discovery support
   - `const.py` - Constants, types (using `Literal`, `Final`)
   - `models.py` - `Alarm` dataclass
   - `alarm_manager.py` - Core logic (sync, state machine, notifications)

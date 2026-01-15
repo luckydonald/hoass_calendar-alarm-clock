@@ -42,10 +42,17 @@ Or manually:
 
 ## Configuration
 
+### Automatic Discovery
+When you set up a calendar integration (like CalDAV or Google Calendar), the Alarm Clock integration will automatically be suggested in your notifications. Simply click to configure it.
+
+### Manual Setup
 1. Go to Settings → Devices & Services → Add Integration
-2. Search for "Calendar Alarm Clock"
+2. Search for "Calendar backed Alarm Clock"
 3. Select the calendar entity to use for storing alarms
-4. Configure default settings (snooze duration, timeout, max snoozes)
+4. Configure default settings via the integration options:
+   - **Snooze duration** (default: 9 minutes)
+   - **Alarm timeout** (default: 30 minutes)
+   - **Max snoozes** (default: 3, set to 0 for infinite)
 
 ## Lovelace Card
 

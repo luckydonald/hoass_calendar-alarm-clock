@@ -1,5 +1,6 @@
 {
   "config": {
+    "flow_title": "Alarm Clock for {name}",
     "step": {
       "user": {
         "title": "Calendar Alarm Clock Setup",
@@ -10,10 +11,15 @@
         "data_description": {
           "calendar_entity": "The calendar where alarm events will be stored"
         }
+      },
+      "discovery_confirm": {
+        "title": "Set up Alarm Clock",
+        "description": "A calendar **{calendar}** was discovered. Would you like to use it as an alarm clock?\n\nAlarms will be stored as calendar events."
       }
     },
     "abort": {
-      "already_configured": "This calendar is already configured for alarm clock."
+      "already_configured": "This calendar is already configured for alarm clock.",
+      "no_calendars": "No calendar entities found. Please set up a calendar integration first (e.g., CalDAV, Google Calendar)."
     },
     "error": {
       "cannot_connect": "Failed to connect to the calendar."
