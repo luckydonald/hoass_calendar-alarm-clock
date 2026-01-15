@@ -1,4 +1,5 @@
 """Services for Calendar Alarm Clock."""
+
 from __future__ import annotations
 
 import logging
@@ -301,4 +302,3 @@ async def async_unload_services(hass: HomeAssistant) -> None:
 
     for service in services:
         hass.services.async_remove(DOMAIN, service)
-

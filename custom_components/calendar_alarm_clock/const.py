@@ -1,4 +1,5 @@
 """Constants for Calendar Alarm Clock."""
+
 from typing import Final, Literal
 
 DOMAIN: Final[str] = "calendar_alarm_clock"
@@ -81,4 +82,3 @@ PLATFORMS: Final[list[str]] = ["sensor"]
 
 # Update interval (seconds)
 UPDATE_INTERVAL: Final[int] = 30
-

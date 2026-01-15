@@ -1,4 +1,5 @@
 """Config flow for Calendar Alarm Clock integration."""
+
 from __future__ import annotations
 
 import logging
@@ -40,10 +41,7 @@ def get_calendar_entities(hass: HomeAssistant) -> list[str]:
     # Also check entity registry for any that might not have state yet
     registry = er.async_get(hass)
     for entity in registry.entities.values():
-        if (
-            entity.entity_id.startswith("calendar.")
-            and entity.entity_id not in calendar_entities
-        ):
+        if entity.entity_id.startswith("calendar.") and entity.entity_id not in calendar_entities:
             calendar_entities.append(entity.entity_id)
 
     return sorted(calendar_entities)
@@ -79,9 +77,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the initial step (manual setup)."""
         errors: dict[str, str] = {}
 
@@ -118,9 +114,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_integration_discovery(
-        self, discovery_info: dict[str, Any]
-    ) -> FlowResult:
+    async def async_step_integration_discovery(self, discovery_info: dict[str, Any]) -> FlowResult:
         """Handle discovery of a calendar entity."""
         calendar_entity: str = discovery_info[CONF_CALENDAR_ENTITY]
 
@@ -143,9 +137,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None or not onboarding.async_is_onboarded(self.hass):
             # User confirmed or onboarding is not complete (auto-setup)
             assert self._discovered_calendar is not None
-            calendar_name = (
-                self._discovered_calendar.split(".")[-1].replace("_", " ").title()
-            )
+            calendar_name = self._discovered_calendar.split(".")[-1].replace("_", " ").title()
             return self.async_create_entry(
                 title=f"Alarm Clock ({calendar_name})",
                 data={CONF_CALENDAR_ENTITY: self._discovered_calendar},
@@ -170,9 +162,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize options flow."""
         self.config_entry: config_entries.ConfigEntry = config_entry
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
@@ -183,9 +173,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             {
                 vol.Optional(
                     CONF_DEFAULT_SNOOZE_DURATION,
-                    default=options.get(
-                        CONF_DEFAULT_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION
-                    ),
+                    default=options.get(CONF_DEFAULT_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION),
                 ): NumberSelector(
                     NumberSelectorConfig(
                         min=1,
@@ -197,9 +185,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ),
                 vol.Optional(
                     CONF_DEFAULT_ALARM_TIMEOUT,
-                    default=options.get(
-                        CONF_DEFAULT_ALARM_TIMEOUT, DEFAULT_ALARM_TIMEOUT
-                    ),
+                    default=options.get(CONF_DEFAULT_ALARM_TIMEOUT, DEFAULT_ALARM_TIMEOUT),
                 ): NumberSelector(
                     NumberSelectorConfig(
                         min=1,
@@ -237,8 +223,7 @@ async def async_discover_calendars(hass: HomeAssistant) -> None:
         # Check if there's already a pending flow for this calendar
         existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
         if any(
-            flow.get("context", {}).get("unique_id") == calendar_entity
-            for flow in existing_flows
+            flow.get("context", {}).get("unique_id") == calendar_entity for flow in existing_flows
         ):
             continue
 
@@ -250,4 +235,3 @@ async def async_discover_calendars(hass: HomeAssistant) -> None:
                 data={CONF_CALENDAR_ENTITY: calendar_entity},
             )
         )
-

@@ -1,4 +1,5 @@
 """Alarm data models for Calendar Alarm Clock."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -86,7 +87,7 @@ class Alarm:
                 end_bracket = summary.index("]")
                 snooze_str = summary[8:end_bracket]
                 snooze_count = int(snooze_str)
-                name = summary[end_bracket + 2:]  # Skip "] "
+                name = summary[end_bracket + 2 :]  # Skip "] "
             except (ValueError, IndexError):
                 pass
 
@@ -135,4 +136,3 @@ class Alarm:
             calendar_event_uid=uid,
             _calendar_data=event,
         )
-

@@ -1,4 +1,5 @@
 """Alarm Manager for Calendar Alarm Clock."""
+
 from __future__ import annotations
 
 import logging
@@ -112,9 +113,7 @@ class AlarmManager:
             if result is None:
                 result = {}
 
-            events: list[dict[str, Any]] = result.get(
-                self.calendar_entity, {}
-            ).get("events", [])
+            events: list[dict[str, Any]] = result.get(self.calendar_entity, {}).get("events", [])
 
             # Convert events to alarms
             new_alarms: dict[str, Alarm] = {}
@@ -246,13 +245,9 @@ class AlarmManager:
         future_alarms: list[Alarm] = [
             a
             for a in self._alarms.values()
-            if a.time > now
-            and a.enabled
-            and a.state not in (STATE_DISMISSED, STATE_TIMED_OUT)
+            if a.time > now and a.enabled and a.state not in (STATE_DISMISSED, STATE_TIMED_OUT)
         ]
-        past_alarms: list[Alarm] = [
-            a for a in self._alarms.values() if a.time <= now
-        ]
+        past_alarms: list[Alarm] = [a for a in self._alarms.values() if a.time <= now]
 
         future_alarms.sort(key=lambda a: a.time)
         past_alarms.sort(key=lambda a: a.time, reverse=True)
@@ -293,9 +288,7 @@ class AlarmManager:
             alarm_date = datetime.combine(now.date(), datetime.min.time())
 
         alarm_datetime: datetime = alarm_date.replace(hour=hour, minute=minute)
-        alarm_datetime = dt_util.as_local(
-            alarm_datetime.replace(tzinfo=now.tzinfo)
-        )
+        alarm_datetime = dt_util.as_local(alarm_datetime.replace(tzinfo=now.tzinfo))
 
         # Build event summary
         summary: str = name
@@ -339,10 +332,7 @@ class AlarmManager:
 
             # Find the newly created alarm
             for alarm in self._alarms.values():
-                if (
-                    alarm.name == name
-                    and abs((alarm.time - alarm_datetime).total_seconds()) < 60
-                ):
+                if alarm.name == name and abs((alarm.time - alarm_datetime).total_seconds()) < 60:
                     self._fire_event(EVENT_ALARM_CREATED, alarm)
                     return alarm
 
@@ -378,9 +368,7 @@ class AlarmManager:
             _LOGGER.error("Error deleting alarm: %s", e)
             return False
 
-    async def async_snooze_alarm(
-        self, alarm_id: str, duration: int | None = None
-    ) -> bool:
+    async def async_snooze_alarm(self, alarm_id: str, duration: int | None = None) -> bool:
         """Snooze an alarm."""
         alarm: Alarm | None = self._alarms.get(alarm_id)
         if not alarm:
@@ -392,17 +380,11 @@ class AlarmManager:
             return False
 
         # Check max snoozes
-        if (
-            alarm.max_snoozes
-            and alarm.max_snoozes > 0
-            and alarm.snooze_count >= alarm.max_snoozes
-        ):
+        if alarm.max_snoozes and alarm.max_snoozes > 0 and alarm.snooze_count >= alarm.max_snoozes:
             _LOGGER.warning("Max snoozes reached for alarm: %s", alarm_id)
             return False
 
-        snooze_duration: int = (
-            duration or alarm.snooze_duration or self.default_snooze_duration
-        )
+        snooze_duration: int = duration or alarm.snooze_duration or self.default_snooze_duration
         snooze_time: datetime = dt_util.now() + timedelta(minutes=snooze_duration)
         new_snooze_count: int = alarm.snooze_count + 1
 
@@ -591,9 +573,7 @@ class AlarmManager:
             hour, minute = map(int, time.split(":"))
             new_time: datetime = alarm.time.replace(hour=hour, minute=minute)
             service_data["start_date_time"] = new_time.isoformat()
-            service_data["end_date_time"] = (
-                new_time + timedelta(minutes=1)
-            ).isoformat()
+            service_data["end_date_time"] = (new_time + timedelta(minutes=1)).isoformat()
 
         if repeat is not None:
             if repeat == "daily":
@@ -627,4 +607,3 @@ class AlarmManager:
     def list_alarms(self) -> list[dict[str, Any]]:
         """List all alarms."""
         return [alarm.to_dict() for alarm in self._alarms.values()]
-

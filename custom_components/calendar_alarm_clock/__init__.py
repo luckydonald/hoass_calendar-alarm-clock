@@ -1,4 +1,5 @@
 """Calendar Alarm Clock integration for Home Assistant."""
+
 from __future__ import annotations
 
 import logging
@@ -93,11 +94,7 @@ async def _async_register_card(hass: HomeAssistant) -> None:
             if hasattr(lovelace_data, "resources"):
                 resources: ResourceStorageCollection = lovelace_data.resources
                 # Check if already registered
-                existing = [
-                    r
-                    for r in resources.async_items()
-                    if DOMAIN in r.get("url", "")
-                ]
+                existing = [r for r in resources.async_items() if DOMAIN in r.get("url", "")]
                 if not existing:
                     await resources.async_create_item(
                         {
@@ -117,12 +114,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     calendar_entity: str = entry.data[CONF_CALENDAR_ENTITY]
 
     # Get configuration options with defaults
-    snooze_duration: int = entry.options.get(
-        CONF_DEFAULT_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION
-    )
-    alarm_timeout: float = entry.options.get(
-        CONF_DEFAULT_ALARM_TIMEOUT, DEFAULT_ALARM_TIMEOUT
-    )
+    snooze_duration: int = entry.options.get(CONF_DEFAULT_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION)
+    alarm_timeout: float = entry.options.get(CONF_DEFAULT_ALARM_TIMEOUT, DEFAULT_ALARM_TIMEOUT)
     max_snoozes: int = entry.options.get(CONF_DEFAULT_MAX_SNOOZES, DEFAULT_MAX_SNOOZES)
 
     # Create alarm manager
@@ -148,9 +141,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await manager.async_update()
 
     entry.async_on_unload(
-        async_track_time_interval(
-            hass, async_update_alarms, timedelta(seconds=UPDATE_INTERVAL)
-        )
+        async_track_time_interval(hass, async_update_alarms, timedelta(seconds=UPDATE_INTERVAL))
     )
 
     # Set up services
@@ -177,4 +168,3 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await async_unload_services(hass)
 
     return unload_ok
-

@@ -1,4 +1,5 @@
 """Sensor platform for Calendar Alarm Clock."""
+
 from __future__ import annotations
 
 import logging
@@ -123,9 +124,7 @@ class AlarmSensor(SensorEntity):
             ATTR_ENABLED: self._alarm.enabled,
             ATTR_REPEAT: self._alarm.repeat,
             ATTR_NEXT_SNOOZE_TIME: (
-                self._alarm.next_snooze_time.isoformat()
-                if self._alarm.next_snooze_time
-                else None
+                self._alarm.next_snooze_time.isoformat() if self._alarm.next_snooze_time else None
             ),
             ATTR_SNOOZE_COUNT: self._alarm.snooze_count,
             ATTR_TIMEOUT: self._alarm.timeout,
@@ -265,4 +264,3 @@ class PreviousAlarmSensor(SensorEntity):
     def async_update(self) -> None:
         """Update the sensor."""
         self.async_write_ha_state()
-
