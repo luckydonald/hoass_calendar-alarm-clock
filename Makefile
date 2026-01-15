@@ -15,22 +15,21 @@ help:
 
 setup:
 	@echo "Setting up development environment..."
-	python3 -m venv .venv
-	. .venv/bin/activate && pip install ruff mypy homeassistant
+	uv sync
 	cd frontend && yarn install
-	@echo "Done! Activate venv with: source .venv/bin/activate"
+	@echo "Done!"
 
 lint:
 	@echo "Linting Python..."
-	. .venv/bin/activate && ruff check custom_components/
-	. .venv/bin/activate && ruff format --check custom_components/
+	uv run ruff check custom_components/
+	uv run ruff format --check custom_components/
 	@echo "Type checking frontend..."
 	cd frontend && yarn type-check
 
 format:
 	@echo "Formatting Python..."
-	. .venv/bin/activate && ruff format custom_components/
-	. .venv/bin/activate && ruff check --fix custom_components/ || true
+	uv run ruff format custom_components/
+	uv run ruff check --fix custom_components/ || true
 
 build:
 	@echo "Building frontend..."

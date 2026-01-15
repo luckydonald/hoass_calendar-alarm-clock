@@ -128,7 +128,8 @@ ai/
 
 Makefile                  # Development commands
 hacs.json                 # HACS configuration
-pyproject.toml            # Python tooling config
+pyproject.toml            # Python tooling config (uv)
+uv.lock                   # uv lockfile
 README.md                 # Documentation
 LICENSE                   # MIT License
 .gitignore                # Git ignore rules
@@ -142,9 +143,7 @@ LICENSE                   # MIT License
 make setup
 
 # Or manually:
-python3 -m venv venv
-source venv/bin/activate
-pip install ruff mypy homeassistant
+uv sync
 cd frontend && yarn install
 ```
 

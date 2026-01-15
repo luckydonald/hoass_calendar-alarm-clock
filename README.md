@@ -250,7 +250,7 @@ Releases are built automatically via GitHub Actions:
 
 ### Prerequisites
 
-- Python 3.12+
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
 - Node.js 22+
 - Yarn
 
@@ -261,36 +261,28 @@ Releases are built automatically via GitHub Actions:
 git clone https://github.com/luckydonald/hoass_calendar-alarm-clock.git
 cd hoass_calendar-alarm-clock
 
-# Set up Python virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Set up everything (Python deps + frontend)
+make setup
 
-# Install Python development dependencies
-pip install ruff mypy homeassistant
-
-# Set up frontend
-cd frontend
-yarn install
-cd ..
+# Or manually:
+uv sync
+cd frontend && yarn install
 ```
 
 ### Running Linters
 
 ```bash
-# Activate virtual environment (if not already active)
-source venv/bin/activate
-
 # Python: Check for lint issues
-ruff check custom_components/
+uv run ruff check custom_components/
 
 # Python: Auto-fix lint issues
-ruff check --fix custom_components/
+uv run ruff check --fix custom_components/
 
 # Python: Format code
-ruff format custom_components/
+uv run ruff format custom_components/
 
 # Python: Check formatting (without changing)
-ruff format --check custom_components/
+uv run ruff format --check custom_components/
 
 # Frontend: Type check
 cd frontend

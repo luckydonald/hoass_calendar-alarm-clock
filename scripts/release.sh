@@ -72,16 +72,17 @@ echo "  Updated manifest.json"
 
 echo ""
 echo -e "${GREEN}🐍 Step 2: Lint and format Python${NC}"
-if command -v ruff &> /dev/null; then
+if command -v uv &> /dev/null; then
     echo "  Running ruff format..."
-    ruff format custom_components/
+    uv run ruff format custom_components/
     echo "  Running ruff check --fix..."
-    ruff check --fix custom_components/ || true
+    uv run ruff check --fix custom_components/ || true
     echo "  Running ruff check..."
-    ruff check custom_components/
+    uv run ruff check custom_components/
 else
-    echo -e "${YELLOW}  Warning: ruff not found, skipping Python lint${NC}"
-    echo "  Install with: pip install ruff"
+    echo -e "${RED}  Error: uv not found${NC}"
+    echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
 fi
 
 echo ""
