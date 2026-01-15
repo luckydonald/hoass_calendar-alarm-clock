@@ -77,6 +77,8 @@ I would assume the following flow:
 - Choose calendar to load/save events to
 - Setup defaults (snooze, timeout)
 
+If a calender is set up in home assistant, I want automatic discovery for that, offering me to add that integration.
+
 Write me the code for this plugin.
 
 —————————
