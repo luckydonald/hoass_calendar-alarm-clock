@@ -28,8 +28,12 @@ if ! git diff --quiet HEAD -- || [ -n "$(git ls-files --others --exclude-standar
     fi
 fi
 
-# Get current version from manifest.json
-CURRENT_VERSION=$(grep '"version"' custom_components/calendar_alarm_clock/manifest.json | sed 's/.*"version": "\([^"]*\)".*/\1/')
+# Get current version from latest git tag
+CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+if [ -z "$CURRENT_VERSION" ]; then
+    echo -e "${YELLOW}No existing tags found, starting at v0.0.0-pre1${NC}"
+    CURRENT_VERSION="0.0.0-pre0"
+fi
 echo -e "Current version: ${YELLOW}v${CURRENT_VERSION}${NC}"
 
 # Parse version and bump
@@ -66,9 +70,9 @@ fi
 
 echo ""
 echo -e "${GREEN}📝 Step 1: Update version in manifest.json${NC}"
-sed -i.bak "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" custom_components/calendar_alarm_clock/manifest.json
+sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/calendar_alarm_clock/manifest.json
 rm -f custom_components/calendar_alarm_clock/manifest.json.bak
-echo "  Updated manifest.json"
+echo "  Updated manifest.json to ${NEW_VERSION}"
 
 echo ""
 echo -e "${GREEN}🐍 Step 2: Lint and format Python${NC}"
