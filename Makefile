@@ -1,4 +1,4 @@
-.PHONY: release lint format build setup help
+.PHONY: release lint format build setup help commit
 
 help:
 	@echo "Calendar Alarm Clock - Development Commands"
@@ -10,6 +10,7 @@ help:
 	@echo "  lint      - Run all linters"
 	@echo "  format    - Format all code"
 	@echo "  build     - Build frontend"
+	@echo "  commit    - Commit changes with structured messages"
 	@echo "  release   - Bump version, lint, build, and push release"
 	@echo "  help      - Show this help message"
 
@@ -38,4 +39,8 @@ build:
 release:
 	@chmod +x scripts/release.sh
 	@./scripts/release.sh
+
+commit:
+	@chmod +x scripts/commit.sh
+	@./scripts/commit.sh
 
