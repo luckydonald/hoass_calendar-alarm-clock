@@ -1,8 +1,14 @@
 {
   "name": "alarm-clock-card",
   "version": "1.0.0",
-  "description": "Lovelace card for Calendar Alarm Clock",
+  "description": "Lovelace card for Calendar backed Alarm Clock for Home Assistant",
   "main": "dist/alarm-clock-card.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luckydonald/hoass_calendar-alarm-clock.git"
+  },
+  "author": "luckydonald",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
