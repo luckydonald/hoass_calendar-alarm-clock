@@ -109,6 +109,23 @@ yarn install
 yarn build
 ```
 
+## CI/CD
+- **CI** (`ci.yml`): Runs on push/PR to `mane`/`main`
+  - Python linting with Ruff
+  - Frontend TypeScript check and build
+  - HACS validation
+  - Hassfest validation
+- **Release** (`release.yml`): Runs on version tags (`v*`)
+  - Builds frontend
+  - Creates release zip
+  - Publishes to GitHub Releases
+
+## Creating a Release
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
 ## Installation
 1. Add via HACS: `https://github.com/luckydonald/hoass_calendar-alarm-clock`
 2. Or manually copy `custom_components/calendar_alarm_clock` to HA config

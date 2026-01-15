@@ -60,6 +60,10 @@
 
 ## Files Structure
 ```
+.github/workflows/
+├── ci.yml                # CI: lint, build, validate
+└── release.yml           # Release: build, zip, publish
+
 custom_components/calendar_alarm_clock/
 ├── __init__.py           # Component setup (fully typed)
 ├── manifest.json         # Component metadata (updated URLs)
@@ -74,7 +78,7 @@ custom_components/calendar_alarm_clock/
 ├── translations/
 │   └── en.json           # English translations
 └── www/
-    └── alarm-clock-card.js  # (needs build)
+    └── alarm-clock-card.js  # (built by CI)
 
 frontend/
 ├── package.json          # Yarn config (with repo info)
@@ -96,16 +100,34 @@ ai/
 └── overview.md           # Architecture overview
 
 hacs.json                 # HACS configuration
-README.md                 # Documentation (updated URLs)
+pyproject.toml            # Python tooling config
+README.md                 # Documentation
+LICENSE                   # MIT License
 .gitignore                # Git ignore rules
 ```
 
 ## Build Instructions
+
+### Local Development
 ```bash
 cd frontend
 yarn install
 yarn build
 ```
+
+### Creating a Release
+1. Update version in `custom_components/calendar_alarm_clock/manifest.json`
+2. Commit changes
+3. Create and push a tag:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+4. GitHub Actions will automatically:
+   - Build the frontend
+   - Create a release zip
+   - Publish to GitHub Releases
+   - HACS will pick up the new release
 
 ## Type Checking Features
 - **Python**: Full type annotations using Python 3.12 features
