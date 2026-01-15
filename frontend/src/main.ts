@@ -249,7 +249,6 @@ window.customCards.push({
   name: 'Alarm Clock Card',
   description: 'A card for managing calendar-based alarms with snooze and dismiss',
   preview: true,
-  documentationURL: 'https://github.com/luckydonald/hoass_calendar-alarm-clock',
 });
 
 console.info(
