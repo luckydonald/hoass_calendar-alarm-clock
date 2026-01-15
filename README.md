@@ -232,6 +232,13 @@ The built file will be placed in `custom_components/calendar_alarm_clock/www/`.
 - Python 3.12 with full type annotations
 - Home Assistant custom component
 
+### CI/CD
+Releases are built automatically via GitHub Actions:
+- Push a tag like `v1.0.0` to create a release
+- The frontend is built and bundled
+- A release zip is created and published to GitHub Releases
+- HACS will automatically pick up new releases
+
 ## Links
 
 - [GitHub Repository](https://github.com/luckydonald/hoass_calendar-alarm-clock)
