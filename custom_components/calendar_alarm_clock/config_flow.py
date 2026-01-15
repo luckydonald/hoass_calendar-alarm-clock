@@ -34,12 +34,19 @@ _LOGGER = logging.getLogger(__name__)
 
 def get_calendar_entities(hass: HomeAssistant) -> list[str]:
     """Get list of calendar entities."""
-    registry = er.async_get(hass)
-    return [
-        entity.entity_id
-        for entity in registry.entities.values()
-        if entity.entity_id.startswith("calendar.")
+    # Get calendars from hass.states (more reliable than entity registry)
+    calendar_entities: list[str] = [
+        entity_id
+        for entity_id in hass.states.async_entity_ids("calendar")
     ]
+
+    # Also check entity registry for any that might not have state yet
+    registry = er.async_get(hass)
+    for entity in registry.entities.values():
+        if entity.entity_id.startswith("calendar.") and entity.entity_id not in calendar_entities:
+            calendar_entities.append(entity.entity_id)
+
+    return sorted(calendar_entities)
 
 
 class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -65,12 +72,12 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data={CONF_CALENDAR_ENTITY: calendar_entity},
             )
 
-        # Get available calendar entities
+        # Get available calendar entities (for information, selector handles filtering)
         calendar_entities: list[str] = get_calendar_entities(self.hass)
+        _LOGGER.debug("Found calendar entities: %s", calendar_entities)
 
-        if not calendar_entities:
-            return self.async_abort(reason="no_calendars")
-
+        # Show form even if no calendars found - EntitySelector will show empty
+        # This allows the user to see the integration exists
         data_schema: vol.Schema = vol.Schema(
             {
                 vol.Required(CONF_CALENDAR_ENTITY): EntitySelector(

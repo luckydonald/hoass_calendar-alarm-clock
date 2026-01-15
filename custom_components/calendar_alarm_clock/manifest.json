@@ -1,10 +1,11 @@
 {
   "domain": "calendar_alarm_clock",
-  "name": "Calendar backed Alarm Clock for Home Assistant",
+  "name": "Calendar backed Alarm Clock",
   "codeowners": ["@luckydonald"],
   "config_flow": true,
   "dependencies": ["calendar"],
   "documentation": "https://github.com/luckydonald/hoass_calendar-alarm-clock",
+  "integration_type": "service",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/luckydonald/hoass_calendar-alarm-clock/issues",
   "requirements": [],

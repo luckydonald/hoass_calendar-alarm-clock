@@ -6,17 +6,19 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
+- Fixed config_flow.py:
+  - Now checks both `hass.states` and entity registry for calendars
+  - Removed abort when no calendars found (shows form anyway)
+  - Added debug logging for calendar discovery
+- Added `integration_type: service` to manifest.json
+- Updated strings.json and translations/en.json with better descriptions
 - Fixed Ruff linting errors:
   - SIM102: Combined nested if statements in `alarm_manager.py` and `services.py`
   - I001: Fixed import sorting in `config_flow.py` and `services.py`
   - Fixed unreachable code in `async_snooze_alarm`
 - Fixed HACS JSON: Removed invalid `domains` key
-- Added GitHub Actions workflows:
-  - `ci.yml` - Runs on push/PR: Python lint (ruff), frontend build, HACS validation, hassfest
-  - `release.yml` - Runs on tags (v*): Builds frontend, creates release zip, publishes to GitHub Releases
-- Added `pyproject.toml` for Python tooling (ruff, mypy)
-- Added `LICENSE` file (MIT)
-- Added CI badge to README
+- Added GitHub Actions workflows
+- Added `pyproject.toml`, `LICENSE`, CI badge
 
 ## Manual Steps Required (GitHub)
 1. **Add repository topics** on GitHub (Settings or main page):

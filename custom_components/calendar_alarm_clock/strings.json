@@ -2,16 +2,18 @@
   "config": {
     "step": {
       "user": {
-        "title": "Calendar Alarm Clock",
-        "description": "Select the calendar to use for storing alarms.",
+        "title": "Calendar Alarm Clock Setup",
+        "description": "Select the calendar to use for storing alarms. Make sure you have a calendar integration (like CalDAV) set up first.",
         "data": {
           "calendar_entity": "Calendar"
+        },
+        "data_description": {
+          "calendar_entity": "The calendar where alarm events will be stored"
         }
       }
     },
     "abort": {
-      "already_configured": "This calendar is already configured.",
-      "no_calendars": "No calendar entities found. Please set up a calendar integration first."
+      "already_configured": "This calendar is already configured for alarm clock."
     },
     "error": {
       "cannot_connect": "Failed to connect to the calendar."
@@ -23,9 +25,14 @@
         "title": "Alarm Clock Options",
         "description": "Configure default alarm settings.",
         "data": {
-          "default_snooze_duration": "Default Snooze Duration",
-          "default_alarm_timeout": "Default Alarm Timeout",
-          "default_max_snoozes": "Default Max Snoozes (0 = infinite)"
+          "default_snooze_duration": "Default Snooze Duration (minutes)",
+          "default_alarm_timeout": "Default Alarm Timeout (minutes)",
+          "default_max_snoozes": "Default Max Snoozes"
+        },
+        "data_description": {
+          "default_snooze_duration": "How long to snooze when user hits snooze (default: 9 minutes)",
+          "default_alarm_timeout": "How long an alarm rings before timing out (default: 30 minutes)",
+          "default_max_snoozes": "Maximum number of snoozes allowed (0 = infinite)"
         }
       }
     }
@@ -49,7 +56,7 @@
         },
         "repeat": {
           "name": "Repeat",
-          "description": "Repeat pattern: none, daily, weekdays, weekends, weekly, or custom RRULE."
+          "description": "Repeat pattern (none, daily, weekdays, weekends, weekly)."
         },
         "enabled": {
           "name": "Enabled",
@@ -61,33 +68,13 @@
       "name": "Delete Alarm",
       "description": "Delete an alarm.",
       "fields": {
-        "entity_id": {
-          "name": "Entity",
-          "description": "The alarm entity to delete."
-        },
         "alarm_id": {
           "name": "Alarm ID",
-          "description": "The ID of the alarm to delete."
-        }
-      }
-    },
-    "enable_alarm": {
-      "name": "Enable Alarm",
-      "description": "Enable an alarm.",
-      "fields": {
+          "description": "ID of the alarm to delete."
+        },
         "entity_id": {
-          "name": "Entity",
-          "description": "The alarm entity to enable."
-        }
-      }
-    },
-    "disable_alarm": {
-      "name": "Disable Alarm",
-      "description": "Disable an alarm.",
-      "fields": {
-        "entity_id": {
-          "name": "Entity",
-          "description": "The alarm entity to disable."
+          "name": "Entity ID",
+          "description": "Entity ID of the alarm to delete."
         }
       }
     },
@@ -95,9 +82,13 @@
       "name": "Snooze Alarm",
       "description": "Snooze a ringing alarm.",
       "fields": {
+        "alarm_id": {
+          "name": "Alarm ID",
+          "description": "ID of the alarm to snooze."
+        },
         "entity_id": {
-          "name": "Entity",
-          "description": "The alarm entity to snooze."
+          "name": "Entity ID",
+          "description": "Entity ID of the alarm to snooze."
         },
         "duration": {
           "name": "Duration",
@@ -109,19 +100,41 @@
       "name": "Dismiss Alarm",
       "description": "Dismiss a ringing alarm.",
       "fields": {
+        "alarm_id": {
+          "name": "Alarm ID",
+          "description": "ID of the alarm to dismiss."
+        },
         "entity_id": {
-          "name": "Entity",
-          "description": "The alarm entity to dismiss."
+          "name": "Entity ID",
+          "description": "Entity ID of the alarm to dismiss."
         }
       }
     },
-    "trigger_alarm": {
-      "name": "Trigger Alarm",
-      "description": "Manually trigger an alarm for testing.",
+    "enable_alarm": {
+      "name": "Enable Alarm",
+      "description": "Enable an alarm.",
       "fields": {
+        "alarm_id": {
+          "name": "Alarm ID",
+          "description": "ID of the alarm to enable."
+        },
         "entity_id": {
-          "name": "Entity",
-          "description": "The alarm entity to trigger."
+          "name": "Entity ID",
+          "description": "Entity ID of the alarm to enable."
+        }
+      }
+    },
+    "disable_alarm": {
+      "name": "Disable Alarm",
+      "description": "Disable an alarm.",
+      "fields": {
+        "alarm_id": {
+          "name": "Alarm ID",
+          "description": "ID of the alarm to disable."
+        },
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "Entity ID of the alarm to disable."
         }
       }
     },
@@ -129,9 +142,13 @@
       "name": "Edit Alarm",
       "description": "Edit an existing alarm.",
       "fields": {
+        "alarm_id": {
+          "name": "Alarm ID",
+          "description": "ID of the alarm to edit."
+        },
         "entity_id": {
-          "name": "Entity",
-          "description": "The alarm entity to edit."
+          "name": "Entity ID",
+          "description": "Entity ID of the alarm to edit."
         },
         "name": {
           "name": "Name",
@@ -139,18 +156,35 @@
         },
         "time": {
           "name": "Time",
-          "description": "New time for the alarm."
+          "description": "New time for the alarm (HH:MM format)."
         },
         "repeat": {
           "name": "Repeat",
           "description": "New repeat pattern."
+        },
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether the alarm is enabled."
+        }
+      }
+    },
+    "trigger_alarm": {
+      "name": "Trigger Alarm",
+      "description": "Manually trigger an alarm (for testing).",
+      "fields": {
+        "alarm_id": {
+          "name": "Alarm ID",
+          "description": "ID of the alarm to trigger."
+        },
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "Entity ID of the alarm to trigger."
         }
       }
     },
     "list_alarms": {
       "name": "List Alarms",
-      "description": "List all alarms.",
-      "fields": {}
+      "description": "List all alarms."
     }
   }
 }
