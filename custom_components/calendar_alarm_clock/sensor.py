@@ -71,6 +71,10 @@ async def async_setup_entry(
         for alarm_id in existing_ids - current_alarm_ids:
             entities[alarm_id].async_set_unavailable()
 
+        # Update next/previous alarm sensors
+        next_alarm_sensor.async_write_ha_state()
+        previous_alarm_sensor.async_write_ha_state()
+
     # Initial entity creation
     async_update_entities()
 
@@ -206,10 +210,6 @@ class NextAlarmSensor(SensorEntity):
             "state": alarm.state,
         }
 
-    @callback
-    def async_update(self) -> None:
-        """Update the sensor."""
-        self.async_write_ha_state()
 
 
 class PreviousAlarmSensor(SensorEntity):
@@ -260,7 +260,3 @@ class PreviousAlarmSensor(SensorEntity):
             "state": alarm.state,
         }
 
-    @callback
-    def async_update(self) -> None:
-        """Update the sensor."""
-        self.async_write_ha_state()

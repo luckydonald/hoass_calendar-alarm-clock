@@ -6,6 +6,9 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
+- **Fixed calendar service call**: Changed `calendar.list_events` to `calendar.get_events` (renamed in HA 2023.6+)
+- **Fixed sensor async_update error**: Removed invalid `@callback` decorated `async_update` methods from `NextAlarmSensor` and `PreviousAlarmSensor`
+- **Fixed OptionsFlowHandler**: Removed `__init__` method - `config_entry` is now provided by parent class in newer HA
 - **Fixed hassfest validation**:
   - Added `http` and `lovelace` to dependencies in `manifest.json`
   - Added `CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)` to `__init__.py`

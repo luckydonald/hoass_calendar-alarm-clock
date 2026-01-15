@@ -97,10 +97,10 @@ class AlarmManager:
         end: datetime = now + timedelta(days=7)  # Look ahead one week
 
         try:
-            # Call calendar.list_events service
+            # Call calendar.get_events service (renamed from list_events in HA 2023.6+)
             result: dict[str, Any] | None = await self.hass.services.async_call(
                 "calendar",
-                "list_events",
+                "get_events",
                 {
                     "entity_id": self.calendar_entity,
                     "start_date_time": start.isoformat(),
