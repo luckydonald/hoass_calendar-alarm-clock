@@ -68,14 +68,9 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
+# Run tests BEFORE bumping version
 echo ""
-echo -e "${GREEN}📝 Step 1: Update version in manifest.json${NC}"
-sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/calendar_alarm_clock/manifest.json
-rm -f custom_components/calendar_alarm_clock/manifest.json.bak
-echo "  Updated manifest.json to ${NEW_VERSION}"
-
-echo ""
-echo -e "${GREEN}🐍 Step 2: Lint and format Python${NC}"
+echo -e "${GREEN}🐍 Step 1: Lint and format Python${NC}"
 if command -v uv &> /dev/null; then
     echo "  Running ruff format..."
     uv run ruff format custom_components/
@@ -90,7 +85,7 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}📦 Step 3: Build frontend${NC}"
+echo -e "${GREEN}📦 Step 2: Build frontend${NC}"
 cd frontend
 echo "  Installing dependencies..."
 yarn install --silent
@@ -100,6 +95,13 @@ echo "  Building..."
 yarn build
 cd ..
 echo "  Frontend built successfully"
+
+# Only bump version AFTER tests pass
+echo ""
+echo -e "${GREEN}📝 Step 3: Update version in manifest.json${NC}"
+sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/calendar_alarm_clock/manifest.json
+rm -f custom_components/calendar_alarm_clock/manifest.json.bak
+echo "  Updated manifest.json to ${NEW_VERSION}"
 
 echo ""
 echo -e "${GREEN}📤 Step 4: Commit and push${NC}"
@@ -126,4 +128,7 @@ echo "  3. Publish to GitHub Releases"
 echo ""
 echo "View the release at:"
 echo "  https://github.com/luckydonald/hoass_calendar-alarm-clock/releases/tag/v${NEW_VERSION}"
+echo ""
+echo "Install via HACS:"
+echo "  https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_calendar-alarm-clock&category=integration"
 
