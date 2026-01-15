@@ -6,15 +6,25 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
+- Fixed Ruff linting errors:
+  - SIM102: Combined nested if statements in `alarm_manager.py` and `services.py`
+  - I001: Fixed import sorting in `config_flow.py` and `services.py`
+- Fixed HACS JSON: Removed invalid `domains` key
 - Added GitHub Actions workflows:
   - `ci.yml` - Runs on push/PR: Python lint (ruff), frontend build, HACS validation, hassfest
   - `release.yml` - Runs on tags (v*): Builds frontend, creates release zip, publishes to GitHub Releases
 - Added `pyproject.toml` for Python tooling (ruff, mypy)
 - Added `LICENSE` file (MIT)
-- Updated `hacs.json` with `zip_release` config
 - Added CI badge to README
-- Added "Open in HACS" button to README for one-click installation
-- Updated repository URL in all files
+
+## Manual Steps Required (GitHub)
+1. **Add repository topics** on GitHub (Settings or main page):
+   - `home-assistant`
+   - `hacs`
+   - `alarm-clock`
+   - `calendar`
+   - `homeassistant-integration`
+2. **Brands repo** (optional, for official icon): Submit PR to https://github.com/home-assistant/brands
 
 ## Completed Steps
 - [x] Project planning (plan.md created)
