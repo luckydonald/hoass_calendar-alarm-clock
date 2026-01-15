@@ -94,4 +94,5 @@ ALWAYS keep ai/progress.md, ai/overview.md updated with the current state of the
 
 ——————————
 
-Never use rm -rf, always use safer alternatives.
+Never use `rm -f`, always use safer alternatives (e.g. interactive).
+I want proper typing, don't just disable it.
