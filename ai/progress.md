@@ -1,6 +1,6 @@
 # Implementation Progress
 
-## Status: ✅ Implementation Complete (Build in Progress)
+## Status: 🔧 Build Configuration Fix In Progress
 
 ## Completed Steps
 - [x] Project planning (plan.md created)
@@ -34,15 +34,22 @@
   - [x] Web component wrapper in `main.ts`
   - [x] Card editor for configuration
   - [x] TypeScript types in `types.ts` and `env.d.ts`
+  - [x] Declare HA custom elements (`ha-card`, `ha-icon`) for proper typing
 - [x] 8. Documentation
   - [x] Create `README.md` with installation, configuration, services, events
   - [x] Create `hacs.json` for HACS integration
   - [x] Create `ai/overview.md` with architecture documentation
 
-## Current Issue
-- Build configuration being finalized for yarn + vite + vue-tsc
+## Current Task
+- Fixing TypeScript/vue-tsc build configuration for proper type checking
 
-## Files Created
+## Recent Changes
+- Added proper declarations for Home Assistant custom elements in `env.d.ts`
+- Updated `tsconfig.json` with proper project references
+- Fixed `main.ts` to have proper typing without unused warnings
+- Updated `vite.config.ts` to properly handle ha-* custom elements
+
+## Files Structure
 ```
 custom_components/calendar_alarm_clock/
 ├── __init__.py           # Component setup (fully typed)
@@ -58,19 +65,19 @@ custom_components/calendar_alarm_clock/
 ├── translations/
 │   └── en.json           # English translations
 └── www/
-    └── alarm-clock-card.js  # (placeholder - needs build)
+    └── alarm-clock-card.js  # (needs build)
 
 frontend/
 ├── package.json          # Yarn config
-├── tsconfig.json         # TypeScript config
-├── tsconfig.node.json    # Node TypeScript config
+├── tsconfig.json         # TypeScript config (with references)
+├── tsconfig.node.json    # Node TypeScript config for vite
 ├── vite.config.ts        # Vite build config
 ├── .yarnrc.yml           # Yarn config (nodeLinker)
 ├── index.html            # Dev entry
 └── src/
-    ├── main.ts           # Web component wrapper
-    ├── types.ts          # TypeScript types
-    ├── env.d.ts          # Type declarations
+    ├── main.ts           # Web component wrapper (typed)
+    ├── types.ts          # TypeScript types for Alarm
+    ├── env.d.ts          # Type declarations (HA elements)
     └── AlarmClockCard.vue  # Vue component (<script setup lang="ts">)
 
 ai/
@@ -88,22 +95,29 @@ README.md                 # Documentation
 ```bash
 cd frontend
 
-# Clean old files (if they exist)
-rm -f vite.config.js src/main.js
-
-# Install and build
+# Clean and reinstall dependencies
+rm -ri node_modules yarn.lock  # Interactive removal
 yarn install
 yarn build
 ```
 
+## Type Checking Features
+- **Python**: Full type annotations using Python 3.12 features
+  - `Final[T]` for constants
+  - `Literal` for alarm states
+  - `Self` for factory methods
+  - `CALLBACK_TYPE` for HA callbacks
+- **TypeScript/Vue**: Full type checking
+  - Home Assistant elements declared in `env.d.ts`
+  - Proper Vue 3 `<script setup lang="ts">` with `defineProps<T>()`
+  - Alarm types in `types.ts`
+
 ## Notes
 - Using Vue 3 with `<script setup lang="ts">` for frontend
-- TypeScript for all frontend code
-- Yarn as package manager
+- Yarn as package manager with `nodeLinker: node-modules`
 - Python 3.12 with full type annotations
 - CalDAV calendar integration via Home Assistant's calendar entity
-- All services implemented: create, delete, enable, disable, snooze, dismiss, trigger, edit, list
+- All services implemented
 - Events fired for all state changes
 - Shake animation on alarm icon when ringing
-- Build skips type-check (HA custom elements not typeable)
 
