@@ -1,4 +1,8 @@
-# Calendar Alarm Clock
+# Calendar backed Alarm Clock for Home Assistant
+
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![GitHub Release](https://img.shields.io/github/release/luckydonald/hoass_calendar-alarm-clock.svg)](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
+[![License](https://img.shields.io/github/license/luckydonald/hoass_calendar-alarm-clock.svg)](LICENSE)
 
 A Home Assistant custom component that provides phone-like alarm clock functionality, storing alarms in your CalDAV calendar.
 
@@ -20,15 +24,16 @@ A Home Assistant custom component that provides phone-like alarm clock functiona
 2. Click on "Integrations"
 3. Click the three dots in the top right corner
 4. Select "Custom repositories"
-5. Add this repository URL and select "Integration" as the category
+5. Add `https://github.com/luckydonald/hoass_calendar-alarm-clock` and select "Integration" as the category
 6. Click "Install"
 7. Restart Home Assistant
 
 ### Manual Installation
 
-1. Copy the `custom_components/calendar_alarm_clock` folder to your `custom_components` directory
-2. Copy `custom_components/calendar_alarm_clock/www/alarm-clock-card.js` to your `www` folder
-3. Restart Home Assistant
+1. Download the latest release from [GitHub Releases](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
+2. Copy the `custom_components/calendar_alarm_clock` folder to your `custom_components` directory
+3. Copy `custom_components/calendar_alarm_clock/www/alarm-clock-card.js` to your `www` folder
+4. Restart Home Assistant
 
 ## Configuration
 
@@ -51,13 +56,13 @@ Or if using HACS, it will be automatically added.
 
 ### Card Configuration
 
+**List View** (default - shows all alarms):
 ```yaml
 type: custom:alarm-clock-card
 title: My Alarms
 ```
 
-For a single alarm view (showing one specific alarm):
-
+**Single Alarm View** (shows one specific alarm):
 ```yaml
 type: custom:alarm-clock-card
 entity: sensor.alarm_clock_abc123
@@ -204,11 +209,29 @@ If you want to modify the frontend:
 
 ```bash
 cd frontend
-npm install
-npm run build
+yarn install
+yarn build
 ```
 
 The built file will be placed in `custom_components/calendar_alarm_clock/www/`.
+
+## Development
+
+### Frontend
+- Vue 3 with `<script setup lang="ts">`
+- TypeScript
+- Vite for bundling
+- Yarn as package manager
+
+### Backend
+- Python 3.12 with full type annotations
+- Home Assistant custom component
+
+## Links
+
+- [GitHub Repository](https://github.com/luckydonald/hoass_calendar-alarm-clock)
+- [Issue Tracker](https://github.com/luckydonald/hoass_calendar-alarm-clock/issues)
+- [Releases](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
 
 ## License
 

@@ -1,8 +1,16 @@
 # Implementation Progress
 
-## Status: 🔧 Fixing TypeScript Build Errors
+**Project**: Calendar backed Alarm Clock for Home Assistant
+**Repository**: https://github.com/luckydonald/hoass_calendar-alarm-clock
 
-## Recent Fixes
+## Status: 🔧 TypeScript Build Configuration In Progress
+
+## Recent Changes
+- Updated repository URL in all files:
+  - `manifest.json` - documentation and issue_tracker URLs
+  - `package.json` - added repository, author, license fields
+  - `README.md` - complete rewrite with proper URLs and badges
+  - `ai/overview.md` - added repo links
 - Fixed `tsconfig.node.json` - added `emitDeclarationOnly: true` for composite mode
 - Fixed `HomeAssistant` type not found - moved to `types.ts` and properly imported
 - Fixed type casting in `main.ts` using `ComponentPublicInstance & AppData`
@@ -45,21 +53,16 @@
   - [x] Create `README.md` with installation, configuration, services, events
   - [x] Create `hacs.json` for HACS integration
   - [x] Create `ai/overview.md` with architecture documentation
+  - [x] Update all URLs to correct repository
 
 ## Current Task
 - Fixing TypeScript/vue-tsc build configuration for proper type checking
-
-## Recent Changes
-- Added proper declarations for Home Assistant custom elements in `env.d.ts`
-- Updated `tsconfig.json` with proper project references
-- Fixed `main.ts` to have proper typing without unused warnings
-- Updated `vite.config.ts` to properly handle ha-* custom elements
 
 ## Files Structure
 ```
 custom_components/calendar_alarm_clock/
 ├── __init__.py           # Component setup (fully typed)
-├── manifest.json         # Component metadata
+├── manifest.json         # Component metadata (updated URLs)
 ├── const.py              # Constants (Literal, Final types)
 ├── config_flow.py        # UI configuration (fully typed)
 ├── models.py             # Alarm dataclass (Self type)
@@ -74,7 +77,7 @@ custom_components/calendar_alarm_clock/
     └── alarm-clock-card.js  # (needs build)
 
 frontend/
-├── package.json          # Yarn config
+├── package.json          # Yarn config (with repo info)
 ├── tsconfig.json         # TypeScript config (with references)
 ├── tsconfig.node.json    # Node TypeScript config for vite
 ├── vite.config.ts        # Vite build config
@@ -82,7 +85,7 @@ frontend/
 ├── index.html            # Dev entry
 └── src/
     ├── main.ts           # Web component wrapper (typed)
-    ├── types.ts          # TypeScript types for Alarm
+    ├── types.ts          # TypeScript types (HomeAssistant, Alarm)
     ├── env.d.ts          # Type declarations (HA elements)
     └── AlarmClockCard.vue  # Vue component (<script setup lang="ts">)
 
@@ -93,16 +96,13 @@ ai/
 └── overview.md           # Architecture overview
 
 hacs.json                 # HACS configuration
-README.md                 # Documentation
+README.md                 # Documentation (updated URLs)
 .gitignore                # Git ignore rules
 ```
 
 ## Build Instructions
 ```bash
 cd frontend
-
-# Clean and reinstall dependencies
-rm -ri node_modules yarn.lock  # Interactive removal
 yarn install
 yarn build
 ```
@@ -116,13 +116,10 @@ yarn build
 - **TypeScript/Vue**: Full type checking
   - Home Assistant elements declared in `env.d.ts`
   - Proper Vue 3 `<script setup lang="ts">` with `defineProps<T>()`
-  - Alarm types in `types.ts`
+  - All types exported from `types.ts`
 
-## Notes
-- Using Vue 3 with `<script setup lang="ts">` for frontend
-- Yarn as package manager with `nodeLinker: node-modules`
-- Python 3.12 with full type annotations
-- CalDAV calendar integration via Home Assistant's calendar entity
-- All services implemented
-- Events fired for all state changes
-- Shake animation on alarm icon when ringing
+## Repository
+- **GitHub**: https://github.com/luckydonald/hoass_calendar-alarm-clock
+- **Branch**: mane
+- **Author**: @luckydonald
+

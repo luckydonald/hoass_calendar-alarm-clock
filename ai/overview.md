@@ -1,4 +1,6 @@
-# Calendar Alarm Clock - Project Overview
+# Calendar backed Alarm Clock for Home Assistant - Project Overview
+
+**Repository**: https://github.com/luckydonald/hoass_calendar-alarm-clock
 
 ## Description
 A Home Assistant custom component (HACS compatible) that provides phone-like alarm clock functionality, storing alarms in a CalDAV calendar.
@@ -90,6 +92,7 @@ custom_components/calendar_alarm_clock/
 frontend/
 ├── package.json
 ├── tsconfig.json
+├── tsconfig.node.json
 ├── vite.config.ts
 ├── .yarnrc.yml
 └── src/
@@ -107,7 +110,12 @@ yarn build
 ```
 
 ## Installation
-1. Copy `custom_components/calendar_alarm_clock` to HA config
-2. Add card resource: `/local/alarm-clock-card.js`
-3. Configure integration via UI
+1. Add via HACS: `https://github.com/luckydonald/hoass_calendar-alarm-clock`
+2. Or manually copy `custom_components/calendar_alarm_clock` to HA config
+3. Add card resource: `/local/alarm-clock-card.js`
+4. Configure integration via UI
+
+## Links
+- [GitHub Repository](https://github.com/luckydonald/hoass_calendar-alarm-clock)
+- [Issue Tracker](https://github.com/luckydonald/hoass_calendar-alarm-clock/issues)
 
