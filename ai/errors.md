@@ -109,3 +109,38 @@ Traceback (most recent call last):
 AttributeError: property 'config_entry' of 'OptionsFlowHandler' object has no setter
 
 —————————
+
+Log details (ERROR)
+This error originated from a custom integration.
+Logger: custom_components.calendar_alarm_clock.alarm_manager
+Source: custom_components/calendar_alarm_clock/alarm_manager.py:150
+integration: Calendar backed Alarm Clock (documentation, issues)
+First occurred: 20:43:32 (4 occurrences)
+Last logged: 20:45:02
+
+Error updating alarms from calendar: Action calendar.list_events not found
+
+—————————
+
+Log details (ERROR)
+Logger: homeassistant.helpers.entity
+Source: helpers/entity.py:961
+First occurred: 20:44:23 (6 occurrences)
+Last logged: 20:45:23
+
+Update for sensor.calendar_alarm_next_alarm fails
+Update for sensor.calendar_alarm_previous_alarm fails
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/entity.py", line 961, in async_update_ha_state
+    await self.async_device_update()
+  File "/usr/src/homeassistant/homeassistant/helpers/entity.py", line 1312, in async_device_update
+    await self.async_update()
+TypeError: object NoneType can't be used in 'await' expression
+
+—————————
+
+
+—————————
+
+—————————
+
