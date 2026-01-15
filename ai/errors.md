@@ -151,5 +151,19 @@ Error updating alarms from calendar: Action calendar.list_events not found
 
 —————————
 
+Logger: homeassistant.helpers.entity
+Source: helpers/entity.py:961
+First occurred: January 15, 2026 at 20:54:41 (846 occurrences)
+Last logged: 00:25:42
+
+Update for sensor.calendar_alarm_next_alarm fails
+Update for sensor.calendar_alarm_previous_alarm fails
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/entity.py", line 961, in async_update_ha_state
+    await self.async_device_update()
+  File "/usr/src/homeassistant/homeassistant/helpers/entity.py", line 1312, in async_device_update
+    await self.async_update()
+TypeError: object NoneType can't be used in 'await' expression
+
 —————————
 
