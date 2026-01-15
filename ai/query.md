@@ -106,8 +106,4 @@ The project is named "Calendar backed Alarm Clock for Home Assistant".
 
 The repo is at https://github.com/luckydonald/hoass_calendar-alarm-clock/tree/mane
 
-Adjust the repo url where mentioned (node?) and in the readme install section.
-
-Add a "install in hacs button" to the readme.
-
 ———————————
