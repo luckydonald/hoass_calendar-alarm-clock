@@ -108,4 +108,6 @@ The repo is at https://github.com/luckydonald/hoass_calendar-alarm-clock/tree/ma
 
 Adjust the repo url where mentioned (node?) and in the readme install section.
 
+Add a "install in hacs button" to the readme.
+
 ———————————
