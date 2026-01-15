@@ -59,15 +59,15 @@ jobs:
 
       - name: Create release zip
         run: |
-          cd custom_components
-          zip -r ../calendar_alarm_clock.zip calendar_alarm_clock
+          # HACS expects zip contents to be extracted directly into custom_components/calendar_alarm_clock/
+          # So we zip the contents, not the folder itself
+          cd custom_components/calendar_alarm_clock
+          zip -r ../../calendar_alarm_clock.zip .
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            calendar_alarm_clock.zip
-            custom_components/calendar_alarm_clock/www/alarm-clock-card.js
+          files: calendar_alarm_clock.zip
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}
