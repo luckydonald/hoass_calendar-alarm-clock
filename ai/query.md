@@ -95,4 +95,11 @@ ALWAYS keep ai/progress.md, ai/overview.md updated with the current state of the
 ——————————
 
 Never use `rm -f`, always use safer alternatives (e.g. interactive).
+
+———————————
+
 I want proper typing, don't just disable it.
+
+———————————
+
+The repo is at https://github.com/luckydonald/hoass_calendar-alarm-clock/tree/mane
