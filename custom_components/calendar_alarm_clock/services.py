@@ -84,11 +84,10 @@ def _get_alarm_id_from_call(hass: HomeAssistant, call: ServiceCall) -> str | Non
         return alarm_id
 
     entity_id: str | None = call.data.get("entity_id")
-    if entity_id:
-        # Extract alarm ID from entity ID
-        # Entity ID format: sensor.alarm_clock_ALARM_ID
-        if entity_id.startswith("sensor.alarm_clock_"):
-            return entity_id.replace("sensor.alarm_clock_", "")
+    # Extract alarm ID from entity ID
+    # Entity ID format: sensor.alarm_clock_ALARM_ID
+    if entity_id and entity_id.startswith("sensor.alarm_clock_"):
+        return entity_id.replace("sensor.alarm_clock_", "")
 
     return None
 

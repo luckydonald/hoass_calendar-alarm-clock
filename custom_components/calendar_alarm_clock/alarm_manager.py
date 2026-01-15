@@ -166,11 +166,14 @@ class AlarmManager:
                 if alarm.time <= now:
                     await self._trigger_alarm(alarm)
 
-            elif alarm.state == STATE_SNOOZED and alarm.next_snooze_time:
-                if alarm.next_snooze_time <= now:
-                    alarm.state = STATE_RINGING_SNOOZE
-                    self._fire_event(EVENT_ALARM_RINGING, alarm)
-                    self._schedule_timeout(alarm)
+            elif (
+                alarm.state == STATE_SNOOZED
+                and alarm.next_snooze_time
+                and alarm.next_snooze_time <= now
+            ):
+                alarm.state = STATE_RINGING_SNOOZE
+                self._fire_event(EVENT_ALARM_RINGING, alarm)
+                self._schedule_timeout(alarm)
 
     async def _trigger_alarm(self, alarm: Alarm) -> None:
         """Trigger an alarm to start ringing."""
@@ -386,10 +389,13 @@ class AlarmManager:
 
         if alarm.state not in (STATE_RINGING, STATE_RINGING_SNOOZE):
             _LOGGER.warning("Alarm is not ringing: %s", alarm_id)
+        if (
+            alarm.max_snoozes
+            and alarm.max_snoozes > 0
+            and alarm.snooze_count >= alarm.max_snoozes
+        ):
+            _LOGGER.warning("Max snoozes reached for alarm: %s", alarm_id)
             return False
-
-        # Check max snoozes
-        if alarm.max_snoozes and alarm.max_snoozes > 0:
             if alarm.snooze_count >= alarm.max_snoozes:
                 _LOGGER.warning("Max snoozes reached for alarm: %s", alarm_id)
                 return False
