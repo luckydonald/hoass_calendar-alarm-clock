@@ -6,6 +6,7 @@
 ## Status: 🔧 TypeScript Build Configuration In Progress
 
 ## Recent Changes
+- Added "Open in HACS" button to README for one-click installation
 - Updated repository URL in all files:
   - `manifest.json` - documentation and issue_tracker URLs
   - `package.json` - added repository, author, license fields
