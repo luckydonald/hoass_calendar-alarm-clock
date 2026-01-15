@@ -10,6 +10,7 @@ from homeassistant.components.lovelace.resources import ResourceStorageCollectio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_STATE_CHANGED, Platform
 from homeassistant.core import Event, HomeAssistant, callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.start import async_at_started
 
@@ -28,6 +29,9 @@ from .const import (
 from .services import async_setup_services, async_unload_services
 
 _LOGGER = logging.getLogger(__name__)
+
+# This integration is config entry only (no YAML configuration)
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 LOVELACE_CARD_URL = "/local/community/calendar_alarm_clock/alarm-clock-card.js"

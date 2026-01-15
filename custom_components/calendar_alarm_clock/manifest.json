@@ -3,7 +3,7 @@
   "name": "Calendar backed Alarm Clock",
   "codeowners": ["@luckydonald"],
   "config_flow": true,
-  "dependencies": ["calendar"],
+  "dependencies": ["calendar", "http", "lovelace"],
   "documentation": "https://github.com/luckydonald/hoass_calendar-alarm-clock",
   "integration_type": "service",
   "iot_class": "local_polling",

@@ -6,10 +6,13 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
-- **Added visual card editor**: Card now appears in the "Add Card" dialog with a GUI editor using HA native elements (`ha-textfield`, `ha-entity-picker`)
-- **Auto-register Lovelace resource**: The integration now automatically registers the card JS file as a Lovelace resource
-- **Static path registration**: The `www` folder is registered at `/local/community/calendar_alarm_clock/`
-- **Fixed release zip structure**: HACS expects zip contents to extract directly into `custom_components/calendar_alarm_clock/`
+- **Fixed hassfest validation**:
+  - Added `http` and `lovelace` to dependencies in `manifest.json`
+  - Added `CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)` to `__init__.py`
+- **Fixed static path registration**: Use `async_register_static_paths` with `StaticPathConfig`
+- **Added visual card editor**: Card now appears in the "Add Card" dialog with a GUI editor
+- **Auto-register Lovelace resource**: The integration automatically registers the card JS file
+- **Fixed release zip structure**: HACS expects zip contents to extract directly
 - **Added automatic discovery**: When a calendar is set up, the integration is automatically suggested
   - Listens for new calendar entities via `EVENT_STATE_CHANGED`
   - Triggers discovery on HA startup via `async_at_started`
