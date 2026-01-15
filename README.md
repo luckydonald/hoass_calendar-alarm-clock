@@ -315,20 +315,46 @@ yarn build
 
 ### Creating a Release
 
+The easiest way to create a release is using the release script:
+
 ```bash
-# Ensure all checks pass
-ruff check custom_components/
-ruff format --check custom_components/
-cd frontend && yarn type-check && yarn build && cd ..
+# One command to: bump version, lint, format, build, commit, tag, and push
+make release
+```
 
-# Commit changes
+This will:
+1. Bump the version (e.g., `v0.0.0-pre11` → `v0.0.0-pre12`)
+2. Lint and format Python code with ruff
+3. Type-check and build the frontend
+4. Commit, tag, and push to GitHub
+
+Alternatively, do it manually:
+
+```bash
+# Lint and format
+make lint
+make format
+
+# Build
+make build
+
+# Commit and tag
 git add .
-git commit -m "Your commit message"
-git push
+git commit -m "Release vX.Y.Z"
+git tag vX.Y.Z
+git push origin mane
+git push origin vX.Y.Z
+```
 
-# Tag a release (triggers GitHub Actions build)
-git tag v1.0.0
-git push origin v1.0.0
+### Make Commands
+
+```bash
+make help     # Show all available commands
+make setup    # Set up development environment
+make lint     # Run all linters
+make format   # Format all code
+make build    # Build frontend
+make release  # Full release workflow
 ```
 
 ## Links

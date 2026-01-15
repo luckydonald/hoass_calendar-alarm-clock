@@ -6,13 +6,13 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
-- **Fixed sensor polling error**: Added `_attr_should_poll = False` to all sensor classes. HA was trying to poll sensors that are push-based (updated via callbacks), causing `TypeError: object NoneType can't be used in 'await' expression`
+- **Added release script**: `make release` - one command to bump version, lint, format, build, commit, tag, and push
+- **Added Makefile**: Convenient commands for development (`make setup`, `make lint`, `make format`, `make build`, `make release`)
+- **Fixed sensor polling error**: Added `_attr_should_poll = False` to all sensor classes
 - **Fixed calendar service call**: Changed `calendar.list_events` to `calendar.get_events` (renamed in HA 2023.6+)
-- **Fixed sensor async_update error**: Removed invalid `@callback` decorated `async_update` methods from `NextAlarmSensor` and `PreviousAlarmSensor`
+- **Fixed sensor async_update error**: Removed invalid `@callback` decorated `async_update` methods
 - **Fixed OptionsFlowHandler**: Removed `__init__` method - `config_entry` is now provided by parent class in newer HA
-- **Fixed hassfest validation**:
-  - Added `http` and `lovelace` to dependencies in `manifest.json`
-  - Added `CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)` to `__init__.py`
+- **Fixed hassfest validation**: Added dependencies and CONFIG_SCHEMA
 - **Fixed static path registration**: Use `async_register_static_paths` with `StaticPathConfig`
 - **Added visual card editor**: Card now appears in the "Add Card" dialog with a GUI editor
 - **Auto-register Lovelace resource**: The integration automatically registers the card JS file
@@ -80,13 +80,16 @@
   - [x] Update all URLs to correct repository
 
 ## Current Task
-- Fixing TypeScript/vue-tsc build configuration for proper type checking
+- None - Implementation complete!
 
 ## Files Structure
 ```
 .github/workflows/
 ├── ci.yml                # CI: lint, build, validate
 └── release.yml           # Release: build, zip, publish
+
+scripts/
+└── release.sh            # Release script (bump, lint, build, push)
 
 custom_components/calendar_alarm_clock/
 ├── __init__.py           # Component setup (fully typed)
@@ -123,6 +126,7 @@ ai/
 ├── progress.md           # This file
 └── overview.md           # Architecture overview
 
+Makefile                  # Development commands
 hacs.json                 # HACS configuration
 pyproject.toml            # Python tooling config
 README.md                 # Documentation
@@ -134,24 +138,37 @@ LICENSE                   # MIT License
 
 ### Local Development
 ```bash
-cd frontend
-yarn install
-yarn build
+# Setup (one time)
+make setup
+
+# Or manually:
+python3 -m venv venv
+source venv/bin/activate
+pip install ruff mypy homeassistant
+cd frontend && yarn install
 ```
 
 ### Creating a Release
-1. Update version in `custom_components/calendar_alarm_clock/manifest.json`
-2. Commit changes
-3. Create and push a tag:
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-4. GitHub Actions will automatically:
-   - Build the frontend
-   - Create a release zip
-   - Publish to GitHub Releases
-   - HACS will pick up the new release
+```bash
+# One command to bump version, lint, format, build, commit, tag, and push
+make release
+```
+
+This will:
+1. Bump version (e.g., `v0.0.0-pre11` → `v0.0.0-pre12`)
+2. Lint and format Python code
+3. Type-check and build frontend
+4. Commit, tag, and push
+
+### Make Commands
+```bash
+make help     # Show all commands
+make setup    # Set up dev environment
+make lint     # Run linters
+make format   # Format code
+make build    # Build frontend
+make release  # Full release workflow
+```
 
 ## Type Checking Features
 - **Python**: Full type annotations using Python 3.12 features
