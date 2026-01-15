@@ -1,4 +1,43 @@
 
+It doesn't appear as integration to add?
+There i would assume the following flow:
+- Add integration
+- Choose calendar to load/save events to
+- Setup defaults (snooze, timeout)
+
+————————
+
+Give me steps to troubleshoot why the integration is not shown when I search for alarm or anything which should match the name.
+
+————————
+
+Logs: nothing.
+
+File structure: `/homeassistant/custom_components/calendar_alarm_clock/calendar_alarm_clock/` containing `__init__.py`, `alarm_manager.py`, more .py files and the other listed stuff, and the folders `translations/` and `www/`
+
+————————
+
+Error: src/main.ts(252,3): error TS2353: Object literal may only specify known properties, and 'documentationURL' does not exist in type '{ type: string; name: string; description: string; preview?: boolean | undefined; }'.
+
+————————
+
+the hacs test fails with `Error:  <Validation brands> failed:  The repository has not been added as a custom domain to the brands repo (More info: https://hacs.xyz/docs/publish/include#check-brands )`
+I do not plan to add a icon to their repo, can I somehow mute that one check specifically?
+
+————————
+
+Log details (ERROR)   Logger: homeassistant.setup Source: setup.py:425 First occurred: 19:24:23 (1 occurrence) Last logged: 19:24:23  Error during setup of component calendar_alarm_clock: 'HomeAssistantHTTP' object has no attribute 'register_static_path' Traceback (most recent call last):   File "/usr/src/homeassistant/homeassistant/setup.py", line 425, in _async_setup_component     result = await task              ^^^^^^^^^^   File "/config/custom_components/calendar_alarm_clock/__init__.py", line 41, in async_setup     hass.http.register_static_path(     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ AttributeError: 'HomeAssistantHTTP' object has no attribute 'register_static_path'. Did you mean: 'async_register_static_paths'?
+
+————————
+
+Hassfest fails with:
+Integration calendar_alarm_clock - /github/workspace/custom_components/calendar_alarm_clock: Error: R] [DEPENDENCIES] Using component http but it's not in 'dependencies' or 'after_dependencies' Error: R] [DEPENDENCIES] Using component lovelace but it's not in 'dependencies' or 'after_dependencies' Warning: G] [CONFIG_SCHEMA] Integrations which implement 'async_setup' or 'setup' must define either 'CONFIG_SCHEMA', 'PLATFORM_SCHEMA' or 'PLATFORM_SCHEMA_BASE'. If the integration has no configuration parameters, can only be set up from platforms or can only be set up from config entries, one of the helpers cv.empty_config_schema, cv.platform_only_config_schema or cv.config_entry_only_config_schema can be used.
+
+————————
+
+- zsh: command not found: ruff
+
+Add a full development setup/execution section to the end of the readme.
 
 ————————
 
