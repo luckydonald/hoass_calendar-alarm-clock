@@ -6,9 +6,11 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
-- **Fixed release zip structure**: HACS expects zip contents to extract directly into `custom_components/calendar_alarm_clock/`, not contain a nested folder. Changed `zip -r ../calendar_alarm_clock.zip calendar_alarm_clock` to `cd calendar_alarm_clock && zip -r ../../calendar_alarm_clock.zip .`
-- **Removed extra asset**: The `alarm-clock-card.js` was being uploaded separately (unnecessary since it's in the zip)
-- **Added automatic discovery**: When a calendar is set up in Home Assistant, the integration is automatically suggested in the Notifications panel
+- **Added visual card editor**: Card now appears in the "Add Card" dialog with a GUI editor using HA native elements (`ha-textfield`, `ha-entity-picker`)
+- **Auto-register Lovelace resource**: The integration now automatically registers the card JS file as a Lovelace resource
+- **Static path registration**: The `www` folder is registered at `/local/community/calendar_alarm_clock/`
+- **Fixed release zip structure**: HACS expects zip contents to extract directly into `custom_components/calendar_alarm_clock/`
+- **Added automatic discovery**: When a calendar is set up, the integration is automatically suggested
   - Listens for new calendar entities via `EVENT_STATE_CHANGED`
   - Triggers discovery on HA startup via `async_at_started`
   - Shows confirmation dialog before setting up

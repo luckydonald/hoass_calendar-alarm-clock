@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from pathlib import Path
 
+from homeassistant.components.lovelace.resources import ResourceStorageCollection
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_STATE_CHANGED, Platform
 from homeassistant.core import Event, HomeAssistant, callback
@@ -27,11 +29,20 @@ from .services import async_setup_services, async_unload_services
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
+LOVELACE_CARD_URL = "/local/community/calendar_alarm_clock/alarm-clock-card.js"
+LOVELACE_CARD_URL_ALT = "/hacsfiles/calendar_alarm_clock/alarm-clock-card.js"
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Calendar Alarm Clock component."""
     hass.data.setdefault(DOMAIN, {})
+
+    # Register the www folder as static path
+    hass.http.register_static_path(
+        f"/local/community/{DOMAIN}",
+        str(Path(__file__).parent / "www"),
+        cache_headers=False,
+    )
 
     # Set up discovery when HA is fully started
     async def async_discover_on_start(_: HomeAssistant) -> None:
@@ -62,6 +73,32 @@ async def _async_discover_calendars(hass: HomeAssistant) -> None:
     from .config_flow import async_discover_calendars
 
     await async_discover_calendars(hass)
+
+
+async def _async_register_card(hass: HomeAssistant) -> None:
+    """Register the Lovelace card resource."""
+    # Try to register via lovelace resources
+    try:
+        if "lovelace" in hass.data:
+            lovelace_data = hass.data["lovelace"]
+            if hasattr(lovelace_data, "resources"):
+                resources: ResourceStorageCollection = lovelace_data.resources
+                # Check if already registered
+                existing = [
+                    r
+                    for r in resources.async_items()
+                    if DOMAIN in r.get("url", "")
+                ]
+                if not existing:
+                    await resources.async_create_item(
+                        {
+                            "url": LOVELACE_CARD_URL,
+                            "res_type": "module",
+                        }
+                    )
+                    _LOGGER.info("Registered Lovelace card resource: %s", LOVELACE_CARD_URL)
+    except Exception as e:
+        _LOGGER.debug("Could not auto-register Lovelace resource: %s", e)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -109,6 +146,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Set up services
     await async_setup_services(hass)
+
+    # Register Lovelace card
+    await _async_register_card(hass)
 
     # Forward entry setup to platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
