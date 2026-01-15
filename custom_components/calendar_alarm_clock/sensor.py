@@ -87,6 +87,7 @@ class AlarmSensor(SensorEntity):
 
     _attr_has_entity_name: bool = True
     _attr_icon: str = "mdi:alarm"
+    _attr_should_poll: bool = False
 
     def __init__(
         self,
@@ -168,6 +169,7 @@ class NextAlarmSensor(SensorEntity):
     _attr_has_entity_name: bool = True
     _attr_name: str | None = "Next Alarm"
     _attr_icon: str = "mdi:alarm"
+    _attr_should_poll: bool = False
 
     def __init__(self, manager: AlarmManager, entry: ConfigEntry) -> None:
         """Initialize the next alarm sensor."""
@@ -217,6 +219,7 @@ class PreviousAlarmSensor(SensorEntity):
     _attr_has_entity_name: bool = True
     _attr_name: str | None = "Previous Alarm"
     _attr_icon: str = "mdi:alarm-check"
+    _attr_should_poll: bool = False
 
     def __init__(self, manager: AlarmManager, entry: ConfigEntry) -> None:
         """Initialize the previous alarm sensor."""

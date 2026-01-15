@@ -6,6 +6,7 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
+- **Fixed sensor polling error**: Added `_attr_should_poll = False` to all sensor classes. HA was trying to poll sensors that are push-based (updated via callbacks), causing `TypeError: object NoneType can't be used in 'await' expression`
 - **Fixed calendar service call**: Changed `calendar.list_events` to `calendar.get_events` (renamed in HA 2023.6+)
 - **Fixed sensor async_update error**: Removed invalid `@callback` decorated `async_update` methods from `NextAlarmSensor` and `PreviousAlarmSensor`
 - **Fixed OptionsFlowHandler**: Removed `__init__` method - `config_entry` is now provided by parent class in newer HA
