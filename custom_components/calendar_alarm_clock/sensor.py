@@ -211,7 +211,6 @@ class NextAlarmSensor(SensorEntity):
         }
 
 
-
 class PreviousAlarmSensor(SensorEntity):
     """Sensor for the previous alarm."""
 
@@ -259,4 +258,3 @@ class PreviousAlarmSensor(SensorEntity):
             ATTR_SNOOZE_COUNT: alarm.snooze_count,
             "state": alarm.state,
         }
-
