@@ -9,6 +9,7 @@
 - Fixed Ruff linting errors:
   - SIM102: Combined nested if statements in `alarm_manager.py` and `services.py`
   - I001: Fixed import sorting in `config_flow.py` and `services.py`
+  - Fixed unreachable code in `async_snooze_alarm`
 - Fixed HACS JSON: Removed invalid `domains` key
 - Added GitHub Actions workflows:
   - `ci.yml` - Runs on push/PR: Python lint (ruff), frontend build, HACS validation, hassfest

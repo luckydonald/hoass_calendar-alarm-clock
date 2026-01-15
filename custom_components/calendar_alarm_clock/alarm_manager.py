@@ -389,6 +389,9 @@ class AlarmManager:
 
         if alarm.state not in (STATE_RINGING, STATE_RINGING_SNOOZE):
             _LOGGER.warning("Alarm is not ringing: %s", alarm_id)
+            return False
+
+        # Check max snoozes
         if (
             alarm.max_snoozes
             and alarm.max_snoozes > 0
@@ -396,9 +399,6 @@ class AlarmManager:
         ):
             _LOGGER.warning("Max snoozes reached for alarm: %s", alarm_id)
             return False
-            if alarm.snooze_count >= alarm.max_snoozes:
-                _LOGGER.warning("Max snoozes reached for alarm: %s", alarm_id)
-                return False
 
         snooze_duration: int = (
             duration or alarm.snooze_duration or self.default_snooze_duration
