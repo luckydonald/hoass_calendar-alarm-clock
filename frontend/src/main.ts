@@ -1,13 +1,14 @@
-import { createApp, h, type App, type Component } from 'vue';
+import { createApp, h, type App, type ComponentPublicInstance } from 'vue';
 import AlarmClockCard from './AlarmClockCard.vue';
+import type { HomeAssistant, CardConfig } from './types';
 
-interface AlarmClockCardConfig {
+interface AlarmClockCardConfig extends CardConfig {
   type?: string;
   entity?: string;
   title?: string;
 }
 
-interface AppProxy {
+interface AppData {
   hass: HomeAssistant | null;
   config: AlarmClockCardConfig;
 }
@@ -21,14 +22,16 @@ class AlarmClockCardElement extends HTMLElement {
   public set hass(hass: HomeAssistant) {
     this._hass = hass;
     if (this._app?._instance?.proxy) {
-      (this._app._instance.proxy as AppProxy).hass = hass;
+      const proxy = this._app._instance.proxy as ComponentPublicInstance & AppData;
+      proxy.hass = hass;
     }
   }
 
   public setConfig(config: AlarmClockCardConfig): void {
     this._config = config;
     if (this._app?._instance?.proxy) {
-      (this._app._instance.proxy as AppProxy).config = config;
+      const proxy = this._app._instance.proxy as ComponentPublicInstance & AppData;
+      proxy.config = config;
     }
   }
 
@@ -38,20 +41,21 @@ class AlarmClockCardElement extends HTMLElement {
       this.appendChild(this._root);
     }
 
-    const hass = this._hass;
-    const config = this._config;
+    const initialHass = this._hass;
+    const initialConfig = this._config;
 
     this._app = createApp({
-      data(): { hass: HomeAssistant | null; config: AlarmClockCardConfig } {
+      data(): AppData {
         return {
-          hass: hass,
-          config: config,
+          hass: initialHass,
+          config: initialConfig,
         };
       },
       render() {
-        return h(AlarmClockCard as Component, {
-          hass: this.hass,
-          config: this.config,
+        const data = this as unknown as AppData;
+        return h(AlarmClockCard, {
+          hass: data.hass,
+          config: data.config,
         });
       },
     });

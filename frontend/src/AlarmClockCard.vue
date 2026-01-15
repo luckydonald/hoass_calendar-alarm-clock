@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { Alarm, AlarmState, AlarmDialogData, NextAlarmInfo, RepeatPattern } from './types';
+import type { Alarm, AlarmState, AlarmDialogData, NextAlarmInfo, RepeatPattern, HomeAssistant } from './types';
 
 // Props
 const props = defineProps<{
