@@ -246,6 +246,91 @@ Releases are built automatically via GitHub Actions:
 - A release zip is created and published to GitHub Releases
 - HACS will automatically pick up new releases
 
+## Development Setup
+
+### Prerequisites
+
+- Python 3.12+
+- Node.js 22+
+- Yarn
+
+### Initial Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/luckydonald/hoass_calendar-alarm-clock.git
+cd hoass_calendar-alarm-clock
+
+# Set up Python virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install Python development dependencies
+pip install ruff mypy homeassistant
+
+# Set up frontend
+cd frontend
+yarn install
+cd ..
+```
+
+### Running Linters
+
+```bash
+# Activate virtual environment (if not already active)
+source venv/bin/activate
+
+# Python: Check for lint issues
+ruff check custom_components/
+
+# Python: Auto-fix lint issues
+ruff check --fix custom_components/
+
+# Python: Format code
+ruff format custom_components/
+
+# Python: Check formatting (without changing)
+ruff format --check custom_components/
+
+# Frontend: Type check
+cd frontend
+yarn type-check
+```
+
+### Building
+
+```bash
+# Build frontend
+cd frontend
+yarn build
+
+# The built JS file is placed in custom_components/calendar_alarm_clock/www/
+```
+
+### Testing Locally
+
+1. Copy `custom_components/calendar_alarm_clock` to your Home Assistant's `custom_components/` folder
+2. Restart Home Assistant
+3. Add the integration via Settings → Devices & Services
+
+### Creating a Release
+
+```bash
+# Ensure all checks pass
+ruff check custom_components/
+ruff format --check custom_components/
+cd frontend && yarn type-check && yarn build && cd ..
+
+# Commit changes
+git add .
+git commit -m "Your commit message"
+git push
+
+# Tag a release (triggers GitHub Actions build)
+git tag v1.0.0
+git push origin v1.0.0
+```
+
 ## Links
 
 - [GitHub Repository](https://github.com/luckydonald/hoass_calendar-alarm-clock)
