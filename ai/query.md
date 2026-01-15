@@ -102,4 +102,8 @@ I want proper typing, don't just disable it.
 
 ———————————
 
+The project is named "Calendar backed Alarm Clock for Home Assistant".
+
 The repo is at https://github.com/luckydonald/hoass_calendar-alarm-clock/tree/mane
+
+———————————
