@@ -94,6 +94,8 @@ After creating that file, start implementing!
 —————————
 
 use yarn, vue 3 <script setup lang="ts">, typescript, full types in python 3.12.
+UV is nice, I wanna use that.
+Make sure the documentation/script reflects that.
 
 —————————
 
