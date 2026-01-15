@@ -71,6 +71,12 @@ There's also global next and previous entities, which represent the next and pre
 
 When an alarm is ringing, the user shall be able to stop/snooze it via the notification, or via the entity (set state to snooze or dismissed).
 
+It is an integration, multiple can be setup, each attached to their own calender.
+I would assume the following flow:
+- Add integration
+- Choose calendar to load/save events to
+- Setup defaults (snooze, timeout)
+
 Write me the code for this plugin.
 
 —————————
