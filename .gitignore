@@ -50,6 +50,7 @@ yarn-error.log*
 
 # Build outputs
 frontend/dist/
+custom_components/calendar_alarm_clock/www/
 
 # TypeScript build info
 *.tsbuildinfo
@@ -67,4 +68,7 @@ home-assistant_v2.db
 
 # Release artifacts
 *.zip
+
+# AI/docs
+ai/apis/
 

@@ -16,8 +16,8 @@ if [ ! -f "custom_components/calendar_alarm_clock/manifest.json" ]; then
     exit 1
 fi
 
-# Check for uncommitted changes
-if [ -n "$(git status --porcelain)" ]; then
+# Check for uncommitted changes (only tracked files, respects .gitignore)
+if ! git diff --quiet HEAD -- || [ -n "$(git ls-files --others --exclude-standard)" ]; then
     echo -e "${YELLOW}Warning: You have uncommitted changes${NC}"
     git status --short
     echo ""
