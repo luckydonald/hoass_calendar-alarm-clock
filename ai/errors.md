@@ -141,12 +141,11 @@ TypeError: object NoneType can't be used in 'await' expression
 
 Log details (ERROR)
 This error originated from a custom integration.
-
 Logger: custom_components.calendar_alarm_clock.alarm_manager
 Source: custom_components/calendar_alarm_clock/alarm_manager.py:150
 integration: Calendar backed Alarm Clock (documentation, issues)
-First occurred: 20:54:00 (1 occurrence)
-Last logged: 20:54:00
+First occurred: 20:54:00 (13 occurrences)
+Last logged: 21:00:02
 
 Error updating alarms from calendar: Action calendar.list_events not found
 
