@@ -43,3 +43,34 @@ interface CardConfig {
   title?: string;
 }
 
+// Declare Home Assistant custom elements for Vue templates
+declare module 'vue' {
+  export interface GlobalComponents {
+    'ha-card': typeof HTMLElement;
+    'ha-icon': typeof HTMLElement;
+  }
+}
+
+// Augment HTMLElementTagNameMap for type checking
+declare global {
+  interface HTMLElementTagNameMap {
+    'ha-card': HTMLElement & {
+      header?: string;
+    };
+    'ha-icon': HTMLElement & {
+      icon: string;
+    };
+  }
+
+  interface Window {
+    customCards?: Array<{
+      type: string;
+      name: string;
+      description: string;
+      preview?: boolean;
+    }>;
+  }
+}
+
+export {};
+

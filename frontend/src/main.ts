@@ -7,27 +7,32 @@ interface AlarmClockCardConfig {
   title?: string;
 }
 
+interface AppProxy {
+  hass: HomeAssistant | null;
+  config: AlarmClockCardConfig;
+}
+
 class AlarmClockCardElement extends HTMLElement {
   private _config: AlarmClockCardConfig = {};
   private _hass: HomeAssistant | null = null;
   private _app: App | null = null;
   private _root: HTMLDivElement | null = null;
 
-  set hass(hass: HomeAssistant) {
+  public set hass(hass: HomeAssistant) {
     this._hass = hass;
     if (this._app?._instance?.proxy) {
-      (this._app._instance.proxy as { hass: HomeAssistant }).hass = hass;
+      (this._app._instance.proxy as AppProxy).hass = hass;
     }
   }
 
-  setConfig(config: AlarmClockCardConfig): void {
+  public setConfig(config: AlarmClockCardConfig): void {
     this._config = config;
     if (this._app?._instance?.proxy) {
-      (this._app._instance.proxy as { config: AlarmClockCardConfig }).config = config;
+      (this._app._instance.proxy as AppProxy).config = config;
     }
   }
 
-  connectedCallback(): void {
+  public connectedCallback(): void {
     if (!this._root) {
       this._root = document.createElement('div');
       this.appendChild(this._root);
@@ -37,10 +42,10 @@ class AlarmClockCardElement extends HTMLElement {
     const config = this._config;
 
     this._app = createApp({
-      data() {
+      data(): { hass: HomeAssistant | null; config: AlarmClockCardConfig } {
         return {
-          hass: hass as HomeAssistant | null,
-          config: config as AlarmClockCardConfig,
+          hass: hass,
+          config: config,
         };
       },
       render() {
@@ -54,22 +59,22 @@ class AlarmClockCardElement extends HTMLElement {
     this._app.mount(this._root);
   }
 
-  disconnectedCallback(): void {
+  public disconnectedCallback(): void {
     if (this._app) {
       this._app.unmount();
       this._app = null;
     }
   }
 
-  getCardSize(): number {
+  public getCardSize(): number {
     return 3;
   }
 
-  static getConfigElement(): HTMLElement {
+  public static getConfigElement(): HTMLElement {
     return document.createElement('alarm-clock-card-editor');
   }
 
-  static getStubConfig(): AlarmClockCardConfig {
+  public static getStubConfig(): AlarmClockCardConfig {
     return {
       entity: '',
       title: 'Alarm Clock',
@@ -79,13 +84,12 @@ class AlarmClockCardElement extends HTMLElement {
 
 class AlarmClockCardEditor extends HTMLElement {
   private _config: AlarmClockCardConfig = {};
-  private _hass: HomeAssistant | null = null;
 
-  set hass(hass: HomeAssistant) {
-    this._hass = hass;
+  public set hass(_hass: HomeAssistant) {
+    // Store hass if needed for entity picker, etc.
   }
 
-  setConfig(config: AlarmClockCardConfig): void {
+  public setConfig(config: AlarmClockCardConfig): void {
     this._config = config;
     this._render();
   }
@@ -95,7 +99,10 @@ class AlarmClockCardEditor extends HTMLElement {
       this.attachShadow({ mode: 'open' });
     }
 
-    this.shadowRoot!.innerHTML = `
+    const shadowRoot = this.shadowRoot;
+    if (!shadowRoot) return;
+
+    shadowRoot.innerHTML = `
       <style>
         .form-row {
           margin-bottom: 16px;
@@ -117,21 +124,26 @@ class AlarmClockCardEditor extends HTMLElement {
       </style>
       <div class="form-row">
         <label>Entity (optional, for single alarm view)</label>
-        <input type="text" id="entity" value="${this._config.entity || ''}" />
+        <input type="text" id="entity" value="${this._config.entity ?? ''}" />
       </div>
       <div class="form-row">
         <label>Title</label>
-        <input type="text" id="title" value="${this._config.title || 'Alarm Clock'}" />
+        <input type="text" id="title" value="${this._config.title ?? 'Alarm Clock'}" />
       </div>
     `;
 
-    this.shadowRoot!.getElementById('entity')?.addEventListener('change', (e) => {
-      this._config = { ...this._config, entity: (e.target as HTMLInputElement).value };
+    const entityInput = shadowRoot.getElementById('entity');
+    const titleInput = shadowRoot.getElementById('title');
+
+    entityInput?.addEventListener('change', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      this._config = { ...this._config, entity: target.value };
       this._fireConfigChanged();
     });
 
-    this.shadowRoot!.getElementById('title')?.addEventListener('change', (e) => {
-      this._config = { ...this._config, title: (e.target as HTMLInputElement).value };
+    titleInput?.addEventListener('change', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      this._config = { ...this._config, title: target.value };
       this._fireConfigChanged();
     });
   }
@@ -151,17 +163,6 @@ customElements.define('alarm-clock-card', AlarmClockCardElement);
 customElements.define('alarm-clock-card-editor', AlarmClockCardEditor);
 
 // Register with Home Assistant
-declare global {
-  interface Window {
-    customCards?: Array<{
-      type: string;
-      name: string;
-      description: string;
-      preview?: boolean;
-    }>;
-  }
-}
-
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'alarm-clock-card',

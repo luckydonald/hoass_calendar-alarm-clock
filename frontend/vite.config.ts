@@ -1,13 +1,17 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: (tag: string) => tag.includes('-') && !tag.startsWith('v-'),
+          // Treat ha-* tags as custom elements (Home Assistant components)
+          isCustomElement: (tag: string) => tag.startsWith('ha-'),
         },
       },
     }),
