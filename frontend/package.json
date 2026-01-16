@@ -14,7 +14,7 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc -b",
-    "format": "dprint fmt src/"
+    "format": "dprint fmt"
   },
   "dependencies": {
     "vue": "^3.5.13"
