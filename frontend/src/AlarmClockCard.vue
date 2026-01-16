@@ -125,6 +125,10 @@ const isNextAlarmRinging = computed(() => {
   );
 });
 
+const ringingAlarms = computed<Alarm[]>(() => {
+  return alarms.value.filter((alarm) => isAlarmRinging(alarm));
+});
+
 // Methods
 function formatTime(isoTime: string | null): string {
   if (!isoTime) return '--:--';
@@ -388,6 +392,42 @@ function handleRepeatChange(event: Event): void {
 
       <!-- Alarm List View -->
       <div v-else class="alarm-list">
+        <!-- Ringing Alarms Banner -->
+        <div
+          v-for="alarm in ringingAlarms"
+          :key="'ringing-' + alarm.alarm_id"
+          class="ringing-alarm-banner"
+        >
+          <div class="ringing-alarm-icon shake">
+            <ha-icon icon="mdi:alarm-note" />
+          </div>
+          <div class="ringing-alarm-info">
+            <div class="ringing-alarm-label">ALARM RINGING</div>
+            <div class="ringing-alarm-time">{{ formatTime(alarm.time) }}</div>
+            <div class="ringing-alarm-name">{{ alarm.name }}</div>
+          </div>
+          <div class="ringing-alarm-actions">
+            <mwc-button
+              raised
+              dense
+              class="snooze-button"
+              @click="snoozeAlarm(alarm)"
+            >
+              <ha-icon icon="mdi:alarm-snooze" slot="icon" />
+              Snooze
+            </mwc-button>
+            <mwc-button
+              raised
+              dense
+              class="dismiss-button"
+              @click="dismissAlarm(alarm)"
+            >
+              <ha-icon icon="mdi:alarm-off" slot="icon" />
+              Dismiss
+            </mwc-button>
+          </div>
+        </div>
+
         <div v-if="alarms.length === 0" class="no-alarms">
           <ha-icon icon="mdi:alarm-plus" />
           <p>No alarms scheduled</p>
@@ -699,6 +739,63 @@ function handleRepeatChange(event: Event): void {
 /* Alarm List */
 .alarm-list {
   margin: 0 -16px;
+}
+
+/* Ringing Alarm Banner */
+.ringing-alarm-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  margin: 0 0 8px 0;
+  background: var(--error-color, #db4437);
+  color: white;
+  text-align: center;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.ringing-alarm-icon {
+  --mdc-icon-size: 56px;
+  margin-bottom: 8px;
+}
+
+.ringing-alarm-info {
+  margin-bottom: 16px;
+}
+
+.ringing-alarm-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.ringing-alarm-time {
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ringing-alarm-name {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.ringing-alarm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.ringing-alarm-actions .snooze-button {
+  --mdc-theme-primary: var(--warning-color, #ff9800);
+  --mdc-theme-on-primary: white;
+}
+
+.ringing-alarm-actions .dismiss-button {
+  --mdc-theme-primary: rgba(255, 255, 255, 0.2);
+  --mdc-theme-on-primary: white;
 }
 
 .no-alarms {
