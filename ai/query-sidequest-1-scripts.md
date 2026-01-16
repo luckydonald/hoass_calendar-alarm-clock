@@ -40,3 +40,7 @@ Regarding formatting:
 - reminder that the config key is called `"markup": { …` not `"markup_fmt"`.
 
 ——————————
+
+bash script get own file dir
+
+——————————
