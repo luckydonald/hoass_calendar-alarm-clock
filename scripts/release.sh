@@ -21,7 +21,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-COMMIT_MSG_VERSION_BUMP="??version: bumped \`{from}\` → \`{to}\`"
+COMMIT_MSG_VERSION_BUMP="⬆️ version: bumped \`{from}\` → \`{to}\`"
 COMMIT_MSG_LINT="🔧 lint: {reason}"
 
 # -------------------------------------------------
