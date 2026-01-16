@@ -2,7 +2,7 @@
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.93.3.wasm",
     "https://plugins.dprint.dev/json-0.19.4.wasm",
-    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.19.0.wasm"
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.25.3.wasm"
   ],
   "typescript": {
     "lineWidth": 9999,
@@ -35,7 +35,7 @@
     "array.preferSingleLine": false,
     "object.preferSingleLine": false
   },
-  "markup_fmt": {
+  "markup": {
     "printWidth": 9999,
     "indentWidth": 2,
     "useTabs": false,

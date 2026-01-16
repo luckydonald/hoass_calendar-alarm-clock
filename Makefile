@@ -32,7 +32,7 @@ format:
 	uv run ruff format custom_components/
 	uv run ruff check --fix custom_components/ || true
 	@echo "Formatting TypeScript..."
-	cd frontend && yarn format
+	cd frontend && yarn format --verbose
 
 build:
 	@echo "Building frontend..."
