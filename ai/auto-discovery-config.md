@@ -68,9 +68,16 @@ Added a configuration option during initial integration setup that allows users 
 
 ### Technical Notes
 - Auto-discovery entry uses unique_id "auto_discovery" to prevent duplicates
+- **Auto-discovery entries are lightweight**: They don't create AlarmManager or sensors, just enable discovery
+- **Regular calendar entries**: Create AlarmManager, sensors, and handle alarm logic
+- `async_setup_entry` checks `CONF_AUTO_DISCOVER_CALENDARS` to determine entry type
+- `async_unload_entry` handles both entry types appropriately
 - Manual calendar entries use the calendar entity_id as unique_id (as before)
 - Discovery only triggers if auto-discovery is enabled
 - Backward compatible: existing installations continue working (discovery on by default)
+
+## Bug Fixes
+- **Fixed KeyError on auto-discovery entry setup**: Auto-discovery entries don't have `calendar_entity` in their data, so `async_setup_entry` now checks the entry type first and handles each appropriately
 
 ## Testing Checklist
 - [ ] Initial setup with auto-discovery enabled works

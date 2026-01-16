@@ -111,6 +111,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Calendar Alarm Clock from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
+    # Check if this is an auto-discovery entry (doesn't have calendar_entity)
+    from .const import CONF_AUTO_DISCOVER_CALENDARS
+
+    if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
+        # This is the auto-discovery config entry - it doesn't manage a specific calendar
+        # Just mark it as set up and let the discovery mechanism handle finding calendars
+        hass.data[DOMAIN][entry.entry_id] = {
+            "auto_discovery": True,
+        }
+        _LOGGER.info("Auto-discovery enabled for Calendar Alarm Clock")
+        return True
+
+    # This is a regular calendar entry
     calendar_entity: str = entry.data[CONF_CALENDAR_ENTITY]
 
     # Get configuration options with defaults
@@ -158,6 +171,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    # Check if this is an auto-discovery entry
+    from .const import CONF_AUTO_DISCOVER_CALENDARS
+
+    if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
+        # This is the auto-discovery entry - no platforms to unload
+        hass.data[DOMAIN].pop(entry.entry_id, None)
+
+        # Unload services if no more entries
+        if not hass.data[DOMAIN]:
+            await async_unload_services(hass)
+
+        return True
+
+    # Regular calendar entry
     unload_ok: bool = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:

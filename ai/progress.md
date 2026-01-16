@@ -6,6 +6,10 @@
 ## Status: ✅ Enhanced UI Complete
 
 ## Recent Changes (January 16, 2026)
+- **Fixed auto-discovery entry setup**: Auto-discovery entries don't have a calendar entity, so they're handled separately in `async_setup_entry` and `async_unload_entry`:
+  - Auto-discovery entries are lightweight - they just enable the discovery mechanism
+  - Regular calendar entries create AlarmManager instances and set up sensors
+  - Prevents KeyError when setting up auto-discovery entry
 - **Added auto-discovery configuration option**: Users can now choose during initial setup whether calendars should be auto-discovered:
   - New initial step in config flow asks about auto-discovery preference
   - Shows count of available calendars
