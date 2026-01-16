@@ -63,7 +63,8 @@ fi
 # Check if there are any other changes to commit
 if [ -n "$(git status --porcelain)" ]; then
     # Find the last "ai: running..." commit and extract the step number
-    LAST_STEP=$(git log --oneline | grep -oP "ai: running\.\.\. \(\K[0-9]+" | head -1)
+    # macOS-compatible: use sed instead of grep -P
+    LAST_STEP=$(git log --oneline | grep "ai: running\.\.\. (" | head -1 | sed 's/.*ai: running\.\.\. (\([0-9]*\).*/\1/')
 
     if [ -z "$LAST_STEP" ]; then
         NEW_STEP=1
