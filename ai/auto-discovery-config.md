@@ -111,15 +111,22 @@ Added a configuration option during initial integration setup that allows users 
 - **Fixed KeyError on auto-discovery entry setup**: Auto-discovery entries don't have `calendar_entity` in their data, so `async_setup_entry` now checks the entry type first and handles each appropriately
 
 ## Testing Checklist
-- [ ] Initial setup with auto-discovery enabled works
-- [ ] Initial setup with auto-discovery disabled works
-- [ ] Auto-discovery correctly discovers new calendars when enabled
-- [ ] Auto-discovery doesn't discover when disabled
+- [ ] Auto-discovery entry is automatically created when calendars exist (during onboarding)
+- [ ] Auto-discovery confirmation dialog appears (after onboarding)
+- [ ] Auto-discovery entry is not created when no calendars exist
+- [ ] Auto-discovery entry is not duplicated if already exists
+- [ ] New calendars trigger auto-discovery entry creation
+- [ ] Auto-discovery correctly discovers calendars when enabled
+- [ ] Auto-discovery doesn't discover when user rejects confirmation
+- [ ] Manual setup with auto-discovery enabled works
+- [ ] Manual setup with auto-discovery disabled works
 - [ ] Multiple manual calendar setups work independently
 - [ ] Cannot create duplicate auto-discovery entry
 - [ ] Cannot create duplicate manual calendar entries
 - [ ] Translations display correctly
-- [ ] Calendar count shows correctly in initial screen
+- [ ] Calendar count shows correctly in manual setup
+- [ ] Auto-discovery entry unloads cleanly
+- [ ] Regular calendar entries unload cleanly
 
 ## Future Enhancements
 - Add option to toggle auto-discovery in options flow (for existing installations)
