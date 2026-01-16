@@ -85,8 +85,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
     """Auto-create the auto-discovery entry if calendars exist and it's not configured."""
     from homeassistant import config_entries
-    from .const import CONF_AUTO_DISCOVER_CALENDARS
+
     from .config_flow import get_calendar_entities
+    from .const import CONF_AUTO_DISCOVER_CALENDARS
 
     # Check if we already have an auto-discovery entry
     for entry in hass.config_entries.async_entries(DOMAIN):
