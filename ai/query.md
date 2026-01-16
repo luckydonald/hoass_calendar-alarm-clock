@@ -127,4 +127,4 @@ Also this means reusing `<ha-icon>`, `<ha-card>`, etc. where possible.
 ———————————
 
 The "Ringing alarm" kind of display is missing.
-Remeber, there needs to be the included buttons to take action.
+Remember, there needs to be the included buttons to take action.
