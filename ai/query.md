@@ -153,3 +153,8 @@ Modify the panel in the following way:
 
 Rename `Calender Alarm Clock Card` to `Calendar Alarm Clock Card` everywhere.
 Make sure the custom components are named `calender-alarm-clock-card` and `calender-alarm-clock-editor`
+
+——————
+
+In the initial integration flow, I want it to ask if calenders should be auto-discovered, or rather not.
+After all it can get a bit spammy if you have a lot calenders.
