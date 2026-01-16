@@ -6,6 +6,7 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
+- **Added ringing alarm banner in list view**: When an alarm is ringing, a prominent red banner appears at the top of the alarm list with large time display and Snooze/Dismiss action buttons
 - **Updated Vue component to use HA native components**: Replaced custom HTML elements with `<ha-card>`, `<ha-icon>`, `<ha-switch>`, `<ha-dialog>`, `<ha-textfield>`, `<ha-select>`, `<ha-fab>`, `<ha-list>`, `<ha-list-item>`, `<ha-icon-button>`, `<ha-expansion-panel>`, `<ha-formfield>`, `<mwc-button>`, `<mwc-list-item>` for better HA theming integration
 - **Added release script**: `make release` - one command to bump version, lint, format, build, commit, tag, and push
 - **Added Makefile**: Convenient commands for development (`make setup`, `make lint`, `make format`, `make build`, `make release`)
