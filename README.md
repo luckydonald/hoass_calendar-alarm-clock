@@ -70,7 +70,7 @@ Or if using HACS, it will be automatically added.
 
 **List View** (default - shows all alarms):
 ```yaml
-type: custom:alarm-clock-card
+type: custom:calender-alarm-clock-card
 title: My Alarms
 ```
 
