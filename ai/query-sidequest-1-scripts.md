@@ -52,6 +52,12 @@ Running ruff check...
 Found 1 error. [*] 1 fixable with the `--fix` option. make: *** [release] Error 1
 ```
 
-Also insert a step where the linter has only fixable errors, so it commits the file before, then does an "autofix" commit afterwards - similar to the format ones.
+Also insert a step where the linter has only automatically fixable errors, so it commits the file before, then does an "autofix" commit afterwards - similar to the format ones.
+
+✅ **DONE**: Added Step 3 that:
+- Runs `ruff check --fix` to auto-fix errors
+- Commits any changes with message "🔧 lint: ruff autofix"
+- Verifies no errors remain after autofix
+- Exits if unfixable errors remain
 
 ——————————
