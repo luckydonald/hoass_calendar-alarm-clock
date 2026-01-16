@@ -44,10 +44,10 @@ const alarms = computed<Alarm[]>(() => {
   for (const entityId in states) {
     const state = states[entityId];
     if (
-      entityId.startsWith('sensor.') &&
-      state.attributes.alarm_id &&
-      !entityId.includes('_next_alarm') &&
-      !entityId.includes('_previous_alarm')
+      entityId.startsWith('sensor.')
+      && state.attributes.alarm_id
+      && !entityId.includes('_next_alarm')
+      && !entityId.includes('_previous_alarm')
     ) {
       result.push({
         entity_id: entityId,
@@ -120,8 +120,8 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
 
 const isNextAlarmRinging = computed(() => {
   return (
-    nextAlarm.value &&
-    (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
+    nextAlarm.value
+    && (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
   );
 });
 
@@ -294,7 +294,7 @@ function handleRepeatChange(event: Event): void {
 <template>
   <ha-card>
     <h1 class="card-header">
-      <ha-icon icon="mdi:alarm" class="header-icon"></ha-icon>
+      <ha-icon icon="mdi:alarm" class="header-icon" />
       {{ cardTitle }}
     </h1>
 
@@ -306,7 +306,7 @@ function handleRepeatChange(event: Event): void {
         :class="{ ringing: isNextAlarmRinging }"
       >
         <div class="next-alarm-icon" :class="{ shake: isNextAlarmRinging }">
-          <ha-icon icon="mdi:alarm"></ha-icon>
+          <ha-icon icon="mdi:alarm" />
         </div>
         <div class="next-alarm-info">
           <div class="next-alarm-label">Next Alarm</div>
@@ -324,7 +324,7 @@ function handleRepeatChange(event: Event): void {
             disabled: !selectedAlarm.enabled,
           }"
         >
-          <ha-icon :icon="getAlarmIcon(selectedAlarm)"></ha-icon>
+          <ha-icon :icon="getAlarmIcon(selectedAlarm)" />
         </div>
         <div class="single-alarm-time">{{ formatTime(selectedAlarm.time) }}</div>
         <div class="single-alarm-name">{{ selectedAlarm.name }}</div>
@@ -339,7 +339,7 @@ function handleRepeatChange(event: Event): void {
             class="snooze-button"
             @click="snoozeAlarm(selectedAlarm)"
           >
-            <ha-icon icon="mdi:alarm-snooze" slot="icon"></ha-icon>
+            <ha-icon icon="mdi:alarm-snooze" slot="icon" />
             Snooze
           </mwc-button>
           <mwc-button
@@ -347,7 +347,7 @@ function handleRepeatChange(event: Event): void {
             class="dismiss-button"
             @click="dismissAlarm(selectedAlarm)"
           >
-            <ha-icon icon="mdi:alarm-off" slot="icon"></ha-icon>
+            <ha-icon icon="mdi:alarm-off" slot="icon" />
             Dismiss
           </mwc-button>
         </div>
@@ -357,7 +357,7 @@ function handleRepeatChange(event: Event): void {
           <ha-switch
             :checked="selectedAlarm.enabled"
             @change="handleSwitchChange(selectedAlarm, $event)"
-          ></ha-switch>
+          />
           <span class="toggle-label">{{ selectedAlarm.enabled ? 'Enabled' : 'Disabled' }}</span>
         </div>
 
@@ -378,10 +378,10 @@ function handleRepeatChange(event: Event): void {
         <!-- Action buttons -->
         <div class="single-alarm-buttons">
           <ha-icon-button @click="openEditDialog(selectedAlarm)">
-            <ha-icon icon="mdi:pencil"></ha-icon>
+            <ha-icon icon="mdi:pencil" />
           </ha-icon-button>
           <ha-icon-button class="delete-button" @click="deleteAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:delete"></ha-icon>
+            <ha-icon icon="mdi:delete" />
           </ha-icon-button>
         </div>
       </div>
@@ -389,7 +389,7 @@ function handleRepeatChange(event: Event): void {
       <!-- Alarm List View -->
       <div v-else class="alarm-list">
         <div v-if="alarms.length === 0" class="no-alarms">
-          <ha-icon icon="mdi:alarm-plus"></ha-icon>
+          <ha-icon icon="mdi:alarm-plus" />
           <p>No alarms scheduled</p>
         </div>
 
@@ -410,7 +410,7 @@ function handleRepeatChange(event: Event): void {
               :icon="getAlarmIcon(alarm)"
               class="alarm-icon"
               :class="{ shake: isAlarmRinging(alarm) }"
-            ></ha-icon>
+            />
 
             <span class="alarm-primary">
               <span class="alarm-time">{{ formatTime(alarm.time) }}</span>
@@ -424,10 +424,10 @@ function handleRepeatChange(event: Event): void {
             <div slot="meta" class="alarm-actions">
               <template v-if="isAlarmRinging(alarm)">
                 <ha-icon-button @click.stop="snoozeAlarm(alarm)">
-                  <ha-icon icon="mdi:alarm-snooze"></ha-icon>
+                  <ha-icon icon="mdi:alarm-snooze" />
                 </ha-icon-button>
                 <ha-icon-button @click.stop="dismissAlarm(alarm)">
-                  <ha-icon icon="mdi:alarm-off"></ha-icon>
+                  <ha-icon icon="mdi:alarm-off" />
                 </ha-icon-button>
               </template>
               <template v-else>
@@ -435,12 +435,12 @@ function handleRepeatChange(event: Event): void {
                   :checked="alarm.enabled"
                   @change="handleSwitchChange(alarm, $event)"
                   @click.stop
-                ></ha-switch>
+                />
                 <ha-icon-button @click.stop="openEditDialog(alarm)">
-                  <ha-icon icon="mdi:pencil"></ha-icon>
+                  <ha-icon icon="mdi:pencil" />
                 </ha-icon-button>
                 <ha-icon-button @click.stop="deleteAlarm(alarm)">
-                  <ha-icon icon="mdi:delete"></ha-icon>
+                  <ha-icon icon="mdi:delete" />
                 </ha-icon-button>
               </template>
             </div>
@@ -455,7 +455,7 @@ function handleRepeatChange(event: Event): void {
         label="Add Alarm"
         @click="openAddDialog"
       >
-        <ha-icon slot="icon" icon="mdi:plus"></ha-icon>
+        <ha-icon slot="icon" icon="mdi:plus" />
       </ha-fab>
     </div>
 
@@ -466,7 +466,7 @@ function handleRepeatChange(event: Event): void {
       @closed="closeDialog"
     >
       <div slot="heading" class="dialog-heading">
-        <ha-icon :icon="isEditing ? 'mdi:pencil' : 'mdi:alarm-plus'"></ha-icon>
+        <ha-icon :icon="isEditing ? 'mdi:pencil' : 'mdi:alarm-plus'" />
         <span>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</span>
       </div>
 
@@ -475,7 +475,7 @@ function handleRepeatChange(event: Event): void {
           label="Name"
           :value="dialogData.name"
           @input="dialogData.name = ($event.target as HTMLInputElement).value"
-        ></ha-textfield>
+        />
 
         <div class="form-row">
           <label class="form-label">Time</label>
@@ -513,7 +513,7 @@ function handleRepeatChange(event: Event): void {
           <ha-switch
             :checked="dialogData.enabled"
             @change="handleDialogEnabledChange"
-          ></ha-switch>
+          />
         </ha-formfield>
       </div>
 
