@@ -25,7 +25,7 @@ export interface HomeAssistant {
     domain: string,
     service: string,
     data?: Record<string, unknown>,
-    target?: { entity_id?: string | string[]; },
+    target?: { entity_id?: string | string[] },
   ) => Promise<void>;
 }
 
@@ -33,6 +33,22 @@ export interface CardConfig {
   type?: string;
   entity?: string;
   title?: string;
+  // Clock display options
+  clock_display?: 'analog' | '24h' | '12h' | 'none';
+  // Alarm list options
+  alarm_list_mode?: 'days' | 'count';
+  alarm_list_days?: number;
+  alarm_list_count?: number;
+  // Section visibility
+  show_clock?: boolean;
+  show_quick_alarm?: boolean;
+  show_alarm_list?: boolean;
+  show_add_section?: 'on' | 'off' | 'auto';
+  // Section collapsed state
+  collapse_clock?: boolean;
+  collapse_quick_alarm?: boolean;
+  collapse_alarm_list?: boolean;
+  collapse_add_section?: boolean;
 }
 
 // Alarm types
@@ -69,6 +85,12 @@ export type RepeatPattern =
   | 'weekends'
   | 'weekly';
 
+export type ClockDisplay = 'analog' | '24h' | '12h' | 'none';
+
+export type AlarmListMode = 'days' | 'count';
+
+export type AddSectionMode = 'on' | 'off' | 'auto';
+
 export interface AlarmDialogData {
   name: string;
   time: string;
@@ -81,4 +103,10 @@ export interface NextAlarmInfo {
   time: string | null;
   name: string;
   state: AlarmState;
+}
+
+export interface QuickAlarmOption {
+  label: string;
+  minutes: number;
+  icon: string;
 }
