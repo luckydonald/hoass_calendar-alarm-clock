@@ -165,25 +165,34 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_integration_discovery(self, discovery_info: dict[str, Any]) -> FlowResult:
         """Handle discovery of a calendar entity or auto-discovery setup."""
+        _LOGGER.info("Integration discovery triggered with data: %s", discovery_info)
+
         # Check if this is an auto-discovery entry request
         if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS, False):
             # This is a request to set up the auto-discovery entry
+            _LOGGER.info("Auto-discovery entry requested, setting unique_id")
             await self.async_set_unique_id("auto_discovery")
             self._abort_if_unique_id_configured()
 
             # Auto-confirm during onboarding or if no user interaction needed
-            if not onboarding.async_is_onboarded(self.hass):
+            is_onboarded = onboarding.async_is_onboarded(self.hass)
+            _LOGGER.info("System onboarded: %s", is_onboarded)
+
+            if not is_onboarded:
+                _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
                 return self.async_create_entry(
                     title="Calendar Alarm Clock (Auto-Discovery)",
                     data={CONF_AUTO_DISCOVER_CALENDARS: True},
                 )
 
             # Show confirmation to user
+            _LOGGER.info("Showing auto-discovery confirmation dialog to user")
             self.context["title_placeholders"] = {"name": "Auto-Discovery"}
             return await self.async_step_auto_discovery_confirm()
 
         # This is a regular calendar discovery
         calendar_entity: str = discovery_info[CONF_CALENDAR_ENTITY]
+        _LOGGER.info("Regular calendar discovery for: %s", calendar_entity)
 
         # Check if this calendar is already configured
         await self.async_set_unique_id(calendar_entity)
