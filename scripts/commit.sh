@@ -13,19 +13,32 @@ COMMIT_MSG_STEP="✨ ai: running... ({step}-{substep})"
 COMMIT_MSG_FIX="🫥 own: {msg}"
 COMMIT_MSG_OWN="👩‍💻 own: {msg}"
 
+# -------------------------------------------------
+# tmpl  –  expand a template using environment variables
+# Usage:  tmpl "<template>"
+# Example call:
+#   step=4 substep=1 tmpl "$GIT_MSG_TEMPLATE"
+# -------------------------------------------------
 tmpl() {
     local tmpl_str=$1
-    local -n vars=$2          # nameref to the associative array
-
-    # Escape any characters that could be interpreted by the shell
-    # when we later perform the replacement.
     local result=$tmpl_str
 
-    for key in "${!vars[@]}"; do
-        # Build the exact placeholder we want to replace: {key}
-        local placeholder="{${key}}"
-        # Replace *all* occurrences of that placeholder.
-        result=${result//${placeholder}/${vars[$key]}}
+    # Loop over every {placeholder} found in the string.
+    # The pattern \{[^}]*\} matches a literal {, then any
+    # characters except }, then a closing }.
+    while [[ $result =~ \{([^}]*)\} ]]; do
+        # BASH_REMATCH[1] is the name without the braces
+        local var_name="${BASH_REMATCH[1]}"
+
+        # Get the value from the environment (empty if unset)
+        # Using indirect expansion works even if the variable
+        # contains spaces or newlines.
+        local var_value="${!var_name}"
+
+        # Replace *all* occurrences of this placeholder.
+        # We need to escape the braces for the replacement.
+        local placeholder="\{$var_name\}"
+        result=${result//${placeholder}/${var_value}}
     done
 
     printf '%s' "$result"
@@ -100,12 +113,8 @@ if [ -n "$(git status --porcelain)" ]; then
     git add -u
     git add .  # Also add new files that aren't ignored
     # shellcheck disable=SC2034
-    declare -A template_context=(
-        [step]="$NEW_STEP"
-        [substep]="1"
-    )
 
-    git commit -m "$(tmpl "${GIT_MSG_TEMPLATE}" template_context)"
+    git commit -m "$(step="$NEW_STEP" substep="1" tmpl "${GIT_MSG_TEMPLATE}" template_context)"
     echo "  Done"
 else
     echo -e "${YELLOW}No other changes to commit${NC}"
