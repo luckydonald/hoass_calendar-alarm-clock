@@ -46,7 +46,15 @@
     "vSlotStyle": "short",
     "component.selfClosing": true
   },
-  "includes": ["src/**/*.{ts,tsx,js,jsx,json,vue,html}"],
-  "excludes": ["node_modules", "dist"]
+  "includes": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.json",
+    "src/**/*.vue",
+    "src/**/*.html"
+  ],
+  "excludes": ["**/node_modules", "**/dist"]
 }
 
