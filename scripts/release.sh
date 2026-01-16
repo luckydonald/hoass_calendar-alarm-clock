@@ -181,8 +181,24 @@ git add custom_components/calendar_alarm_clock/manifest.json
 git commit -m "$(from="${CURRENT_VERSION}" to="${NEW_VERSION}" tmpl "${COMMIT_MSG_VERSION_BUMP}")"
 echo "  Committed version bump"
 
-git tag "v${NEW_VERSION}"
-echo "  Created tag v${NEW_VERSION}"
+# Check if tag already exists
+if git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
+    echo -e "${YELLOW}  Warning: Tag v${NEW_VERSION} already exists${NC}"
+    read -p "  Move tag to current commit? (y/N) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        git tag -d "v${NEW_VERSION}"
+        echo "  Deleted old tag"
+        git tag "v${NEW_VERSION}"
+        echo "  Created new tag v${NEW_VERSION}"
+    else
+        echo -e "${RED}  Aborted: Tag already exists and user chose not to move it${NC}"
+        exit 1
+    fi
+else
+    git tag "v${NEW_VERSION}"
+    echo "  Created tag v${NEW_VERSION}"
+fi
 
 # Step 8: Push
 echo ""
@@ -190,7 +206,13 @@ echo -e "${GREEN}📤 Step 8: Push to origin${NC}"
 git push origin mane
 echo "  Pushed to origin/mane"
 
-git push origin "v${NEW_VERSION}"
+# Check if we need to force push the tag (if it was moved)
+if git ls-remote --tags origin | grep -q "refs/tags/v${NEW_VERSION}"; then
+    echo -e "${YELLOW}  Tag exists on remote, force pushing...${NC}"
+    git push --force origin "v${NEW_VERSION}"
+else
+    git push origin "v${NEW_VERSION}"
+fi
 echo "  Pushed tag v${NEW_VERSION}"
 
 echo ""
