@@ -123,3 +123,8 @@ Have the build happen on a github pipeline, building releases made for hacs.
 Make sure to use best practices for home assistant plugins.
 This includes using async where possible, proper config flows, etc.
 Also this means reusing `<ha-icon>`, `<ha-card>`, etc. where possible.
+
+———————————
+
+The "Ringing alarm" kind of display is missing.
+Remeber, there needs to be the included buttons to take action.
