@@ -37,8 +37,14 @@
   },
   "markup_fmt": {
     "printWidth": 9999,
+    "indentWidth": 2,
+    "useTabs": false,
+    "closingBracketSameLine": false,
+    "preferAttrsSingleLine": false,
     "vBindStyle": "short",
-    "vOnStyle": "short"
+    "vOnStyle": "short",
+    "vSlotStyle": "short",
+    "component.selfClosing": true
   },
   "includes": ["src/**/*.{ts,tsx,js,jsx,json,vue,html}"],
   "excludes": ["node_modules", "dist"]
