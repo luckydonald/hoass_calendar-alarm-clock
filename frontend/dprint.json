@@ -9,7 +9,7 @@
     "indentWidth": 2,
     "useTabs": false,
     "semiColons": "always",
-    "quoteStyle": "preferDouble",
+    "quoteStyle": "preferSingle",
     "trailingCommas": "onlyMultiLine",
     "preferSingleLine": false,
     "arrowFunction.useParentheses": "force",
@@ -34,7 +34,7 @@
   "markup_fmt": {
     "lineWidth": 9999,
     "indentWidth": 2,
-    "closingBracketSameLine": true,
+    "closingBracketSameLine": false,
     "vBindStyle": "short",
     "vOnStyle": "short",
     "preferAttrsSingleLine": false
