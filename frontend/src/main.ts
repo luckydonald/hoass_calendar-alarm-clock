@@ -1,6 +1,6 @@
-import { createApp, h, type App, type ComponentPublicInstance } from 'vue';
+import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
 import AlarmClockCard from './AlarmClockCard.vue';
-import type { HomeAssistant, CardConfig } from './types';
+import type { CardConfig, HomeAssistant } from './types';
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;
@@ -214,7 +214,7 @@ class AlarmClockCardEditor extends HTMLElement {
     this._fireConfigChanged();
   }
 
-  private _computeLabel(schema: { name: string }): string {
+  private _computeLabel(schema: { name: string; }): string {
     const labels: Record<string, string> = {
       title: 'Title',
       entity: 'Entity (optional, for single alarm view)',
@@ -254,6 +254,5 @@ window.customCards.push({
 console.info(
   '%c ALARM-CLOCK-CARD %c 1.0.1 ',
   'color: white; background: #3498db; font-weight: bold;',
-  'color: #3498db; background: white; font-weight: bold;'
+  'color: #3498db; background: white; font-weight: bold;',
 );
-

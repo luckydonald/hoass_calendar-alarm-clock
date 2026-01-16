@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import type { Alarm, AlarmState, AlarmDialogData, NextAlarmInfo, RepeatPattern, HomeAssistant } from './types';
+import { computed, ref } from 'vue';
+import type { Alarm, AlarmDialogData, AlarmState, HomeAssistant, NextAlarmInfo, RepeatPattern } from './types';
 
 // Props
 const props = defineProps<{
@@ -37,10 +37,10 @@ const alarms = computed<Alarm[]>(() => {
   for (const entityId in states) {
     const state = states[entityId];
     if (
-      entityId.startsWith('sensor.') &&
-      state.attributes.alarm_id &&
-      !entityId.includes('_next_alarm') &&
-      !entityId.includes('_previous_alarm')
+      entityId.startsWith('sensor.')
+      && state.attributes.alarm_id
+      && !entityId.includes('_next_alarm')
+      && !entityId.includes('_previous_alarm')
     ) {
       result.push({
         entity_id: entityId,
@@ -113,8 +113,8 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
 
 const isNextAlarmRinging = computed(() => {
   return (
-    nextAlarm.value &&
-    (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
+    nextAlarm.value
+    && (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
   );
 });
 
@@ -273,7 +273,7 @@ async function saveAlarm(): Promise<void> {
       <!-- Header with next alarm -->
       <div v-if="nextAlarm && !isSingleAlarmView" class="next-alarm-header" :class="{ ringing: isNextAlarmRinging }">
         <div class="next-alarm-icon" :class="{ ringing: isNextAlarmRinging }">
-          <ha-icon icon="mdi:alarm"></ha-icon>
+          <ha-icon icon="mdi:alarm" />
         </div>
         <div class="next-alarm-info">
           <div class="next-alarm-label">Next Alarm</div>
@@ -288,7 +288,7 @@ async function saveAlarm(): Promise<void> {
           class="single-alarm-icon"
           :class="{ ringing: isAlarmRinging(selectedAlarm), disabled: !selectedAlarm.enabled }"
         >
-          <ha-icon :icon="getAlarmIcon(selectedAlarm)"></ha-icon>
+          <ha-icon :icon="getAlarmIcon(selectedAlarm)" />
         </div>
         <div class="single-alarm-time">{{ formatTime(selectedAlarm.time) }}</div>
         <div class="single-alarm-name">{{ selectedAlarm.name }}</div>
@@ -296,11 +296,11 @@ async function saveAlarm(): Promise<void> {
 
         <div v-if="isAlarmRinging(selectedAlarm)" class="single-alarm-actions">
           <button class="btn btn-snooze" @click="snoozeAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:alarm-snooze"></ha-icon>
+            <ha-icon icon="mdi:alarm-snooze" />
             Snooze
           </button>
           <button class="btn btn-dismiss" @click="dismissAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:alarm-off"></ha-icon>
+            <ha-icon icon="mdi:alarm-off" />
             Dismiss
           </button>
         </div>
@@ -326,11 +326,11 @@ async function saveAlarm(): Promise<void> {
 
         <div class="single-alarm-buttons">
           <button class="btn btn-edit" @click="openEditDialog(selectedAlarm)">
-            <ha-icon icon="mdi:pencil"></ha-icon>
+            <ha-icon icon="mdi:pencil" />
             Edit
           </button>
           <button class="btn btn-delete" @click="deleteAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:delete"></ha-icon>
+            <ha-icon icon="mdi:delete" />
             Delete
           </button>
         </div>
@@ -339,7 +339,7 @@ async function saveAlarm(): Promise<void> {
       <!-- Alarm List View -->
       <div v-else class="alarm-list">
         <div v-if="alarms.length === 0" class="no-alarms">
-          <ha-icon icon="mdi:alarm-plus"></ha-icon>
+          <ha-icon icon="mdi:alarm-plus" />
           <p>No alarms scheduled</p>
         </div>
 
@@ -350,7 +350,7 @@ async function saveAlarm(): Promise<void> {
           :class="{ ringing: isAlarmRinging(alarm), disabled: !alarm.enabled }"
         >
           <div class="alarm-icon" :class="{ shake: isAlarmRinging(alarm) }">
-            <ha-icon :icon="getAlarmIcon(alarm)"></ha-icon>
+            <ha-icon :icon="getAlarmIcon(alarm)" />
           </div>
 
           <div class="alarm-info">
@@ -364,10 +364,10 @@ async function saveAlarm(): Promise<void> {
           <div class="alarm-actions">
             <template v-if="isAlarmRinging(alarm)">
               <button class="btn-icon" title="Snooze" @click="snoozeAlarm(alarm)">
-                <ha-icon icon="mdi:alarm-snooze"></ha-icon>
+                <ha-icon icon="mdi:alarm-snooze" />
               </button>
               <button class="btn-icon" title="Dismiss" @click="dismissAlarm(alarm)">
-                <ha-icon icon="mdi:alarm-off"></ha-icon>
+                <ha-icon icon="mdi:alarm-off" />
               </button>
             </template>
             <template v-else>
@@ -376,10 +376,10 @@ async function saveAlarm(): Promise<void> {
                 <span class="toggle-slider"></span>
               </label>
               <button class="btn-icon" title="Edit" @click="openEditDialog(alarm)">
-                <ha-icon icon="mdi:pencil"></ha-icon>
+                <ha-icon icon="mdi:pencil" />
               </button>
               <button class="btn-icon" title="Delete" @click="deleteAlarm(alarm)">
-                <ha-icon icon="mdi:delete"></ha-icon>
+                <ha-icon icon="mdi:delete" />
               </button>
             </template>
           </div>
@@ -389,7 +389,7 @@ async function saveAlarm(): Promise<void> {
       <!-- Add Alarm Button -->
       <div v-if="!isSingleAlarmView" class="add-alarm">
         <button class="btn btn-add" @click="openAddDialog">
-          <ha-icon icon="mdi:plus"></ha-icon>
+          <ha-icon icon="mdi:plus" />
           Add Alarm
         </button>
       </div>
@@ -401,7 +401,7 @@ async function saveAlarm(): Promise<void> {
         <div class="dialog-header">
           <h3>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</h3>
           <button class="btn-icon" @click="closeDialog">
-            <ha-icon icon="mdi:close"></ha-icon>
+            <ha-icon icon="mdi:close" />
           </button>
         </div>
         <div class="dialog-content">
@@ -903,4 +903,3 @@ async function saveAlarm(): Promise<void> {
   90% { transform: translateX(0) rotate(0deg); }
 }
 </style>
-

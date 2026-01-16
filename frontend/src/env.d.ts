@@ -36,4 +36,3 @@ declare module 'vue' {
 }
 
 export {};
-
