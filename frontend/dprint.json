@@ -1,4 +1,9 @@
 {
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.93.3.wasm",
+    "https://plugins.dprint.dev/json-0.19.4.wasm",
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.19.0.wasm"
+  ],
   "typescript": {
     "lineWidth": 9999,
     "indentWidth": 2,
@@ -26,7 +31,15 @@
     "array.preferSingleLine": false,
     "object.preferSingleLine": false
   },
-  "includes": ["src/**/*.{ts,tsx,js,jsx,json,vue}"],
+  "markup_fmt": {
+    "lineWidth": 9999,
+    "indentWidth": 2,
+    "closingBracketSameLine": true,
+    "vBindStyle": "short",
+    "vOnStyle": "short",
+    "preferAttrsSingleLine": false
+  },
+  "includes": ["src/**/*.{ts,tsx,js,jsx,json,vue,html}"],
   "excludes": ["node_modules", "dist"]
 }
 
