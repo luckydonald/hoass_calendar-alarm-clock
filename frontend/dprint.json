@@ -1,18 +1,30 @@
 {
   "typescript": {
-    "lineWidth": 100,
+    "lineWidth": 9999,
     "indentWidth": 2,
     "useTabs": false,
     "semiColons": "always",
     "quoteStyle": "preferDouble",
     "trailingCommas": "onlyMultiLine",
     "preferSingleLine": false,
-    "arrowFunction.useParentheses": "force"
+    "arrowFunction.useParentheses": "force",
+    "arguments.preferSingleLine": false,
+    "parameters.preferSingleLine": false,
+    "arrayExpression.preferSingleLine": false,
+    "objectExpression.preferSingleLine": false,
+    "importDeclaration.preferSingleLine": false,
+    "exportDeclaration.preferSingleLine": false,
+    "binaryExpression.preferSingleLine": false,
+    "memberExpression.preferSingleLine": false,
+    "typeLiteral.preferSingleLine": false,
+    "tupleType.preferSingleLine": false
   },
   "json": {
-    "lineWidth": 100,
+    "lineWidth": 9999,
     "indentWidth": 2,
-    "useTabs": false
+    "useTabs": false,
+    "array.preferSingleLine": false,
+    "object.preferSingleLine": false
   },
   "includes": ["src/**/*.{ts,tsx,js,jsx,json,vue}"],
   "excludes": ["node_modules", "dist"]
