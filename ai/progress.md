@@ -3,9 +3,28 @@
 **Project**: Calendar backed Alarm Clock for Home Assistant
 **Repository**: https://github.com/luckydonald/hoass_calendar-alarm-clock
 
-## Status: ✅ Implementation Complete
+## Status: ✅ Enhanced UI Complete
 
-## Recent Changes
+## Recent Changes (January 16, 2026)
+- **Enhanced alarm list view**: Modern phone-style alarm list with:
+  - SVG clock icons showing actual alarm time with day/night visual indicator
+  - Display of day (Today, Tomorrow, or date) alongside time
+  - Configurable list (show X days or Y alarms count)
+- **Added big clock section**:
+  - Analog clock with hour/minute/second hands
+  - 24h and 12h digital display options
+  - Day/night background indicator
+  - Active alarm indicator (red = within 12h, yellow = future)
+  - Add alarm button in clock section
+- **Added quick alarm feature**:
+  - Preset buttons: 30 min, 1h, 6h
+  - Custom time input for quick naps
+  - Fires event for automation triggers
+- **Added toggleable sections**: All sections (clock, quick alarm, alarm list, add alarm) can be collapsed/expanded
+- **Added inline add alarm form**: Configurable show modes (on, off, auto)
+- **Improved ringing alarm banner**: Large prominent display with action buttons
+
+## Previous Changes
 - **Added ringing alarm banner in list view**: When an alarm is ringing, a prominent red banner appears at the top of the alarm list with large time display and Snooze/Dismiss action buttons
 - **Updated Vue component to use HA native components**: Replaced custom HTML elements with `<ha-card>`, `<ha-icon>`, `<ha-switch>`, `<ha-dialog>`, `<ha-textfield>`, `<ha-select>`, `<ha-fab>`, `<ha-list>`, `<ha-list-item>`, `<ha-icon-button>`, `<ha-expansion-panel>`, `<ha-formfield>`, `<mwc-button>`, `<mwc-list-item>` for better HA theming integration
 - **Added release script**: `make release` - one command to bump version, lint, format, build, commit, tag, and push

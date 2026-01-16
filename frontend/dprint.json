@@ -41,9 +41,6 @@
     "useTabs": false,
     "closingBracketSameLine": false,
     "preferAttrsSingleLine": false,
-    "vBindStyle": "short",
-    "vOnStyle": "short",
-    "vSlotStyle": "short",
     "component.selfClosing": true
   },
   "includes": [

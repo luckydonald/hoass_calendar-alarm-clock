@@ -4,8 +4,6 @@ import type { CardConfig, HomeAssistant } from './types';
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;
-  entity?: string;
-  title?: string;
 }
 
 interface AppData {
@@ -71,7 +69,7 @@ class AlarmClockCardElement extends HTMLElement {
   }
 
   public getCardSize(): number {
-    return 3;
+    return 4;
   }
 
   public static getConfigElement(): AlarmClockCardEditor {
@@ -81,27 +79,17 @@ class AlarmClockCardElement extends HTMLElement {
   public static getStubConfig(): AlarmClockCardConfig {
     return {
       type: 'custom:alarm-clock-card',
-      title: 'Alarm Clock',
+      title: 'Calendar Alarm Clock',
+      clock_display: 'analog',
+      alarm_list_mode: 'days',
+      alarm_list_days: 7,
+      show_clock: true,
+      show_quick_alarm: true,
+      show_alarm_list: true,
+      show_add_section: 'auto',
     };
   }
 }
-
-// Schema for ha-form
-const SCHEMA = [
-  {
-    name: 'title',
-    selector: { text: {} },
-  },
-  {
-    name: 'entity',
-    selector: {
-      entity: {
-        domain: 'sensor',
-        integration: 'calendar_alarm_clock',
-      },
-    },
-  },
-];
 
 class AlarmClockCardEditor extends HTMLElement {
   private _config: AlarmClockCardConfig = {};
@@ -119,19 +107,6 @@ class AlarmClockCardEditor extends HTMLElement {
 
   private _render(): void {
     if (!this._hass) return;
-
-    // Use ha-form for native HA experience
-    this.innerHTML = `
-      <ha-form
-        .hass=${this._hass}
-        .data=${this._config}
-        .schema=${SCHEMA}
-        .computeLabel=${this._computeLabel}
-        @value-changed=${this._valueChanged}
-      ></ha-form>
-    `;
-
-    // Since we can't use lit-html easily, fall back to manual DOM
     this._renderManual();
   }
 
@@ -140,40 +115,253 @@ class AlarmClockCardEditor extends HTMLElement {
 
     const wrapper = document.createElement('div');
     wrapper.style.padding = '16px';
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.gap = '16px';
 
     // Title input
-    const titleRow = document.createElement('div');
-    titleRow.style.marginBottom = '16px';
+    wrapper.appendChild(this._createTextInput(
+      'title',
+      'Card Title',
+      this._config.title ?? 'Calendar Alarm Clock',
+    ));
 
-    const titleLabel = document.createElement('label');
-    titleLabel.textContent = 'Title';
-    titleLabel.style.display = 'block';
-    titleLabel.style.marginBottom = '4px';
-    titleLabel.style.fontWeight = '500';
-    titleLabel.style.color = 'var(--primary-text-color)';
+    // Entity picker (for single alarm view)
+    wrapper.appendChild(this._createEntityPicker());
 
-    const titleInput = document.createElement('ha-textfield') as HTMLInputElement;
-    titleInput.setAttribute('label', 'Card title');
-    titleInput.setAttribute('value', this._config.title ?? 'Alarm Clock');
-    titleInput.style.width = '100%';
-    titleInput.addEventListener('input', (e: Event) => {
+    // Clock display select
+    wrapper.appendChild(this._createSelect(
+      'clock_display',
+      'Clock Display',
+      this._config.clock_display ?? 'analog',
+      [
+        { value: 'analog', label: 'Analog' },
+        { value: '24h', label: 'Digital (24h)' },
+        { value: '12h', label: 'Digital (12h)' },
+        { value: 'none', label: 'None' },
+      ],
+    ));
+
+    // Alarm list mode select
+    wrapper.appendChild(this._createSelect(
+      'alarm_list_mode',
+      'Alarm List Mode',
+      this._config.alarm_list_mode ?? 'days',
+      [
+        { value: 'days', label: 'Show alarms for X days' },
+        { value: 'count', label: 'Show X alarms' },
+      ],
+    ));
+
+    // Alarm list days/count input
+    if (this._config.alarm_list_mode === 'count') {
+      wrapper.appendChild(this._createNumberInput(
+        'alarm_list_count',
+        'Number of Alarms to Show',
+        this._config.alarm_list_count ?? 10,
+        1,
+        100,
+      ));
+    } else {
+      wrapper.appendChild(this._createNumberInput(
+        'alarm_list_days',
+        'Days to Show',
+        this._config.alarm_list_days ?? 7,
+        1,
+        365,
+      ));
+    }
+
+    // Section visibility toggles
+    const sectionHeader = document.createElement('div');
+    sectionHeader.style.fontWeight = '500';
+    sectionHeader.style.marginTop = '8px';
+    sectionHeader.textContent = 'Section Visibility';
+    wrapper.appendChild(sectionHeader);
+
+    wrapper.appendChild(this._createToggle(
+      'show_clock',
+      'Show Clock Section',
+      this._config.show_clock !== false,
+    ));
+
+    wrapper.appendChild(this._createToggle(
+      'show_quick_alarm',
+      'Show Quick Alarm Section',
+      this._config.show_quick_alarm !== false,
+    ));
+
+    wrapper.appendChild(this._createToggle(
+      'show_alarm_list',
+      'Show Alarm List Section',
+      this._config.show_alarm_list !== false,
+    ));
+
+    // Add section mode
+    wrapper.appendChild(this._createSelect(
+      'show_add_section',
+      'Add Alarm Section',
+      this._config.show_add_section ?? 'auto',
+      [
+        { value: 'auto', label: 'Auto (show when Add clicked)' },
+        { value: 'on', label: 'Always show' },
+        { value: 'off', label: 'Never show (dialog only)' },
+      ],
+    ));
+
+    // Help text
+    const helpText = document.createElement('div');
+    helpText.style.color = 'var(--secondary-text-color)';
+    helpText.style.fontSize = '12px';
+    helpText.style.marginTop = '8px';
+    helpText.innerHTML = `
+      <p style="margin: 0 0 8px 0;"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
+      <p style="margin: 0;"><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
+    `;
+    wrapper.appendChild(helpText);
+
+    this.appendChild(wrapper);
+  }
+
+  private _createTextInput(
+    name: string,
+    label: string,
+    value: string,
+  ): HTMLDivElement {
+    const row = document.createElement('div');
+
+    const labelEl = document.createElement('label');
+    labelEl.textContent = label;
+    labelEl.style.display = 'block';
+    labelEl.style.marginBottom = '4px';
+    labelEl.style.fontWeight = '500';
+    labelEl.style.color = 'var(--primary-text-color)';
+
+    const input = document.createElement('ha-textfield') as HTMLInputElement;
+    input.setAttribute('label', label);
+    input.setAttribute('value', value);
+    input.style.width = '100%';
+    input.addEventListener('input', (e: Event) => {
       const target = e.target as HTMLInputElement;
-      this._updateConfig({ title: target.value });
+      this._updateConfig({ [name]: target.value });
     });
 
-    titleRow.appendChild(titleLabel);
-    titleRow.appendChild(titleInput);
+    row.appendChild(labelEl);
+    row.appendChild(input);
+    return row;
+  }
 
-    // Entity picker
-    const entityRow = document.createElement('div');
-    entityRow.style.marginBottom = '16px';
+  private _createNumberInput(
+    name: string,
+    label: string,
+    value: number,
+    min: number,
+    max: number,
+  ): HTMLDivElement {
+    const row = document.createElement('div');
 
-    const entityLabel = document.createElement('label');
-    entityLabel.textContent = 'Entity (optional - for single alarm view)';
-    entityLabel.style.display = 'block';
-    entityLabel.style.marginBottom = '4px';
-    entityLabel.style.fontWeight = '500';
-    entityLabel.style.color = 'var(--primary-text-color)';
+    const labelEl = document.createElement('label');
+    labelEl.textContent = label;
+    labelEl.style.display = 'block';
+    labelEl.style.marginBottom = '4px';
+    labelEl.style.fontWeight = '500';
+    labelEl.style.color = 'var(--primary-text-color)';
+
+    const input = document.createElement('ha-textfield') as HTMLInputElement;
+    input.setAttribute('type', 'number');
+    input.setAttribute('label', label);
+    input.setAttribute('value', String(value));
+    input.setAttribute('min', String(min));
+    input.setAttribute('max', String(max));
+    input.style.width = '100%';
+    input.addEventListener('input', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      this._updateConfig({ [name]: Number(target.value) });
+    });
+
+    row.appendChild(labelEl);
+    row.appendChild(input);
+    return row;
+  }
+
+  private _createSelect(
+    name: string,
+    label: string,
+    value: string,
+    options: Array<{ value: string; label: string }>,
+  ): HTMLDivElement {
+    const row = document.createElement('div');
+
+    const labelEl = document.createElement('label');
+    labelEl.textContent = label;
+    labelEl.style.display = 'block';
+    labelEl.style.marginBottom = '4px';
+    labelEl.style.fontWeight = '500';
+    labelEl.style.color = 'var(--primary-text-color)';
+
+    const select = document.createElement('ha-select') as HTMLSelectElement;
+    select.setAttribute('label', label);
+    select.style.width = '100%';
+
+    options.forEach((opt) => {
+      const optionEl = document.createElement('mwc-list-item');
+      optionEl.setAttribute('value', opt.value);
+      optionEl.textContent = opt.label;
+      if (opt.value === value) {
+        optionEl.setAttribute('selected', '');
+      }
+      select.appendChild(optionEl);
+    });
+
+    (select as any).value = value;
+
+    select.addEventListener('selected', (e: Event) => {
+      const target = e.target as HTMLSelectElement;
+      this._updateConfig({ [name]: target.value });
+    });
+
+    row.appendChild(labelEl);
+    row.appendChild(select);
+    return row;
+  }
+
+  private _createToggle(
+    name: string,
+    label: string,
+    checked: boolean,
+  ): HTMLDivElement {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.justifyContent = 'space-between';
+
+    const labelEl = document.createElement('span');
+    labelEl.textContent = label;
+    labelEl.style.color = 'var(--primary-text-color)';
+
+    const toggle = document.createElement('ha-switch') as HTMLInputElement;
+    if (checked) {
+      toggle.setAttribute('checked', '');
+    }
+    toggle.addEventListener('change', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      this._updateConfig({ [name]: target.checked });
+    });
+
+    row.appendChild(labelEl);
+    row.appendChild(toggle);
+    return row;
+  }
+
+  private _createEntityPicker(): HTMLDivElement {
+    const row = document.createElement('div');
+
+    const labelEl = document.createElement('label');
+    labelEl.textContent = 'Entity (optional - for single alarm view)';
+    labelEl.style.display = 'block';
+    labelEl.style.marginBottom = '4px';
+    labelEl.style.fontWeight = '500';
+    labelEl.style.color = 'var(--primary-text-color)';
 
     const entityPicker = document.createElement('ha-entity-picker');
     entityPicker.setAttribute('allow-custom-entity', '');
@@ -189,41 +377,13 @@ class AlarmClockCardEditor extends HTMLElement {
       this._updateConfig({ entity: customEvent.detail.value || '' });
     });
 
-    entityRow.appendChild(entityLabel);
-    entityRow.appendChild(entityPicker);
-
-    // Help text
-    const helpText = document.createElement('div');
-    helpText.style.color = 'var(--secondary-text-color)';
-    helpText.style.fontSize = '12px';
-    helpText.style.marginTop = '8px';
-    helpText.innerHTML = `
-      <p style="margin: 0 0 8px 0;"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
-      <p style="margin: 0;"><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
-    `;
-
-    wrapper.appendChild(titleRow);
-    wrapper.appendChild(entityRow);
-    wrapper.appendChild(helpText);
-
-    this.appendChild(wrapper);
+    row.appendChild(labelEl);
+    row.appendChild(entityPicker);
+    return row;
   }
 
   private _updateConfig(update: Partial<AlarmClockCardConfig>): void {
     this._config = { ...this._config, ...update };
-    this._fireConfigChanged();
-  }
-
-  private _computeLabel(schema: { name: string; }): string {
-    const labels: Record<string, string> = {
-      title: 'Title',
-      entity: 'Entity (optional, for single alarm view)',
-    };
-    return labels[schema.name] || schema.name;
-  }
-
-  private _valueChanged(ev: CustomEvent): void {
-    this._config = ev.detail.value;
     this._fireConfigChanged();
   }
 
@@ -242,17 +402,16 @@ customElements.define('alarm-clock-card', AlarmClockCardElement);
 customElements.define('alarm-clock-card-editor', AlarmClockCardEditor);
 
 // Register with Home Assistant's custom card registry
-// This makes the card appear in the card picker
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'alarm-clock-card',
-  name: 'Alarm Clock Card',
-  description: 'A card for managing calendar-based alarms with snooze and dismiss',
+  name: 'Calendar Alarm Clock Card',
+  description: 'A card for managing calendar-based alarms with clock display, quick alarms, snooze and dismiss',
   preview: true,
 });
 
 console.info(
-  '%c ALARM-CLOCK-CARD %c 1.0.1 ',
+  '%c CALENDAR-ALARM-CLOCK-CARD %c 1.0.2 ',
   'color: white; background: #3498db; font-weight: bold;',
   'color: #3498db; background: white; font-weight: bold;',
 );
