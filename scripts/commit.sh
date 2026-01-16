@@ -46,9 +46,12 @@ fi
 
 # Save any currently staged changes
 STASH_STAGED=false
+STAGED_FILES=""
 if [ -n "$(git diff --cached --name-only)" ]; then
     echo -e "${YELLOW}Saving staged changes...${NC}"
-    git stash push --staged -m "commit-script-staged-backup"
+    STAGED_FILES=$(git diff --cached --name-only)
+    git reset HEAD
+    echo "  Unstaged files"
     STASH_STAGED=true
 fi
 
@@ -85,7 +88,13 @@ fi
 # Restore staged changes before the final commit
 if [ "$STASH_STAGED" = true ]; then
     echo -e "${YELLOW}Restoring staged changes...${NC}"
-    git stash pop
+    # Re-stage the files that were originally staged
+    echo "$STAGED_FILES" | while IFS= read -r file; do
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            git add "$file"
+        fi
+    done
+    echo "  Restored"
 fi
 
 # Check if there are any other changes to commit
