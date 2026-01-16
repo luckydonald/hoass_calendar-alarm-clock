@@ -30,7 +30,7 @@ Additionally:
     - and finally push the commit and the tag to origin mane.
 - Do not use `git add --all`. I prefer only updated over all.
 - Also if there's anything staged to git, remove that, and restore it afterwards (before/for the commit rest step)
-- release dependson successful lint, build.
+- release depends on successful lint, build.
 
 Regarding formatting:
 - I don't want prettier to ever move multiline stuff back to single line if "it fits better"! That needs to be DISABLED, or a different tool be used!

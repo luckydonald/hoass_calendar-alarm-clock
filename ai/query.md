@@ -119,10 +119,3 @@ The repo is at https://github.com/luckydonald/hoass_calendar-alarm-clock/tree/ma
 Have the build happen on a github pipeline, building releases made for hacs.
 
 ———————————
-
-Do something to make the deployment easier:
-A single command which does:
-- bump version (v0.0.0-pre11 -> v0.0.0-pre12)
-- lint & format python & typescript
-- build frontend (to test it builds)
-- pushes to origin mane (including the tag)
