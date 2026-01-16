@@ -167,3 +167,9 @@ TypeError: object NoneType can't be used in 'await' expression
 
 —————————
 
+./scripts/commit.sh: line 103: declare: -A: invalid option
+declare: usage: declare [-afFirtx] [-p] [name[=value] ...]
+make: *** [commit] Error 2
+
+—————————
+
