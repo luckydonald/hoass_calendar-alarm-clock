@@ -62,3 +62,16 @@ fatal: tag 'v0.0.0-pre19' already exists
 Ask to move the tag (delete the old one and recreate as intended)
 
 ——————————
+
+➜ make commit
+Script directory: /Users/user/Documents/programming/Python/HomeAssistant/hoass_calendar-alarm-clock/scripts
+📝 Calendar Alarm Clock - Commit Script
+
+Saving staged changes...
+Saved working directory and index state On mane: commit-script-staged-backup
+error: removal patch leaves file contents
+error: ai/debugging-auto-discovery.md: patch does not apply
+Cannot remove worktree changes
+make: *** [commit] Error 1
+
+——————————
