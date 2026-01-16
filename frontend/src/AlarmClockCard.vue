@@ -339,7 +339,7 @@ function isAlarmNightTime(isoTime: string | null): boolean {
   return hour < 6 || hour >= 20;
 }
 
-function getAlarmClockHands(isoTime: string | null): { hour: number; minute: number } {
+function getAlarmClockHands(isoTime: string | null): { hour: number; minute: number; } {
   if (!isoTime) return { hour: 0, minute: 0 };
   const date = new Date(isoTime);
   const hours = date.getHours() % 12;
@@ -1779,4 +1779,3 @@ ha-expansion-panel {
   --expansion-panel-content-padding: 0;
 }
 </style>
-

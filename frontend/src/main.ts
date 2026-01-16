@@ -288,7 +288,7 @@ class AlarmClockCardEditor extends HTMLElement {
     name: string,
     label: string,
     value: string,
-    options: Array<{ value: string; label: string }>,
+    options: Array<{ value: string; label: string; }>,
   ): HTMLDivElement {
     const row = document.createElement('div');
 
