@@ -73,12 +73,12 @@ class AlarmClockCardElement extends HTMLElement {
   }
 
   public static getConfigElement(): AlarmClockCardEditor {
-    return document.createElement('alarm-clock-card-editor') as AlarmClockCardEditor;
+    return document.createElement('calender-alarm-clock-card-editor') as AlarmClockCardEditor;
   }
 
   public static getStubConfig(): AlarmClockCardConfig {
     return {
-      type: 'custom:alarm-clock-card',
+      type: 'custom:calender-alarm-clock-card',
       title: 'Calendar Alarm Clock',
       clock_display: 'analog',
       alarm_list_mode: 'days',
@@ -398,13 +398,13 @@ class AlarmClockCardEditor extends HTMLElement {
 }
 
 // Register custom elements
-customElements.define('calendar-alarm-clock-card', AlarmClockCardElement);
-customElements.define('calendar-alarm-clock-card-editor', AlarmClockCardEditor);
+customElements.define('calender-alarm-clock-card', AlarmClockCardElement);
+customElements.define('calender-alarm-clock-card-editor', AlarmClockCardEditor);
 
 // Register with Home Assistant's custom card registry
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: 'calendar-alarm-clock-card',
+  type: 'calender-alarm-clock-card',
   name: 'Calendar Alarm Clock Card',
   description: 'A card for managing calendar-based alarms with clock display, quick alarms, snooze and dismiss',
   preview: true,

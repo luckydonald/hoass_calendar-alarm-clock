@@ -76,7 +76,7 @@ title: My Alarms
 
 **Single Alarm View** (shows one specific alarm):
 ```yaml
-type: custom:alarm-clock-card
+type: custom:calender-alarm-clock-card
 entity: sensor.alarm_clock_abc123
 title: Wake Up Alarm
 ```
