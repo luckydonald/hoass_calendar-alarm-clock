@@ -114,7 +114,7 @@ if [ -n "$(git status --porcelain)" ]; then
     git add .  # Also add new files that aren't ignored
     # shellcheck disable=SC2034
 
-    git commit -m "$(step="$NEW_STEP" substep="1" tmpl "${GIT_MSG_TEMPLATE}" template_context)"
+    git commit -m "$(step="$NEW_STEP" substep="1" tmpl "${COMMIT_MSG_STEP}" template_context)"
     echo "  Done"
 else
     echo -e "${YELLOW}No other changes to commit${NC}"
