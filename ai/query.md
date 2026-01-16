@@ -128,3 +128,23 @@ Also this means reusing `<ha-icon>`, `<ha-card>`, etc. where possible.
 
 The "Ringing alarm" kind of display is missing.
 Remember, there needs to be the included buttons to take action.
+
+———————————
+
+The list panel doesn't really list any more than one alarm. Have it similar to typical modern phone alarm listings, including a svg of a clock displaying the time dynamically, including day/night visually.
+Also it currently only shows a time, but not the day.
+
+
+Also add a quick alarm command, which sets an alarm in a given time (30 minutes, 1h, 6h, custom) i.e. for a quick nap or so. This should trigger a event so other stuff can listen to it.
+Modify the panel in the following way:
+- include calendar in its name
+- Have toggable sections
+- Also create a big clock of current time on top,
+    - Current time, analog/24h/12h
+    - Active alarm indicator with the day and time (red = within 12h, yellow=anywhere in the future)
+    - Add alarm button, opens config flow or something
+- List of alarms
+    - The default is to show a list of all alarms for the next 7days,
+        - but you can configure either x time
+        - or y alarms (count)
+- Section to add a alarm (name, time, etc. (This is alrealdy implemented, but this section should be optional, allowing On and Off (to always show/hide it), as well as automatic, which shows it if you clicked on [add element]
