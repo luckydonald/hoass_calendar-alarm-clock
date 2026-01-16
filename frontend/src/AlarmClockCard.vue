@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { Alarm, AlarmDialogData, AlarmState, HomeAssistant, NextAlarmInfo, RepeatPattern } from './types';
+import type {
+  Alarm,
+  AlarmDialogData,
+  AlarmState,
+  HomeAssistant,
+  NextAlarmInfo,
+  RepeatPattern,
+} from './types';
 
 // Props
 const props = defineProps<{
@@ -37,10 +44,10 @@ const alarms = computed<Alarm[]>(() => {
   for (const entityId in states) {
     const state = states[entityId];
     if (
-      entityId.startsWith('sensor.')
-      && state.attributes.alarm_id
-      && !entityId.includes('_next_alarm')
-      && !entityId.includes('_previous_alarm')
+      entityId.startsWith('sensor.') &&
+      state.attributes.alarm_id &&
+      !entityId.includes('_next_alarm') &&
+      !entityId.includes('_previous_alarm')
     ) {
       result.push({
         entity_id: entityId,
@@ -113,8 +120,8 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
 
 const isNextAlarmRinging = computed(() => {
   return (
-    nextAlarm.value
-    && (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
+    nextAlarm.value &&
+    (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
   );
 });
 
@@ -265,15 +272,41 @@ async function saveAlarm(): Promise<void> {
 
   closeDialog();
 }
+
+function handleSwitchChange(alarm: Alarm, event: Event): void {
+  const target = event.target as HTMLInputElement;
+  if (target.checked !== alarm.enabled) {
+    toggleAlarm(alarm);
+  }
+}
+
+function handleDialogEnabledChange(event: Event): void {
+  const target = event.target as HTMLInputElement;
+  dialogData.value.enabled = target.checked;
+}
+
+function handleRepeatChange(event: Event): void {
+  const target = event.target as HTMLSelectElement;
+  dialogData.value.repeat = target.value as RepeatPattern;
+}
 </script>
 
 <template>
-  <ha-card :header="cardTitle">
+  <ha-card>
+    <h1 class="card-header">
+      <ha-icon icon="mdi:alarm" class="header-icon"></ha-icon>
+      {{ cardTitle }}
+    </h1>
+
     <div class="card-content">
       <!-- Header with next alarm -->
-      <div v-if="nextAlarm && !isSingleAlarmView" class="next-alarm-header" :class="{ ringing: isNextAlarmRinging }">
-        <div class="next-alarm-icon" :class="{ ringing: isNextAlarmRinging }">
-          <ha-icon icon="mdi:alarm" />
+      <div
+        v-if="nextAlarm && !isSingleAlarmView"
+        class="next-alarm-header"
+        :class="{ ringing: isNextAlarmRinging }"
+      >
+        <div class="next-alarm-icon" :class="{ shake: isNextAlarmRinging }">
+          <ha-icon icon="mdi:alarm"></ha-icon>
         </div>
         <div class="next-alarm-info">
           <div class="next-alarm-label">Next Alarm</div>
@@ -286,166 +319,236 @@ async function saveAlarm(): Promise<void> {
       <div v-if="isSingleAlarmView && selectedAlarm" class="single-alarm-view">
         <div
           class="single-alarm-icon"
-          :class="{ ringing: isAlarmRinging(selectedAlarm), disabled: !selectedAlarm.enabled }"
+          :class="{
+            shake: isAlarmRinging(selectedAlarm),
+            disabled: !selectedAlarm.enabled,
+          }"
         >
-          <ha-icon :icon="getAlarmIcon(selectedAlarm)" />
+          <ha-icon :icon="getAlarmIcon(selectedAlarm)"></ha-icon>
         </div>
         <div class="single-alarm-time">{{ formatTime(selectedAlarm.time) }}</div>
         <div class="single-alarm-name">{{ selectedAlarm.name }}</div>
-        <div class="single-alarm-status">{{ getStatusText(selectedAlarm) }}</div>
+        <div class="single-alarm-status" :class="{ ringing: isAlarmRinging(selectedAlarm) }">
+          {{ getStatusText(selectedAlarm) }}
+        </div>
 
+        <!-- Ringing actions -->
         <div v-if="isAlarmRinging(selectedAlarm)" class="single-alarm-actions">
-          <button class="btn btn-snooze" @click="snoozeAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:alarm-snooze" />
+          <mwc-button
+            raised
+            class="snooze-button"
+            @click="snoozeAlarm(selectedAlarm)"
+          >
+            <ha-icon icon="mdi:alarm-snooze" slot="icon"></ha-icon>
             Snooze
-          </button>
-          <button class="btn btn-dismiss" @click="dismissAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:alarm-off" />
+          </mwc-button>
+          <mwc-button
+            raised
+            class="dismiss-button"
+            @click="dismissAlarm(selectedAlarm)"
+          >
+            <ha-icon icon="mdi:alarm-off" slot="icon"></ha-icon>
             Dismiss
-          </button>
+          </mwc-button>
         </div>
 
+        <!-- Toggle when not ringing -->
         <div v-else class="single-alarm-toggle">
-          <label class="toggle-label">
-            <input type="checkbox" :checked="selectedAlarm.enabled" @change="toggleAlarm(selectedAlarm)" />
-            <span class="toggle-slider"></span>
-            {{ selectedAlarm.enabled ? 'Enabled' : 'Disabled' }}
-          </label>
+          <ha-switch
+            :checked="selectedAlarm.enabled"
+            @change="handleSwitchChange(selectedAlarm, $event)"
+          ></ha-switch>
+          <span class="toggle-label">{{ selectedAlarm.enabled ? 'Enabled' : 'Disabled' }}</span>
         </div>
 
-        <div class="single-alarm-details">
-          <div class="detail-row">
-            <span class="detail-label">Repeat:</span>
-            <span class="detail-value">{{ formatRepeat(selectedAlarm.repeat) }}</span>
+        <!-- Details -->
+        <ha-expansion-panel outlined header="Details">
+          <div class="details-content">
+            <div class="detail-row">
+              <span class="detail-label">Repeat</span>
+              <span class="detail-value">{{ formatRepeat(selectedAlarm.repeat) }}</span>
+            </div>
+            <div v-if="selectedAlarm.snooze_count > 0" class="detail-row">
+              <span class="detail-label">Snooze Count</span>
+              <span class="detail-value">{{ selectedAlarm.snooze_count }}</span>
+            </div>
           </div>
-          <div v-if="selectedAlarm.snooze_count > 0" class="detail-row">
-            <span class="detail-label">Snooze Count:</span>
-            <span class="detail-value">{{ selectedAlarm.snooze_count }}</span>
-          </div>
-        </div>
+        </ha-expansion-panel>
 
+        <!-- Action buttons -->
         <div class="single-alarm-buttons">
-          <button class="btn btn-edit" @click="openEditDialog(selectedAlarm)">
-            <ha-icon icon="mdi:pencil" />
-            Edit
-          </button>
-          <button class="btn btn-delete" @click="deleteAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:delete" />
-            Delete
-          </button>
+          <ha-icon-button @click="openEditDialog(selectedAlarm)">
+            <ha-icon icon="mdi:pencil"></ha-icon>
+          </ha-icon-button>
+          <ha-icon-button class="delete-button" @click="deleteAlarm(selectedAlarm)">
+            <ha-icon icon="mdi:delete"></ha-icon>
+          </ha-icon-button>
         </div>
       </div>
 
       <!-- Alarm List View -->
       <div v-else class="alarm-list">
         <div v-if="alarms.length === 0" class="no-alarms">
-          <ha-icon icon="mdi:alarm-plus" />
+          <ha-icon icon="mdi:alarm-plus"></ha-icon>
           <p>No alarms scheduled</p>
         </div>
 
-        <div
-          v-for="alarm in sortedAlarms"
-          :key="alarm.alarm_id"
-          class="alarm-item"
-          :class="{ ringing: isAlarmRinging(alarm), disabled: !alarm.enabled }"
-        >
-          <div class="alarm-icon" :class="{ shake: isAlarmRinging(alarm) }">
-            <ha-icon :icon="getAlarmIcon(alarm)" />
-          </div>
+        <ha-list>
+          <ha-list-item
+            v-for="alarm in sortedAlarms"
+            :key="alarm.alarm_id"
+            class="alarm-item"
+            :class="{
+              ringing: isAlarmRinging(alarm),
+              disabled: !alarm.enabled,
+            }"
+            graphic="icon"
+            hasMeta
+          >
+            <ha-icon
+              slot="graphic"
+              :icon="getAlarmIcon(alarm)"
+              class="alarm-icon"
+              :class="{ shake: isAlarmRinging(alarm) }"
+            ></ha-icon>
 
-          <div class="alarm-info">
-            <div class="alarm-time">{{ formatTime(alarm.time) }}</div>
-            <div class="alarm-name">{{ alarm.name }}</div>
-            <div v-if="alarm.repeat !== 'none'" class="alarm-repeat">
+            <span class="alarm-primary">
+              <span class="alarm-time">{{ formatTime(alarm.time) }}</span>
+              <span class="alarm-name">{{ alarm.name }}</span>
+            </span>
+
+            <span v-if="alarm.repeat !== 'none'" class="alarm-secondary">
               {{ formatRepeat(alarm.repeat) }}
+            </span>
+
+            <div slot="meta" class="alarm-actions">
+              <template v-if="isAlarmRinging(alarm)">
+                <ha-icon-button @click.stop="snoozeAlarm(alarm)">
+                  <ha-icon icon="mdi:alarm-snooze"></ha-icon>
+                </ha-icon-button>
+                <ha-icon-button @click.stop="dismissAlarm(alarm)">
+                  <ha-icon icon="mdi:alarm-off"></ha-icon>
+                </ha-icon-button>
+              </template>
+              <template v-else>
+                <ha-switch
+                  :checked="alarm.enabled"
+                  @change="handleSwitchChange(alarm, $event)"
+                  @click.stop
+                ></ha-switch>
+                <ha-icon-button @click.stop="openEditDialog(alarm)">
+                  <ha-icon icon="mdi:pencil"></ha-icon>
+                </ha-icon-button>
+                <ha-icon-button @click.stop="deleteAlarm(alarm)">
+                  <ha-icon icon="mdi:delete"></ha-icon>
+                </ha-icon-button>
+              </template>
             </div>
-          </div>
-
-          <div class="alarm-actions">
-            <template v-if="isAlarmRinging(alarm)">
-              <button class="btn-icon" title="Snooze" @click="snoozeAlarm(alarm)">
-                <ha-icon icon="mdi:alarm-snooze" />
-              </button>
-              <button class="btn-icon" title="Dismiss" @click="dismissAlarm(alarm)">
-                <ha-icon icon="mdi:alarm-off" />
-              </button>
-            </template>
-            <template v-else>
-              <label class="toggle">
-                <input type="checkbox" :checked="alarm.enabled" @change="toggleAlarm(alarm)" />
-                <span class="toggle-slider"></span>
-              </label>
-              <button class="btn-icon" title="Edit" @click="openEditDialog(alarm)">
-                <ha-icon icon="mdi:pencil" />
-              </button>
-              <button class="btn-icon" title="Delete" @click="deleteAlarm(alarm)">
-                <ha-icon icon="mdi:delete" />
-              </button>
-            </template>
-          </div>
-        </div>
+          </ha-list-item>
+        </ha-list>
       </div>
 
-      <!-- Add Alarm Button -->
-      <div v-if="!isSingleAlarmView" class="add-alarm">
-        <button class="btn btn-add" @click="openAddDialog">
-          <ha-icon icon="mdi:plus" />
-          Add Alarm
-        </button>
-      </div>
+      <!-- Add Alarm FAB -->
+      <ha-fab
+        v-if="!isSingleAlarmView"
+        extended
+        label="Add Alarm"
+        @click="openAddDialog"
+      >
+        <ha-icon slot="icon" icon="mdi:plus"></ha-icon>
+      </ha-fab>
     </div>
 
     <!-- Add/Edit Dialog -->
-    <div v-if="showDialog" class="dialog-overlay" @click.self="closeDialog">
-      <div class="dialog">
-        <div class="dialog-header">
-          <h3>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</h3>
-          <button class="btn-icon" @click="closeDialog">
-            <ha-icon icon="mdi:close" />
-          </button>
-        </div>
-        <div class="dialog-content">
-          <div class="form-row">
-            <label>Name</label>
-            <input v-model="dialogData.name" type="text" placeholder="Alarm" />
-          </div>
-          <div class="form-row">
-            <label>Time</label>
-            <input v-model="dialogData.time" type="time" />
-          </div>
-          <div class="form-row">
-            <label>Date</label>
-            <input v-model="dialogData.date" type="date" />
-          </div>
-          <div class="form-row">
-            <label>Repeat</label>
-            <select v-model="dialogData.repeat">
-              <option value="none">Never</option>
-              <option value="daily">Daily</option>
-              <option value="weekdays">Weekdays</option>
-              <option value="weekends">Weekends</option>
-              <option value="weekly">Weekly</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label class="checkbox-label">
-              <input v-model="dialogData.enabled" type="checkbox" />
-              Enabled
-            </label>
-          </div>
-        </div>
-        <div class="dialog-footer">
-          <button class="btn btn-cancel" @click="closeDialog">Cancel</button>
-          <button class="btn btn-save" @click="saveAlarm">Save</button>
-        </div>
+    <ha-dialog
+      :open="showDialog"
+      heading=""
+      @closed="closeDialog"
+    >
+      <div slot="heading" class="dialog-heading">
+        <ha-icon :icon="isEditing ? 'mdi:pencil' : 'mdi:alarm-plus'"></ha-icon>
+        <span>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</span>
       </div>
-    </div>
+
+      <div class="dialog-content">
+        <ha-textfield
+          label="Name"
+          :value="dialogData.name"
+          @input="dialogData.name = ($event.target as HTMLInputElement).value"
+        ></ha-textfield>
+
+        <div class="form-row">
+          <label class="form-label">Time</label>
+          <input
+            type="time"
+            class="ha-time-input"
+            :value="dialogData.time"
+            @input="dialogData.time = ($event.target as HTMLInputElement).value"
+          />
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Date</label>
+          <input
+            type="date"
+            class="ha-date-input"
+            :value="dialogData.date"
+            @input="dialogData.date = ($event.target as HTMLInputElement).value"
+          />
+        </div>
+
+        <ha-select
+          label="Repeat"
+          :value="dialogData.repeat"
+          @selected="handleRepeatChange"
+        >
+          <mwc-list-item value="none">Never</mwc-list-item>
+          <mwc-list-item value="daily">Daily</mwc-list-item>
+          <mwc-list-item value="weekdays">Weekdays</mwc-list-item>
+          <mwc-list-item value="weekends">Weekends</mwc-list-item>
+          <mwc-list-item value="weekly">Weekly</mwc-list-item>
+        </ha-select>
+
+        <ha-formfield label="Enabled">
+          <ha-switch
+            :checked="dialogData.enabled"
+            @change="handleDialogEnabledChange"
+          ></ha-switch>
+        </ha-formfield>
+      </div>
+
+      <mwc-button slot="secondaryAction" dialogAction="cancel">
+        Cancel
+      </mwc-button>
+      <mwc-button slot="primaryAction" @click="saveAlarm">
+        Save
+      </mwc-button>
+    </ha-dialog>
   </ha-card>
 </template>
 
 <style scoped>
-.card-content {
+:host {
+  --alarm-ringing-color: var(--error-color, #db4437);
+  --alarm-snooze-color: var(--warning-color, #ff9800);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 16px;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.header-icon {
+  --mdc-icon-size: 24px;
+}
+
+.card-content {
+  padding: 0 16px 16px;
 }
 
 /* Next Alarm Header */
@@ -453,30 +556,32 @@ async function saveAlarm(): Promise<void> {
   display: flex;
   align-items: center;
   padding: 16px;
-  margin: -16px -16px 16px -16px;
+  margin: 0 -16px 16px;
   background: var(--primary-color);
   color: var(--text-primary-color, #fff);
-  border-radius: 0;
+}
+
+.next-alarm-header.ringing {
+  background: var(--alarm-ringing-color);
+  animation: pulse 1s ease-in-out infinite;
 }
 
 .next-alarm-icon {
-  font-size: 48px;
+  --mdc-icon-size: 48px;
   margin-right: 16px;
-}
-
-.next-alarm-icon.ringing {
-  animation: shake 0.5s ease-in-out infinite;
 }
 
 .next-alarm-label {
   font-size: 12px;
   opacity: 0.8;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .next-alarm-time {
   font-size: 32px;
-  font-weight: bold;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .next-alarm-name {
@@ -491,36 +596,41 @@ async function saveAlarm(): Promise<void> {
 }
 
 .single-alarm-icon {
-  font-size: 64px;
+  --mdc-icon-size: 72px;
   color: var(--primary-color);
   margin-bottom: 16px;
 }
 
-.single-alarm-icon.ringing {
-  color: var(--error-color, #f44336);
-  animation: shake 0.5s ease-in-out infinite;
+.single-alarm-icon.shake {
+  color: var(--alarm-ringing-color);
 }
 
 .single-alarm-icon.disabled {
-  color: var(--disabled-text-color, #9e9e9e);
+  color: var(--disabled-text-color);
 }
 
 .single-alarm-time {
   font-size: 48px;
-  font-weight: bold;
+  font-weight: 400;
   color: var(--primary-text-color);
+  font-variant-numeric: tabular-nums;
 }
 
 .single-alarm-name {
   font-size: 20px;
   color: var(--secondary-text-color);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .single-alarm-status {
   font-size: 14px;
   color: var(--secondary-text-color);
   margin-bottom: 24px;
+}
+
+.single-alarm-status.ringing {
+  color: var(--alarm-ringing-color);
+  font-weight: 500;
 }
 
 .single-alarm-actions {
@@ -530,23 +640,36 @@ async function saveAlarm(): Promise<void> {
   margin-bottom: 24px;
 }
 
+.snooze-button {
+  --mdc-theme-primary: var(--alarm-snooze-color);
+}
+
+.dismiss-button {
+  --mdc-theme-primary: var(--alarm-ringing-color);
+}
+
 .single-alarm-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
-.single-alarm-details {
-  text-align: left;
+.toggle-label {
+  font-size: 14px;
+  color: var(--primary-text-color);
+}
+
+.details-content {
   padding: 16px;
-  background: var(--secondary-background-color, #f5f5f5);
-  border-radius: 8px;
-  margin-bottom: 16px;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid var(--divider-color, #e0e0e0);
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .detail-row:last-child {
@@ -559,49 +682,52 @@ async function saveAlarm(): Promise<void> {
 
 .detail-value {
   font-weight: 500;
+  color: var(--primary-text-color);
 }
 
 .single-alarm-buttons {
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.delete-button {
+  --mdc-icon-button-ink-color: var(--alarm-ringing-color);
 }
 
 /* Alarm List */
 .alarm-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin: 0 -16px;
 }
 
 .no-alarms {
   text-align: center;
-  padding: 32px;
+  padding: 48px 16px;
   color: var(--secondary-text-color);
 }
 
 .no-alarms ha-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+  --mdc-icon-size: 64px;
   opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.no-alarms p {
+  margin: 0;
+  font-size: 16px;
+}
+
+ha-list {
+  --mdc-list-vertical-padding: 0;
 }
 
 .alarm-item {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  background: var(--secondary-background-color, #f5f5f5);
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.alarm-item:hover {
-  background: var(--primary-background-color, #e0e0e0);
+  --mdc-list-item-graphic-margin: 16px;
 }
 
 .alarm-item.ringing {
-  background: var(--error-color, #f44336);
-  color: white;
+  background: rgba(var(--rgb-error-color, 219, 68, 55), 0.1);
 }
 
 .alarm-item.disabled {
@@ -609,26 +735,23 @@ async function saveAlarm(): Promise<void> {
 }
 
 .alarm-icon {
-  font-size: 32px;
-  margin-right: 16px;
+  --mdc-icon-size: 32px;
   color: var(--primary-color);
 }
 
 .alarm-item.ringing .alarm-icon {
-  color: white;
+  color: var(--alarm-ringing-color);
 }
 
-.alarm-icon.shake {
-  animation: shake 0.5s ease-in-out infinite;
-}
-
-.alarm-info {
-  flex: 1;
+.alarm-primary {
+  display: flex;
+  flex-direction: column;
 }
 
 .alarm-time {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .alarm-name {
@@ -636,270 +759,133 @@ async function saveAlarm(): Promise<void> {
   color: var(--secondary-text-color);
 }
 
-.alarm-item.ringing .alarm-name {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.alarm-repeat {
+.alarm-secondary {
   font-size: 12px;
   color: var(--secondary-text-color);
-  opacity: 0.8;
 }
 
 .alarm-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-}
-
-.btn:active {
-  transform: translateY(0);
-}
-
-.btn-add {
-  width: 100%;
-  background: var(--primary-color);
-  color: var(--text-primary-color, #fff);
-}
-
-.btn-snooze {
-  background: var(--warning-color, #ff9800);
-  color: white;
-}
-
-.btn-dismiss {
-  background: var(--error-color, #f44336);
-  color: white;
-}
-
-.btn-edit {
-  background: var(--secondary-background-color, #e0e0e0);
-  color: var(--primary-text-color);
-}
-
-.btn-delete {
-  background: var(--error-color, #f44336);
-  color: white;
-}
-
-.btn-save {
-  background: var(--primary-color);
-  color: var(--text-primary-color, #fff);
-}
-
-.btn-cancel {
-  background: var(--secondary-background-color, #e0e0e0);
-  color: var(--primary-text-color);
-}
-
-.btn-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--primary-text-color);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-icon:hover {
-  background: var(--secondary-background-color, rgba(0, 0, 0, 0.1));
-}
-
-.alarm-item.ringing .btn-icon {
-  color: white;
-}
-
-.alarm-item.ringing .btn-icon:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Toggle */
-.toggle {
-  position: relative;
-  display: inline-block;
-  width: 48px;
-  height: 24px;
-}
-
-.toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--disabled-text-color, #ccc);
-  transition: 0.3s;
-  border-radius: 24px;
-}
-
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.3s;
-  border-radius: 50%;
-}
-
-.toggle input:checked + .toggle-slider {
-  background-color: var(--primary-color);
-}
-
-.toggle input:checked + .toggle-slider:before {
-  transform: translateX(24px);
-}
-
-.toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-}
-
-/* Add Alarm */
-.add-alarm {
-  margin-top: 16px;
+/* FAB */
+ha-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1;
 }
 
 /* Dialog */
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+.dialog-heading {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  gap: 8px;
 }
 
-.dialog {
-  background: var(--card-background-color, #fff);
-  border-radius: 12px;
-  width: 90%;
-  max-width: 400px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid var(--divider-color, #e0e0e0);
-}
-
-.dialog-header h3 {
-  margin: 0;
-  font-size: 18px;
+.dialog-heading ha-icon {
+  --mdc-icon-size: 24px;
 }
 
 .dialog-content {
-  padding: 16px;
-}
-
-.dialog-footer {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 16px;
-  border-top: 1px solid var(--divider-color, #e0e0e0);
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
 }
 
-/* Form */
-.form-row {
-  margin-bottom: 16px;
-}
-
-.form-row label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--primary-text-color);
-}
-
-.form-row input[type="text"],
-.form-row input[type="time"],
-.form-row input[type="date"],
-.form-row select {
+ha-textfield,
+ha-select {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--divider-color, #e0e0e0);
-  border-radius: 8px;
-  font-size: 14px;
-  background: var(--card-background-color, #fff);
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--secondary-text-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ha-time-input,
+.ha-date-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--card-background-color);
   color: var(--primary-text-color);
   box-sizing: border-box;
 }
 
-.form-row input:focus,
-.form-row select:focus {
+.ha-time-input:focus,
+.ha-date-input:focus {
   outline: none;
   border-color: var(--primary-color);
 }
 
-.checkbox-label {
+ha-formfield {
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
+  --mdc-typography-body2-font-size: 14px;
 }
 
-.checkbox-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+/* Animations */
+.shake {
+  animation: shake 0.5s ease-in-out infinite;
 }
 
-/* Shake Animation */
 @keyframes shake {
-  0%, 100% { transform: translateX(0) rotate(0deg); }
-  10% { transform: translateX(-2px) rotate(-5deg); }
-  20% { transform: translateX(2px) rotate(5deg); }
-  30% { transform: translateX(-2px) rotate(-5deg); }
-  40% { transform: translateX(2px) rotate(5deg); }
-  50% { transform: translateX(-1px) rotate(-2deg); }
-  60% { transform: translateX(1px) rotate(2deg); }
-  70% { transform: translateX(-1px) rotate(-2deg); }
-  80% { transform: translateX(1px) rotate(2deg); }
-  90% { transform: translateX(0) rotate(0deg); }
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  10% {
+    transform: translateX(-2px) rotate(-5deg);
+  }
+  20% {
+    transform: translateX(2px) rotate(5deg);
+  }
+  30% {
+    transform: translateX(-2px) rotate(-5deg);
+  }
+  40% {
+    transform: translateX(2px) rotate(5deg);
+  }
+  50% {
+    transform: translateX(-1px) rotate(-2deg);
+  }
+  60% {
+    transform: translateX(1px) rotate(2deg);
+  }
+  70% {
+    transform: translateX(-1px) rotate(-2deg);
+  }
+  80% {
+    transform: translateX(1px) rotate(2deg);
+  }
+  90% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 </style>

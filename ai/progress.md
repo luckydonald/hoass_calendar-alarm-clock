@@ -6,6 +6,7 @@
 ## Status: ✅ Implementation Complete
 
 ## Recent Changes
+- **Updated Vue component to use HA native components**: Replaced custom HTML elements with `<ha-card>`, `<ha-icon>`, `<ha-switch>`, `<ha-dialog>`, `<ha-textfield>`, `<ha-select>`, `<ha-fab>`, `<ha-list>`, `<ha-list-item>`, `<ha-icon-button>`, `<ha-expansion-panel>`, `<ha-formfield>`, `<mwc-button>`, `<mwc-list-item>` for better HA theming integration
 - **Added release script**: `make release` - one command to bump version, lint, format, build, commit, tag, and push
 - **Added Makefile**: Convenient commands for development (`make setup`, `make lint`, `make format`, `make build`, `make release`)
 - **Fixed sensor polling error**: Added `_attr_should_poll = False` to all sensor classes
