@@ -30,7 +30,7 @@ A Home Assistant custom component (HACS compatible) that provides phone-like ala
 - **Framework**: Vue 3 with `<script setup lang="ts">`
 - **Build**: Vite (bundled as IIFE web component)
 - **Package Manager**: Yarn
-- **Card Name**: `alarm-clock-card`
+- **Card Name**: `calender-alarm-clock-card`
 
 ## Alarm States
 ```

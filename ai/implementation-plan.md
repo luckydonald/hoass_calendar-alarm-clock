@@ -51,7 +51,7 @@ Enhance the Lovelace card with modern phone-style alarm UI including:
 
 ## Card Configuration Options
 ```yaml
-type: custom:alarm-clock-card
+type: custom:calender-alarm-clock-card
 title: Calendar Alarm Clock
 clock_display: analog  # analog, 24h, 12h, none
 alarm_list_mode: days  # days or count
