@@ -57,6 +57,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     # Set up discovery when HA is fully started
     async def async_discover_on_start(_: HomeAssistant) -> None:
         """Discover calendars when HA starts."""
+        _LOGGER.info("Home Assistant started, checking for auto-discovery opportunity...")
         # First, check if we need to auto-create the auto-discovery entry
         await _async_auto_create_discovery_entry(hass)
         # Then discover calendars
@@ -74,6 +75,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             new_state = event.data.get("new_state")
             # Only trigger discovery if this is a new entity (old_state was None)
             if old_state is None and new_state is not None:
+                _LOGGER.info("New calendar entity detected: %s, triggering discovery", entity_id)
                 hass.async_create_task(_async_auto_create_discovery_entry(hass))
                 hass.async_create_task(_async_discover_calendars(hass))
 
