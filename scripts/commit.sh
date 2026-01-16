@@ -7,6 +7,28 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+COMMIT_MSG_ERRORS="ai: updated errors"
+COMMIT_MSG_QUERY="ai: updated query"
+COMMIT_MSG_STEP="ai: running... ({step}-{substep})"
+
+tmpl() {
+    local tmpl_str=$1
+    local -n vars=$2          # nameref to the associative array
+
+    # Escape any characters that could be interpreted by the shell
+    # when we later perform the replacement.
+    local result=$tmpl_str
+
+    for key in "${!vars[@]}"; do
+        # Build the exact placeholder we want to replace: {key}
+        local placeholder="{${key}}"
+        # Replace *all* occurrences of that placeholder.
+        result=${result//${placeholder}/${vars[$key]}}
+    done
+
+    printf '%s' "$result"
+}
+
 echo -e "${GREEN}📝 Calendar Alarm Clock - Commit Script${NC}"
 echo ""
 
@@ -28,12 +50,12 @@ fi
 if git diff --name-only | grep -q "^ai/query.md$"; then
     echo -e "${GREEN}Committing ai/query.md...${NC}"
     git add ai/query.md
-    git commit -m "ai: updated query"
+    git commit -m "${COMMIT_MSG_QUERY}"
     echo "  Done"
 elif [ -f "ai/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/query.md$"; then
     echo -e "${GREEN}Committing ai/query.md (new file)...${NC}"
     git add ai/query.md
-    git commit -m "ai: updated query"
+    git commit -m "${COMMIT_MSG_QUERY}"
     echo "  Done"
 else
     echo -e "${YELLOW}No changes to ai/query.md${NC}"
@@ -43,12 +65,12 @@ fi
 if git diff --name-only | grep -q "^ai/errors.md$"; then
     echo -e "${GREEN}Committing ai/errors.md...${NC}"
     git add ai/errors.md
-    git commit -m "ai: updated errors"
+    git commit -m "${COMMIT_MSG_ERRORS}"
     echo "  Done"
 elif [ -f "ai/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/errors.md$"; then
     echo -e "${GREEN}Committing ai/errors.md (new file)...${NC}"
     git add ai/errors.md
-    git commit -m "ai: updated errors"
+    git commit -m "${COMMIT_MSG_ERRORS}"
     echo "  Done"
 else
     echo -e "${YELLOW}No changes to ai/errors.md${NC}"
@@ -75,7 +97,13 @@ if [ -n "$(git status --porcelain)" ]; then
     echo -e "${GREEN}Committing remaining changes as step ${NEW_STEP}...${NC}"
     git add -u
     git add .  # Also add new files that aren't ignored
-    git commit -m "ai: running... (${NEW_STEP}-1)"
+    # shellcheck disable=SC2034
+    declare -A template_context=(
+        [step]="$NEW_STEP"
+        [substep]="1"
+    )
+
+    git commit -m "$(tmpl "${GIT_MSG_TEMPLATE}" template_context)"
     echo "  Done"
 else
     echo -e "${YELLOW}No other changes to commit${NC}"
