@@ -1,5 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
+
+# Resolve the full path of the script, even if it was called via a symlink
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do   # resolve $SOURCE until the file is no longer a symlink
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  # If $SOURCE was a relative symlink, prepend the directory where the symlink resides
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+
+# Directory containing the script
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
+echo "Script directory: ${SCRIPT_DIR}"
 
 # Colors for output
 RED='\033[0;31m'
