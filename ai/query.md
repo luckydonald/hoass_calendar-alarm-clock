@@ -168,3 +168,26 @@ I don't see the initial "Calendar Alarm Clock (Auto-Discovery)" auto-discovery p
 "Alarm Clock for Auto-Discovery Calendar backed Alarm Clock"
 appears after I added a calendar manually, so maybe it's logic when to appear is wrong?
 Uh, also I implied with that, that "Alarm Clock for Auto-Discovery Calendar backed Alarm Clock" did NOT apply before adding that intigration basically myself... did you fix that, too?
+
+✅ **FIXED**: Both issues addressed:
+1. **Auto-discovery appearing after manual setup** - Fixed by checking if user has manually configured entries
+   - If manual entries exist, auto-discovery is NOT created
+   - Respects user's explicit choice to use manual setup
+   - Log: "User has manually configured calendar entries, skipping auto-discovery"
+
+2. **Auto-discovery not appearing initially** - Enhanced with better logging:
+   - Logs when HA starts: "Home Assistant started, checking for auto-discovery opportunity..."
+   - Logs when calendars detected: "New calendar entity detected: X, triggering discovery"
+   - Logs calendar count: "Found X calendar(s), will create auto-discovery entry"
+   - Check logs to diagnose why it didn't appear
+
+**To test fresh install behavior**:
+- Remove all Calendar Alarm Clock entries
+- Restart Home Assistant with calendars present
+- Check logs for discovery messages
+- Auto-discovery notification should appear
+
+**See also**:
+- `ai/fix-auto-discovery-after-manual.md` - Detailed fix explanation
+- `ai/debugging-auto-discovery.md` - Debugging guide
+
