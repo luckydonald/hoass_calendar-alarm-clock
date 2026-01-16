@@ -44,3 +44,14 @@ Regarding formatting:
 bash script get own file dir
 
 ——————————
+
+```
+🔍 Step 1: Check for lint errors
+Running ruff check...
+… ruff error output …
+Found 1 error. [*] 1 fixable with the `--fix` option. make: *** [release] Error 1
+```
+
+Also insert a step where the linter has only fixable errors, so it commits the file before, then does an "autofix" commit afterwards - similar to the format ones.
+
+——————————
