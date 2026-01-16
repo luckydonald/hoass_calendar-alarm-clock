@@ -119,3 +119,7 @@ The repo is at https://github.com/luckydonald/hoass_calendar-alarm-clock/tree/ma
 Have the build happen on a github pipeline, building releases made for hacs.
 
 ———————————
+
+Make sure to use best practices for home assistant plugins.
+This includes using async where possible, proper config flows, etc.
+Also this means reusing `<ha-icon>`, `<ha-card>`, etc. where possible.
