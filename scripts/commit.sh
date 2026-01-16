@@ -16,8 +16,16 @@ if [ ! -f "custom_components/calendar_alarm_clock/manifest.json" ]; then
     exit 1
 fi
 
+# Save any currently staged changes
+STASH_STAGED=false
+if [ -n "$(git diff --cached --name-only)" ]; then
+    echo -e "${YELLOW}Saving staged changes...${NC}"
+    git stash push --staged -m "commit-script-staged-backup"
+    STASH_STAGED=true
+fi
+
 # Commit ai/query.md if it has changes
-if git diff --name-only | grep -q "^ai/query.md$" || git diff --cached --name-only | grep -q "^ai/query.md$"; then
+if git diff --name-only | grep -q "^ai/query.md$"; then
     echo -e "${GREEN}Committing ai/query.md...${NC}"
     git add ai/query.md
     git commit -m "ai: updated query"
@@ -32,7 +40,7 @@ else
 fi
 
 # Commit ai/errors.md if it has changes
-if git diff --name-only | grep -q "^ai/errors.md$" || git diff --cached --name-only | grep -q "^ai/errors.md$"; then
+if git diff --name-only | grep -q "^ai/errors.md$"; then
     echo -e "${GREEN}Committing ai/errors.md...${NC}"
     git add ai/errors.md
     git commit -m "ai: updated errors"
@@ -46,10 +54,16 @@ else
     echo -e "${YELLOW}No changes to ai/errors.md${NC}"
 fi
 
+# Restore staged changes before the final commit
+if [ "$STASH_STAGED" = true ]; then
+    echo -e "${YELLOW}Restoring staged changes...${NC}"
+    git stash pop
+fi
+
 # Check if there are any other changes to commit
 if [ -n "$(git status --porcelain)" ]; then
     # Find the last "ai: running..." commit and extract the step number
-    LAST_STEP=$(git log --oneline --all | grep -oP "ai: running\.\.\. \(\K[0-9]+" | head -1)
+    LAST_STEP=$(git log --oneline | grep -oP "ai: running\.\.\. \(\K[0-9]+" | head -1)
 
     if [ -z "$LAST_STEP" ]; then
         NEW_STEP=1
@@ -58,7 +72,8 @@ if [ -n "$(git status --porcelain)" ]; then
     fi
 
     echo -e "${GREEN}Committing remaining changes as step ${NEW_STEP}...${NC}"
-    git add -A
+    git add -u
+    git add .  # Also add new files that aren't ignored
     git commit -m "ai: running... (${NEW_STEP}-1)"
     echo "  Done"
 else
