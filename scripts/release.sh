@@ -68,14 +68,10 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Run tests BEFORE bumping version
+# Step 1: Check for errors (lint without formatting)
 echo ""
-echo -e "${GREEN}🐍 Step 1: Lint and format Python${NC}"
+echo -e "${GREEN}🔍 Step 1: Check for lint errors${NC}"
 if command -v uv &> /dev/null; then
-    echo "  Running ruff format..."
-    uv run ruff format custom_components/
-    echo "  Running ruff check --fix..."
-    uv run ruff check --fix custom_components/ || true
     echo "  Running ruff check..."
     uv run ruff check custom_components/
 else
@@ -83,35 +79,72 @@ else
     echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
     exit 1
 fi
+echo "  Running frontend type-check..."
+cd frontend
+yarn type-check
+cd ..
+echo "  All checks passed!"
 
+# Step 2: Run commit.sh to commit pending changes
 echo ""
-echo -e "${GREEN}📦 Step 2: Build frontend${NC}"
+echo -e "${GREEN}📝 Step 2: Commit pending changes${NC}"
+chmod +x scripts/commit.sh
+./scripts/commit.sh
+
+# Step 3: Run Python formatter and commit
+echo ""
+echo -e "${GREEN}🐍 Step 3: Format Python code${NC}"
+uv run ruff format custom_components/
+if ! git diff --quiet -- custom_components/; then
+    git add -u custom_components/
+    git commit -m "lint: ruff"
+    echo "  Committed Python formatting changes"
+else
+    echo "  No Python formatting changes needed"
+fi
+
+# Step 4: Run TS formatter and commit
+echo ""
+echo -e "${GREEN}📘 Step 4: Format TypeScript code${NC}"
+cd frontend
+yarn format 2>/dev/null || yarn prettier --write src/ 2>/dev/null || echo "  No TS formatter configured, skipping"
+cd ..
+if ! git diff --quiet -- frontend/; then
+    git add -u frontend/
+    git commit -m "lint: ts"
+    echo "  Committed TypeScript formatting changes"
+else
+    echo "  No TypeScript formatting changes needed"
+fi
+
+# Step 5: Build frontend to confirm it works
+echo ""
+echo -e "${GREEN}📦 Step 5: Build frontend${NC}"
 cd frontend
 echo "  Installing dependencies..."
 yarn install --silent
-echo "  Type checking..."
-yarn type-check
 echo "  Building..."
 yarn build
 cd ..
-echo "  Frontend built successfully"
+echo "  Frontend built successfully!"
 
-# Only bump version AFTER tests pass
+# Step 6: Bump version AFTER all tests pass
 echo ""
-echo -e "${GREEN}📝 Step 3: Update version in manifest.json${NC}"
+echo -e "${GREEN}🏷️  Step 6: Update version${NC}"
 sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/calendar_alarm_clock/manifest.json
 rm -f custom_components/calendar_alarm_clock/manifest.json.bak
 echo "  Updated manifest.json to ${NEW_VERSION}"
 
-echo ""
-echo -e "${GREEN}📤 Step 4: Commit and push${NC}"
-git add -A
-git commit -m "Release v${NEW_VERSION}"
-echo "  Created commit"
+git add custom_components/calendar_alarm_clock/manifest.json
+git commit -m "version: bumped \`${CURRENT_VERSION}\` → \`${NEW_VERSION}\`"
+echo "  Committed version bump"
 
 git tag "v${NEW_VERSION}"
 echo "  Created tag v${NEW_VERSION}"
 
+# Step 7: Push
+echo ""
+echo -e "${GREEN}📤 Step 7: Push to origin${NC}"
 git push origin mane
 echo "  Pushed to origin/mane"
 
