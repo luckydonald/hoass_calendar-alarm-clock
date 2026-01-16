@@ -68,43 +68,16 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Run tests BEFORE bumping version
-echo ""
-echo -e "${GREEN}🐍 Step 1: Lint and format Python${NC}"
-if command -v uv &> /dev/null; then
-    echo "  Running ruff format..."
-    uv run ruff format custom_components/
-    echo "  Running ruff check --fix..."
-    uv run ruff check --fix custom_components/ || true
-    echo "  Running ruff check..."
-    uv run ruff check custom_components/
-else
-    echo -e "${RED}  Error: uv not found${NC}"
-    echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
-    exit 1
-fi
+# Note: lint, format, and build are run by make before this script
 
 echo ""
-echo -e "${GREEN}📦 Step 2: Build frontend${NC}"
-cd frontend
-echo "  Installing dependencies..."
-yarn install --silent
-echo "  Type checking..."
-yarn type-check
-echo "  Building..."
-yarn build
-cd ..
-echo "  Frontend built successfully"
-
-# Only bump version AFTER tests pass
-echo ""
-echo -e "${GREEN}📝 Step 3: Update version in manifest.json${NC}"
+echo -e "${GREEN}📝 Step 1: Update version in manifest.json${NC}"
 sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/calendar_alarm_clock/manifest.json
 rm -f custom_components/calendar_alarm_clock/manifest.json.bak
 echo "  Updated manifest.json to ${NEW_VERSION}"
 
 echo ""
-echo -e "${GREEN}📤 Step 4: Commit and push${NC}"
+echo -e "${GREEN}📤 Step 2: Commit and push${NC}"
 git add -A
 git commit -m "Release v${NEW_VERSION}"
 echo "  Created commit"
