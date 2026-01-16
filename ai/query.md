@@ -158,3 +158,5 @@ Make sure the custom components are named `calender-alarm-clock-card` and `calen
 
 In the initial integration flow, I want it to ask if calenders should be auto-discovered, or rather not.
 After all it can get a bit spammy if you have a lot calenders.
+
+In fact, can the Autodiscovery integration (`Calendar Alarm Clock (Auto-Discovery)` be itself be autodiscovered if there's at least one calendar available?
