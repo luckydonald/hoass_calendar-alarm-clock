@@ -173,3 +173,20 @@ make: *** [commit] Error 2
 
 —————————
 
+Log details (ERROR)
+
+
+Logger: homeassistant.config_entries
+Source: config_entries.py:762
+First occurred: 21:04:39 (1 occurrence)
+Last logged: 21:04:39
+
+Error setting up entry Calendar Alarm Clock (Auto-Discovery) for calendar_alarm_clock
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/config_entries.py", line 762, in __async_setup_with_context
+    result = await component.async_setup_entry(hass, self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/config/custom_components/calendar_alarm_clock/__init__.py", line 114, in async_setup_entry
+    calendar_entity: str = entry.data[CONF_CALENDAR_ENTITY]
+                           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'calendar_entity'
