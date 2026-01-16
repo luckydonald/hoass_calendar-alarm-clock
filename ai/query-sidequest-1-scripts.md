@@ -54,4 +54,6 @@ Found 1 error. [*] 1 fixable with the `--fix` option. make: *** [release] Error 
 
 Also insert a step where the linter has only fixable errors, so it commits the file before, then does an "autofix" commit afterwards - similar to the format ones.
 
+The interesting part is, the first step already fails if it has those fixable issues - they are at that point still considered issues.
+
 ——————————
