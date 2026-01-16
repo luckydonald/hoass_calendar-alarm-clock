@@ -7,6 +7,17 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+COMMIT_MSG_VERSION_BUMP="👊version: bumped \`{from}\` → \`{to}\`"
+COMMIT_MSG_LINT="🔧 lint: {reason}"
+
+# -------------------------------------------------
+# tmpl  –  expand a template using environment variables
+# Usage:  tmpl "<template>"
+# Example call:
+#   step=4 substep=1 tmpl "$GIT_MSG_TEMPLATE"
+# -------------------------------------------------
+. ./tmpl.sh
+
 echo -e "${GREEN}🚀 Calendar Alarm Clock - Release Script${NC}"
 echo ""
 
@@ -97,7 +108,7 @@ echo -e "${GREEN}🐍 Step 3: Format Python code${NC}"
 uv run ruff format custom_components/
 if ! git diff --quiet -- custom_components/; then
     git add -u custom_components/
-    git commit -m "lint: ruff"
+    git commit -m "$(reason="ruff" tmpl "${COMMIT_MSG_LINT}")"
     echo "  Committed Python formatting changes"
 else
     echo "  No Python formatting changes needed"
@@ -111,7 +122,7 @@ yarn format
 cd ..
 if ! git diff --quiet -- frontend/; then
     git add -u frontend/
-    git commit -m "lint: ts"
+    git commit -m "$(reason="ts" tmpl "${COMMIT_MSG_LINT}")"
     echo "  Committed TypeScript formatting changes"
 else
     echo "  No TypeScript formatting changes needed"
@@ -136,7 +147,7 @@ rm -f custom_components/calendar_alarm_clock/manifest.json.bak
 echo "  Updated manifest.json to ${NEW_VERSION}"
 
 git add custom_components/calendar_alarm_clock/manifest.json
-git commit -m "version: bumped \`${CURRENT_VERSION}\` → \`${NEW_VERSION}\`"
+git commit -m "$(from="${CURRENT_VERSION}" to="${NEW_VERSION}" tmpl "${COMMIT_MSG_VERSION_BUMP}")"
 echo "  Committed version bump"
 
 git tag "v${NEW_VERSION}"
