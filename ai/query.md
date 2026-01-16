@@ -164,3 +164,6 @@ In fact, can the Autodiscovery integration (`Calendar Alarm Clock (Auto-Discover
 ——————
 
 I don't see the initial "Calendar Alarm Clock (Auto-Discovery)" auto-discovery popping up now. The calendars did before the change.
+
+"Alarm Clock for Auto-Discovery Calendar backed Alarm Clock"
+appears after I added a calendar manually, so maybe it's logic when to appear is wrong?
