@@ -56,23 +56,4 @@ Also insert a step where the linter has only fixable errors, so it commits the f
 
 The interesting part is, the first step already fails if it has those fixable issues - they are at that point still considered issues.
 
-✅ **DONE**:
-- Removed strict lint check from Step 1 (was causing early exit on fixable errors)
-- Step 1 now only checks TypeScript type errors
-- Added Step 3 that:
-  - Runs `ruff check --fix` to auto-fix errors
-  - Commits any changes with message "🔧 lint: ruff autofix"
-  - Verifies no errors remain after autofix
-  - Exits if unfixable errors remain
-
-**Flow now:**
-1. Check TypeScript type errors (exits on failure)
-2. Commit pending changes
-3. Auto-fix Python lint errors → commit
-4. Format Python code → commit
-5. Format TypeScript code → commit
-6. Build frontend (validates everything works)
-7. Bump version → commit + tag
-8. Push to origin
-
 ——————————
