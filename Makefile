@@ -31,15 +31,18 @@ format:
 	@echo "Formatting Python..."
 	uv run ruff format custom_components/
 	uv run ruff check --fix custom_components/ || true
+	@echo "Formatting TypeScript..."
+	cd frontend && yarn format
 
 build:
 	@echo "Building frontend..."
 	cd frontend && yarn install && yarn build
 
-release: format lint build
-	@chmod +x scripts/release.sh
-	@./scripts/release.sh
-
 commit:
 	@chmod +x scripts/commit.sh
 	@./scripts/commit.sh
+
+release:
+	@chmod +x scripts/release.sh
+	@./scripts/release.sh
+
