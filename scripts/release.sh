@@ -21,7 +21,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-COMMIT_MSG_VERSION_BUMP="👊version: bumped \`{from}\` → \`{to}\`"
+COMMIT_MSG_VERSION_BUMP="??version: bumped \`{from}\` → \`{to}\`"
 COMMIT_MSG_LINT="🔧 lint: {reason}"
 
 # -------------------------------------------------
@@ -98,7 +98,10 @@ echo ""
 echo -e "${GREEN}🔍 Step 1: Check for lint errors${NC}"
 if command -v uv &> /dev/null; then
     echo "  Running ruff check..."
-    uv run ruff check custom_components/
+    if ! uv run ruff check custom_components/; then
+        echo -e "${YELLOW}  Found lint errors that may be auto-fixable${NC}"
+        exit 1
+    fi
 else
     echo -e "${RED}  Error: uv not found${NC}"
     echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
@@ -115,6 +118,26 @@ echo ""
 echo -e "${GREEN}📝 Step 2: Commit pending changes${NC}"
 chmod +x scripts/commit.sh
 ./scripts/commit.sh
+
+# Step 3: Auto-fix lint errors if possible
+echo ""
+echo -e "${GREEN}🔧 Step 3: Auto-fix lint errors${NC}"
+uv run ruff check --fix custom_components/
+if ! git diff --quiet -- custom_components/; then
+    git add -u custom_components/
+    git commit -m "$(reason="ruff autofix" tmpl "${COMMIT_MSG_LINT}")"
+    echo "  Committed auto-fixed lint errors"
+else
+    echo "  No auto-fixable lint errors"
+fi
+
+# Verify no errors remain after autofix
+echo "  Verifying no errors remain..."
+if ! uv run ruff check custom_components/; then
+    echo -e "${RED}  Error: Unfixable lint errors remain${NC}"
+    exit 1
+fi
+echo "  All lint errors resolved!"
 
 # Step 3: Run Python formatter and commit
 echo ""
