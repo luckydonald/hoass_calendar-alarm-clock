@@ -74,4 +74,5 @@ error: ai/debugging-auto-discovery.md: patch does not apply
 Cannot remove worktree changes
 make: *** [commit] Error 1
 
+But using `git reset HEAD` sounds like it could delete stuff we still need?
 ——————————
