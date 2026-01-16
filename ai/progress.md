@@ -6,6 +6,11 @@
 ## Status: ✅ Enhanced UI Complete
 
 ## Recent Changes (January 16, 2026)
+- **Fixed auto-discovery appearing after manual setup**: Auto-discovery entry now respects user's choice:
+  - Added check for manually configured calendar entries
+  - If manual entries exist, auto-discovery entry is NOT created
+  - Prevents unwanted "Auto-Discovery" notification after user explicitly chose manual setup
+  - Log message: "User has manually configured calendar entries, skipping auto-discovery"
 - **Fixed auto-discovery entry setup**: Auto-discovery entries don't have a calendar entity, so they're handled separately in `async_setup_entry` and `async_unload_entry`:
   - Auto-discovery entries are lightweight - they just enable the discovery mechanism
   - Regular calendar entries create AlarmManager instances and set up sensors

@@ -127,3 +127,37 @@ For each unconfigured calendar:
 - Add "Don't ask again" option in confirmation dialog
 - Provide way to disable auto-discovery globally via config
 
+## Bug Fixes
+
+### Fix: Auto-Discovery Appearing After Manual Setup (Jan 16, 2026)
+
+**Problem**: When a user manually added a calendar entry, the auto-discovery confirmation dialog appeared afterward, even though the user had explicitly chosen manual setup by not using auto-discovery.
+
+**Root Cause**: The `_async_auto_create_discovery_entry()` function only checked if an auto-discovery entry existed, not if the user had already manually configured calendar entries. So:
+1. User manually adds calendar → No auto-discovery entry exists
+2. System sees no auto-discovery entry → Creates one
+3. User gets unwanted notification
+
+**Solution**: Enhanced the logic to also check for manually configured entries:
+- If auto-discovery entry exists → Don't create (already using auto-discovery)
+- **If manual calendar entries exist → Don't create (user chose manual setup)**
+- If no entries exist and calendars available → Create auto-discovery entry
+
+**Code Change**:
+```python
+# Check both conditions
+has_auto_discovery = False
+has_manual_entries = False
+
+for entry in hass.config_entries.async_entries(DOMAIN):
+    if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
+        has_auto_discovery = True
+    else:
+        has_manual_entries = True  # User manually configured this
+
+if has_auto_discovery or has_manual_entries:
+    return  # Respect user's choice
+```
+
+**Result**: Users who manually set up calendars won't see the auto-discovery notification, respecting their explicit choice to use manual setup.
+

@@ -90,10 +90,25 @@ async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
     from .const import CONF_AUTO_DISCOVER_CALENDARS
 
     # Check if we already have an auto-discovery entry
+    has_auto_discovery = False
+    has_manual_entries = False
+
     for entry in hass.config_entries.async_entries(DOMAIN):
         if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
-            _LOGGER.debug("Auto-discovery entry already exists")
-            return
+            has_auto_discovery = True
+        else:
+            # This is a manually configured calendar entry
+            has_manual_entries = True
+
+    if has_auto_discovery:
+        _LOGGER.debug("Auto-discovery entry already exists")
+        return
+
+    if has_manual_entries:
+        _LOGGER.debug(
+            "User has manually configured calendar entries, skipping auto-discovery"
+        )
+        return
 
     # Check if there are any calendars available
     calendars = get_calendar_entities(hass)
