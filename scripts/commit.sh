@@ -33,7 +33,7 @@ COMMIT_MSG_OWN="👩‍💻 own: {msg}"
 # Example call:
 #   step=4 substep=1 tmpl "$GIT_MSG_TEMPLATE"
 # -------------------------------------------------
-. ./tmpl.sh
+. "${SCRIPT_DIR}/tmpl.sh"
 
 echo -e "${GREEN}📝 Calendar Alarm Clock - Commit Script${NC}"
 echo ""

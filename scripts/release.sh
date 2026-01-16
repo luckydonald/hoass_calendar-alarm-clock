@@ -30,7 +30,7 @@ COMMIT_MSG_LINT="🔧 lint: {reason}"
 # Example call:
 #   step=4 substep=1 tmpl "$GIT_MSG_TEMPLATE"
 # -------------------------------------------------
-. ./tmpl.sh
+. "${SCRIPT_DIR}/tmpl.sh"
 
 echo -e "${GREEN}🚀 Calendar Alarm Clock - Release Script${NC}"
 echo ""
