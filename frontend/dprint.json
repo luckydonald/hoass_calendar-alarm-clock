@@ -22,7 +22,11 @@
     "binaryExpression.preferSingleLine": false,
     "memberExpression.preferSingleLine": false,
     "typeLiteral.preferSingleLine": false,
-    "tupleType.preferSingleLine": false
+    "tupleType.preferSingleLine": false,
+    "arguments.trailingCommas": "onlyMultiLine",
+    "parameters.trailingCommas": "onlyMultiLine",
+    "arrayExpression.trailingCommas": "onlyMultiLine",
+    "objectExpression.trailingCommas": "onlyMultiLine"
   },
   "json": {
     "lineWidth": 9999,
@@ -32,12 +36,9 @@
     "object.preferSingleLine": false
   },
   "markup_fmt": {
-    "lineWidth": 9999,
-    "indentWidth": 2,
-    "closingBracketSameLine": false,
+    "printWidth": 9999,
     "vBindStyle": "short",
-    "vOnStyle": "short",
-    "preferAttrsSingleLine": false
+    "vOnStyle": "short"
   },
   "includes": ["src/**/*.{ts,tsx,js,jsx,json,vue,html}"],
   "excludes": ["node_modules", "dist"]
