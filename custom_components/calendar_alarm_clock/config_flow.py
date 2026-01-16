@@ -20,6 +20,7 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import (
+    CONF_AUTO_DISCOVER_CALENDARS,
     CONF_CALENDAR_ENTITY,
     CONF_DEFAULT_ALARM_TIMEOUT,
     CONF_DEFAULT_MAX_SNOOZES,
@@ -68,6 +69,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialize the config flow."""
         self._discovered_calendar: str | None = None
+        self._auto_discover: bool = False
 
     @staticmethod
     @callback
@@ -78,7 +80,54 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler()
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle the initial step (manual setup)."""
+        """Handle the initial step - ask about auto-discovery."""
+        if user_input is not None:
+            self._auto_discover = user_input.get(CONF_AUTO_DISCOVER_CALENDARS, False)
+
+            if self._auto_discover:
+                # Enable auto-discovery - trigger it and complete setup
+                return await self.async_step_auto_discover()
+            else:
+                # Manual selection - show calendar picker
+                return await self.async_step_manual()
+
+        # Get available calendar entities to show in description
+        calendar_entities: list[str] = get_calendar_entities(self.hass)
+        calendar_count = len(calendar_entities)
+
+        data_schema: vol.Schema = vol.Schema(
+            {
+                vol.Required(CONF_AUTO_DISCOVER_CALENDARS, default=False): bool,
+            }
+        )
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=data_schema,
+            description_placeholders={
+                "calendar_count": str(calendar_count),
+            },
+        )
+
+    async def async_step_auto_discover(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle auto-discovery setup."""
+        # Create a single entry to enable auto-discovery
+        # We'll use a special marker to indicate this is the auto-discovery entry
+        await self.async_set_unique_id("auto_discovery")
+        self._abort_if_unique_id_configured()
+
+        # Trigger calendar discovery
+        self.hass.async_create_task(_trigger_discovery(self.hass))
+
+        return self.async_create_entry(
+            title="Calendar Alarm Clock (Auto-Discovery)",
+            data={CONF_AUTO_DISCOVER_CALENDARS: True},
+        )
+
+    async def async_step_manual(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Handle manual calendar selection."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -109,7 +158,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         return self.async_show_form(
-            step_id="user",
+            step_id="manual",
             data_schema=data_schema,
             errors=errors,
         )
@@ -211,8 +260,28 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
 
+async def _trigger_discovery(hass: HomeAssistant) -> None:
+    """Trigger calendar discovery after a short delay."""
+    import asyncio
+
+    # Wait a bit for the entry to be fully set up
+    await asyncio.sleep(2)
+    await async_discover_calendars(hass)
+
+
 async def async_discover_calendars(hass: HomeAssistant) -> None:
     """Discover calendars and create discovery flows."""
+    # Check if auto-discovery is enabled
+    auto_discovery_enabled = False
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
+            auto_discovery_enabled = True
+            break
+
+    if not auto_discovery_enabled:
+        _LOGGER.debug("Auto-discovery is disabled, skipping calendar discovery")
+        return
+
     unconfigured = get_unconfigured_calendars(hass)
 
     for calendar_entity in unconfigured:

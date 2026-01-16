@@ -6,6 +6,7 @@ DOMAIN: Final[str] = "calendar_alarm_clock"
 
 # Configuration keys
 CONF_CALENDAR_ENTITY: Final[str] = "calendar_entity"
+CONF_AUTO_DISCOVER_CALENDARS: Final[str] = "auto_discover_calendars"
 CONF_DEFAULT_SNOOZE_DURATION: Final[str] = "default_snooze_duration"
 CONF_DEFAULT_ALARM_TIMEOUT: Final[str] = "default_alarm_timeout"
 CONF_DEFAULT_MAX_SNOOZES: Final[str] = "default_max_snoozes"

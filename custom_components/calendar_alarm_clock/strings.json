@@ -4,6 +4,16 @@
     "step": {
       "user": {
         "title": "Calendar Alarm Clock Setup",
+        "description": "Would you like to automatically discover and offer to set up alarm clocks for all your calendars?\n\n**Found {calendar_count} calendar(s)**\n\n**Auto-discovery**: Automatically offers to set up alarm clocks for all calendars (can get spammy if you have many calendars).\n\n**Manual setup**: Manually select which calendar to use for alarms.",
+        "data": {
+          "auto_discover_calendars": "Enable automatic calendar discovery"
+        },
+        "data_description": {
+          "auto_discover_calendars": "If enabled, the integration will automatically discover calendars and offer to set them up"
+        }
+      },
+      "manual": {
+        "title": "Select Calendar",
         "description": "Select the calendar to use for storing alarms. Make sure you have a calendar integration (like CalDAV) set up first.",
         "data": {
           "calendar_entity": "Calendar"

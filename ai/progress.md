@@ -6,6 +6,14 @@
 ## Status: ✅ Enhanced UI Complete
 
 ## Recent Changes (January 16, 2026)
+- **Added auto-discovery configuration option**: Users can now choose during initial setup whether calendars should be auto-discovered:
+  - New initial step in config flow asks about auto-discovery preference
+  - Shows count of available calendars
+  - "Auto-discovery" mode: automatically offers to set up alarm clocks for all calendars (can get spammy with many calendars)
+  - "Manual setup" mode: user manually selects which calendar to use
+  - Auto-discovery only triggers if user has enabled it
+  - Added `CONF_AUTO_DISCOVER_CALENDARS` constant
+  - Updated strings.json and translations with new flow steps
 - **Enhanced alarm list view**: Modern phone-style alarm list with:
   - SVG clock icons showing actual alarm time with day/night visual indicator
   - Display of day (Today, Tomorrow, or date) alongside time
