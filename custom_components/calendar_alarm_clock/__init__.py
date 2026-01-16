@@ -92,19 +92,19 @@ async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
     # Check if we already have an auto-discovery entry
     for entry in hass.config_entries.async_entries(DOMAIN):
         if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
-            _LOGGER.debug("Auto-discovery entry already exists")
+            _LOGGER.info("Auto-discovery entry already exists")
             return
 
     # Check if there are any calendars available
     calendars = get_calendar_entities(hass)
     if not calendars:
-        _LOGGER.debug("No calendars found, skipping auto-discovery entry creation")
+        _LOGGER.info("No calendars found, skipping auto-discovery entry creation")
         return
 
     # Check if there's already a pending flow for auto-discovery
     existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
     if any(flow.get("context", {}).get("unique_id") == "auto_discovery" for flow in existing_flows):
-        _LOGGER.debug("Auto-discovery flow already in progress")
+        _LOGGER.info("Auto-discovery flow already in progress")
         return
 
     _LOGGER.info("Found %d calendar(s), creating auto-discovery entry", len(calendars))
@@ -143,7 +143,7 @@ async def _async_register_card(hass: HomeAssistant) -> None:
                     )
                     _LOGGER.info("Registered Lovelace card resource: %s", LOVELACE_CARD_URL)
     except Exception as e:
-        _LOGGER.debug("Could not auto-register Lovelace resource: %s", e)
+        _LOGGER.warning("Could not auto-register Lovelace resource: %s", e)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
