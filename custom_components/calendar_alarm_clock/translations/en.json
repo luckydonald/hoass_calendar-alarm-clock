@@ -25,6 +25,10 @@
       "discovery_confirm": {
         "title": "Set up Alarm Clock",
         "description": "A calendar **{calendar}** was discovered. Would you like to use it as an alarm clock?\n\nAlarms will be stored as calendar events."
+      },
+      "auto_discovery_confirm": {
+        "title": "Enable Calendar Alarm Clock Auto-Discovery",
+        "description": "Calendar Alarm Clock can automatically discover your calendars and offer to set them up as alarm clocks.\n\nWould you like to enable auto-discovery?\n\n**Note**: You can always add calendars manually later by searching for 'Calendar Alarm Clock' in integrations."
       }
     },
     "abort": {

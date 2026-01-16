@@ -164,7 +164,25 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_integration_discovery(self, discovery_info: dict[str, Any]) -> FlowResult:
-        """Handle discovery of a calendar entity."""
+        """Handle discovery of a calendar entity or auto-discovery setup."""
+        # Check if this is an auto-discovery entry request
+        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS, False):
+            # This is a request to set up the auto-discovery entry
+            await self.async_set_unique_id("auto_discovery")
+            self._abort_if_unique_id_configured()
+
+            # Auto-confirm during onboarding or if no user interaction needed
+            if not onboarding.async_is_onboarded(self.hass):
+                return self.async_create_entry(
+                    title="Calendar Alarm Clock (Auto-Discovery)",
+                    data={CONF_AUTO_DISCOVER_CALENDARS: True},
+                )
+
+            # Show confirmation to user
+            self.context["title_placeholders"] = {"name": "Auto-Discovery"}
+            return await self.async_step_auto_discovery_confirm()
+
+        # This is a regular calendar discovery
         calendar_entity: str = discovery_info[CONF_CALENDAR_ENTITY]
 
         # Check if this calendar is already configured
@@ -178,6 +196,21 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.context["title_placeholders"] = {"name": calendar_name}
 
         return await self.async_step_discovery_confirm()
+
+    async def async_step_auto_discovery_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Confirm the auto-discovery setup."""
+        if user_input is not None:
+            return self.async_create_entry(
+                title="Calendar Alarm Clock (Auto-Discovery)",
+                data={CONF_AUTO_DISCOVER_CALENDARS: True},
+            )
+
+        return self.async_show_form(
+            step_id="auto_discovery_confirm",
+            description_placeholders={},
+        )
 
     async def async_step_discovery_confirm(
         self, user_input: dict[str, Any] | None = None

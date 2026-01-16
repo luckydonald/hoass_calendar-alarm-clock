@@ -57,6 +57,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     # Set up discovery when HA is fully started
     async def async_discover_on_start(_: HomeAssistant) -> None:
         """Discover calendars when HA starts."""
+        # First, check if we need to auto-create the auto-discovery entry
+        await _async_auto_create_discovery_entry(hass)
+        # Then discover calendars
         await _async_discover_calendars(hass)
 
     async_at_started(hass, async_discover_on_start)
@@ -71,11 +74,46 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             new_state = event.data.get("new_state")
             # Only trigger discovery if this is a new entity (old_state was None)
             if old_state is None and new_state is not None:
+                hass.async_create_task(_async_auto_create_discovery_entry(hass))
                 hass.async_create_task(_async_discover_calendars(hass))
 
     hass.bus.async_listen(EVENT_STATE_CHANGED, async_state_changed)
 
     return True
+
+
+async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
+    """Auto-create the auto-discovery entry if calendars exist and it's not configured."""
+    from homeassistant import config_entries
+    from .const import CONF_AUTO_DISCOVER_CALENDARS
+    from .config_flow import get_calendar_entities
+
+    # Check if we already have an auto-discovery entry
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
+            _LOGGER.debug("Auto-discovery entry already exists")
+            return
+
+    # Check if there are any calendars available
+    calendars = get_calendar_entities(hass)
+    if not calendars:
+        _LOGGER.debug("No calendars found, skipping auto-discovery entry creation")
+        return
+
+    # Check if there's already a pending flow for auto-discovery
+    existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
+    if any(flow.get("context", {}).get("unique_id") == "auto_discovery" for flow in existing_flows):
+        _LOGGER.debug("Auto-discovery flow already in progress")
+        return
+
+    _LOGGER.info("Found %d calendar(s), creating auto-discovery entry", len(calendars))
+
+    # Create the auto-discovery entry via a discovery flow
+    await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_INTEGRATION_DISCOVERY},
+        data={CONF_AUTO_DISCOVER_CALENDARS: True},
+    )
 
 
 async def _async_discover_calendars(hass: HomeAssistant) -> None:
