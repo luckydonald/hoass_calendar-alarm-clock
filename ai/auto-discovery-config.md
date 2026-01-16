@@ -26,6 +26,15 @@ Added a configuration option during initial integration setup that allows users 
   - Shows calendar entity selector
   - User manually chooses which calendar to configure
 
+- **Updated `async_step_integration_discovery`**:
+  - Now handles both auto-discovery entry creation and regular calendar discovery
+  - Checks if the discovery is for auto-discovery entry or a specific calendar
+  - Auto-confirms during onboarding, shows confirmation dialog after onboarding
+
+- **Added `async_step_auto_discovery_confirm`**:
+  - Confirmation step for auto-discovery entry (shown after onboarding)
+  - Explains what auto-discovery does and offers to enable it
+
 - **Added `_trigger_discovery` helper**:
   - Waits briefly for config entry to be set up
   - Triggers the discovery process
@@ -33,6 +42,26 @@ Added a configuration option during initial integration setup that allows users 
 - **Modified `async_discover_calendars`**:
   - Now checks if auto-discovery is enabled before creating discovery flows
   - Only discovers calendars if at least one config entry has `CONF_AUTO_DISCOVER_CALENDARS: True`
+
+#### 3. Main Integration (`__init__.py`)
+- **Added `_async_auto_create_discovery_entry` function**:
+  - Automatically creates the auto-discovery entry when calendars are detected
+  - Checks if auto-discovery entry already exists
+  - Checks if calendars are available
+  - Creates discovery flow for auto-discovery entry if needed
+  - Triggered on HA startup and when new calendars are added
+
+- **Modified `async_setup`**:
+  - Calls `_async_auto_create_discovery_entry` on startup
+  - Also calls it when new calendar entities are detected
+
+- **Updated `async_setup_entry`**:
+  - Checks if entry is auto-discovery type before trying to access calendar_entity
+  - Auto-discovery entries are lightweight - just mark as set up
+  - Regular entries create AlarmManager and sensors as before
+
+- **Updated `async_unload_entry`**:
+  - Handles auto-discovery entries separately (no platforms to unload)
 
 #### 3. Translations (`strings.json` and `translations/en.json`)
 - Updated `user` step: Now explains auto-discovery vs manual setup
@@ -61,10 +90,12 @@ Added a configuration option during initial integration setup that allows users 
 6. No automatic discovery for other calendars
 
 ### Benefits
-- **Less spam**: Users with many calendars can opt out of auto-discovery
-- **Flexibility**: Users can choose between convenience (auto) and control (manual)
-- **Transparency**: Clear explanation of what each option does
-- **Progressive disclosure**: Only shows complexity when needed
+- **Zero-configuration**: Users don't need to do anything - if they have calendars, the integration appears automatically
+- **Less spam**: Users with many calendars can still opt out by rejecting the auto-discovery confirmation or by manually adding specific calendars
+- **Flexibility**: Users can still choose between convenience (auto) and control (manual) via manual integration setup
+- **Transparency**: Clear explanation of what auto-discovery does when user sees confirmation dialog
+- **Progressive disclosure**: During onboarding, it's automatic. After onboarding, user gets to confirm
+- **Smart**: Only creates auto-discovery entry if calendars actually exist
 
 ### Technical Notes
 - Auto-discovery entry uses unique_id "auto_discovery" to prevent duplicates
