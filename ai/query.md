@@ -148,3 +148,8 @@ Modify the panel in the following way:
         - but you can configure either x time
         - or y alarms (count)
 - Section to add a alarm (name, time, etc. (This is alrealdy implemented, but this section should be optional, allowing On and Off (to always show/hide it), as well as automatic, which shows it if you clicked on [add element]
+
+——————
+
+Rename `Calender Alarm Clock Card` to `Calendar Alarm Clock Card` everywhere.
+Make sure the custom components are named `calender-alarm-clock-card` and `calender-alarm-clock-editor`
