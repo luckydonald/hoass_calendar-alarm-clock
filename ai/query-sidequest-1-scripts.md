@@ -61,12 +61,4 @@ The interesting part is, the first step already fails if it has those fixable is
 fatal: tag 'v0.0.0-pre19' already exists
 Ask to move the tag (delete the old one and recreate as intended)
 
-✅ **DONE**:
-- Added check for existing tags before creating (using `git rev-parse`)
-- Prompts user: "Move tag to current commit? (y/N)"
-- If yes: Deletes old local tag, creates new one at current commit
-- If no: Exits with error message
-- When pushing, detects if tag exists on remote and force pushes if needed
-- This allows re-running the release script on the same version
-
 ——————————
