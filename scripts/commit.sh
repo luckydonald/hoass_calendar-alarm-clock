@@ -7,9 +7,11 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-COMMIT_MSG_ERRORS="ai: updated errors"
-COMMIT_MSG_QUERY="ai: updated query"
-COMMIT_MSG_STEP="ai: running... ({step}-{substep})"
+COMMIT_MSG_ERRORS="🐞 ai: updated errors"
+COMMIT_MSG_QUERY="🤌 ai: updated query"
+COMMIT_MSG_STEP="✨ ai: running... ({step}-{substep})"
+COMMIT_MSG_FIX="🫥 own: {msg}"
+COMMIT_MSG_OWN="👩‍💻 own: {msg}"
 
 tmpl() {
     local tmpl_str=$1
