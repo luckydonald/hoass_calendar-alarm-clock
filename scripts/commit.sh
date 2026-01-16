@@ -49,9 +49,14 @@ STASH_STAGED=false
 STAGED_FILES=""
 if [ -n "$(git diff --cached --name-only)" ]; then
     echo -e "${YELLOW}Saving staged changes...${NC}"
+    # Store the list of staged files
     STAGED_FILES=$(git diff --cached --name-only)
-    git reset HEAD
-    echo "  Unstaged files"
+    echo "  Files to restore later:"
+    echo "$STAGED_FILES" | sed 's/^/    - /'
+
+    # Unstage them (this does NOT delete anything, just moves from staging to working directory)
+    git reset HEAD --quiet
+    echo "  Unstaged files (they remain in your working directory)"
     STASH_STAGED=true
 fi
 
@@ -89,12 +94,15 @@ fi
 if [ "$STASH_STAGED" = true ]; then
     echo -e "${YELLOW}Restoring staged changes...${NC}"
     # Re-stage the files that were originally staged
+    # (They've been in the working directory this whole time, unchanged)
+    RESTORED_COUNT=0
     echo "$STAGED_FILES" | while IFS= read -r file; do
-        if [ -f "$file" ] || [ -d "$file" ]; then
+        if [ -n "$file" ] && ([ -f "$file" ] || [ -d "$file" ]); then
             git add "$file"
+            RESTORED_COUNT=$((RESTORED_COUNT + 1))
         fi
     done
-    echo "  Restored"
+    echo "  Re-staged files"
 fi
 
 # Check if there are any other changes to commit
