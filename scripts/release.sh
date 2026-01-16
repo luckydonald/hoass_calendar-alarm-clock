@@ -93,16 +93,10 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Step 1: Check for errors (lint without formatting)
+# Step 1: Check for type errors (not lint - we'll fix those in step 3)
 echo ""
-echo -e "${GREEN}🔍 Step 1: Check for lint errors${NC}"
-if command -v uv &> /dev/null; then
-    echo "  Running ruff check..."
-    if ! uv run ruff check custom_components/; then
-        echo -e "${YELLOW}  Found lint errors that may be auto-fixable${NC}"
-        exit 1
-    fi
-else
+echo -e "${GREEN}🔍 Step 1: Check for type errors${NC}"
+if ! command -v uv &> /dev/null; then
     echo -e "${RED}  Error: uv not found${NC}"
     echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
     exit 1
@@ -111,7 +105,7 @@ echo "  Running frontend type-check..."
 cd frontend
 yarn type-check
 cd ..
-echo "  All checks passed!"
+echo "  Type checks passed!"
 
 # Step 2: Run commit.sh to commit pending changes
 echo ""
