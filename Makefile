@@ -36,11 +36,10 @@ build:
 	@echo "Building frontend..."
 	cd frontend && yarn install && yarn build
 
-release:
+release: format lint build
 	@chmod +x scripts/release.sh
 	@./scripts/release.sh
 
 commit:
 	@chmod +x scripts/commit.sh
 	@./scripts/commit.sh
-
