@@ -1,0 +1,19 @@
+{
+  "typescript": {
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "useTabs": false,
+    "semiColons": "always",
+    "quoteStyle": "preferSingle",
+    "trailingCommas": "always",
+    "preferSingleLine": false
+  },
+  "json": {
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "useTabs": false
+  },
+  "includes": ["src/**/*.{ts,tsx,js,jsx,json,vue}"],
+  "excludes": ["node_modules", "dist"]
+}
+

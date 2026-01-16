@@ -107,7 +107,7 @@ fi
 echo ""
 echo -e "${GREEN}📘 Step 4: Format TypeScript code${NC}"
 cd frontend
-yarn format 2>/dev/null || yarn prettier --write src/ 2>/dev/null || echo "  No TS formatter configured, skipping"
+yarn format
 cd ..
 if ! git diff --quiet -- frontend/; then
     git add -u frontend/
