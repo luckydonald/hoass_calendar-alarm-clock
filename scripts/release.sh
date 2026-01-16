@@ -139,9 +139,9 @@ if ! uv run ruff check custom_components/; then
 fi
 echo "  All lint errors resolved!"
 
-# Step 3: Run Python formatter and commit
+# Step 4: Run Python formatter and commit
 echo ""
-echo -e "${GREEN}🐍 Step 3: Format Python code${NC}"
+echo -e "${GREEN}🐍 Step 4: Format Python code${NC}"
 uv run ruff format custom_components/
 if ! git diff --quiet -- custom_components/; then
     git add -u custom_components/
@@ -151,9 +151,9 @@ else
     echo "  No Python formatting changes needed"
 fi
 
-# Step 4: Run TS formatter and commit
+# Step 5: Run TS formatter and commit
 echo ""
-echo -e "${GREEN}📘 Step 4: Format TypeScript code${NC}"
+echo -e "${GREEN}📘 Step 5: Format TypeScript code${NC}"
 cd frontend
 yarn format
 cd ..
@@ -165,9 +165,9 @@ else
     echo "  No TypeScript formatting changes needed"
 fi
 
-# Step 5: Build frontend to confirm it works
+# Step 6: Build frontend to confirm it works
 echo ""
-echo -e "${GREEN}📦 Step 5: Build frontend${NC}"
+echo -e "${GREEN}📦 Step 6: Build frontend${NC}"
 cd frontend
 echo "  Installing dependencies..."
 yarn install --silent
@@ -176,9 +176,9 @@ yarn build
 cd ..
 echo "  Frontend built successfully!"
 
-# Step 6: Bump version AFTER all tests pass
+# Step 7: Bump version AFTER all tests pass
 echo ""
-echo -e "${GREEN}🏷️  Step 6: Update version${NC}"
+echo -e "${GREEN}🏷️  Step 7: Update version${NC}"
 sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/calendar_alarm_clock/manifest.json
 rm -f custom_components/calendar_alarm_clock/manifest.json.bak
 echo "  Updated manifest.json to ${NEW_VERSION}"
@@ -190,9 +190,9 @@ echo "  Committed version bump"
 git tag "v${NEW_VERSION}"
 echo "  Created tag v${NEW_VERSION}"
 
-# Step 7: Push
+# Step 8: Push
 echo ""
-echo -e "${GREEN}📤 Step 7: Push to origin${NC}"
+echo -e "${GREEN}📤 Step 8: Push to origin${NC}"
 git push origin mane
 echo "  Pushed to origin/mane"
 
