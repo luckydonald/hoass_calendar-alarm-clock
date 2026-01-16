@@ -57,3 +57,8 @@ Also insert a step where the linter has only fixable errors, so it commits the f
 The interesting part is, the first step already fails if it has those fixable issues - they are at that point still considered issues.
 
 ——————————
+
+fatal: tag 'v0.0.0-pre19' already exists
+Ask to move the tag (delete the old one and recreate as intended)
+
+——————————
