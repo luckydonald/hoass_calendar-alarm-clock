@@ -107,9 +107,7 @@ async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
         return
 
     if has_manual_entries:
-        _LOGGER.debug(
-            "User has manually configured calendar entries, skipping auto-discovery"
-        )
+        _LOGGER.debug("User has manually configured calendar entries, skipping auto-discovery")
         return
 
     # Check if there are any calendars available
