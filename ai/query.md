@@ -167,3 +167,4 @@ I don't see the initial "Calendar Alarm Clock (Auto-Discovery)" auto-discovery p
 
 "Alarm Clock for Auto-Discovery Calendar backed Alarm Clock"
 appears after I added a calendar manually, so maybe it's logic when to appear is wrong?
+Uh, also I implied with that, that "Alarm Clock for Auto-Discovery Calendar backed Alarm Clock" did NOT apply before adding that intigration basically myself... did you fix that, too?
