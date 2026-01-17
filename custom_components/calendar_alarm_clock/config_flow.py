@@ -165,7 +165,9 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_integration_discovery(self, discovery_info: dict[str, Any]) -> ConfigFlowResult:
+    async def async_step_integration_discovery(
+        self, discovery_info: dict[str, Any]
+    ) -> ConfigFlowResult:
         """Handle discovery of a calendar entity or auto-discovery setup."""
         _LOGGER.info("Integration discovery triggered with data: %s", discovery_info)
 
@@ -182,11 +184,11 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.info("System onboarded: %s", is_onboarded)
 
         if not is_onboarded:
-          _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
-          return self.async_create_entry(
-            title="Calendar Alarm Clock (Auto-Discovery)",
-            data={CONF_AUTO_DISCOVER_CALENDARS: True},
-          )
+            _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
+            return self.async_create_entry(
+                title="Calendar Alarm Clock (Auto-Discovery)",
+                data={CONF_AUTO_DISCOVER_CALENDARS: True},
+            )
         # end if
         if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS):
             # Show confirmation to user
