@@ -21,6 +21,7 @@ from .const import (
     EVENT_ALARM_RINGING,
     EVENT_ALARM_SNOOZED,
     EVENT_ALARM_TIMED_OUT,
+    LOG_NAME,
     PREFIX_DISABLED,
     PREFIX_DISMISSED,
     PREFIX_SNOOZE,
@@ -31,7 +32,6 @@ from .const import (
     STATE_SNOOZED,
     STATE_TIMED_OUT,
     SUFFIX_SNOOZE,
-    LOG_NAME,
 )
 from .models import Alarm
 

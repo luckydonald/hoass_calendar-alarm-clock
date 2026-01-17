@@ -170,7 +170,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.info("Integration discovery triggered with data: %s", discovery_info)
 
         # Check if this is an auto-discovery entry request
-        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS, None) is None:
+        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS) is None:
             # This is a request to set up the auto-discovery entry
             _LOGGER.info("Auto-discovery entry requested, setting unique_id")
             await self.async_set_unique_id("auto_discovery")
@@ -188,7 +188,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data={CONF_AUTO_DISCOVER_CALENDARS: True},
           )
         # end if
-        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS, None):
+        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS):
             # Show confirmation to user
             _LOGGER.info("Showing auto-discovery confirmation dialog to user")
             self.context["title_placeholders"] = {"name": "Auto-Discovery"}

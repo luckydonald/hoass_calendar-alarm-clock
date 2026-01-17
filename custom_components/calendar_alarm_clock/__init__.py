@@ -25,8 +25,8 @@ from .const import (
     DEFAULT_MAX_SNOOZES,
     DEFAULT_SNOOZE_DURATION,
     DOMAIN,
-    UPDATE_INTERVAL,
     LOG_NAME,
+    UPDATE_INTERVAL,
 )
 from .services import async_setup_services, async_unload_services
 

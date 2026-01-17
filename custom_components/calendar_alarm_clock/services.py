@@ -18,6 +18,7 @@ from .const import (
     ATTR_TIME,
     DEFAULT_NAME,
     DOMAIN,
+    LOG_NAME,
     SERVICE_CREATE_ALARM,
     SERVICE_DELETE_ALARM,
     SERVICE_DISABLE_ALARM,
@@ -27,7 +28,6 @@ from .const import (
     SERVICE_LIST_ALARMS,
     SERVICE_SNOOZE_ALARM,
     SERVICE_TRIGGER_ALARM,
-    LOG_NAME,
 )
 
 _LOGGER = logging.getLogger(LOG_NAME)
