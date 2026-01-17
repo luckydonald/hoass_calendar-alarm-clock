@@ -8,6 +8,7 @@ from typing import Any
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.components import onboarding
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import entity_registry as er
@@ -164,28 +165,30 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_integration_discovery(self, discovery_info: dict[str, Any]) -> FlowResult:
+    async def async_step_integration_discovery(self, discovery_info: dict[str, Any]) -> ConfigFlowResult:
         """Handle discovery of a calendar entity or auto-discovery setup."""
         _LOGGER.info("Integration discovery triggered with data: %s", discovery_info)
 
         # Check if this is an auto-discovery entry request
-        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS, False):
+        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS, None) is None:
             # This is a request to set up the auto-discovery entry
             _LOGGER.info("Auto-discovery entry requested, setting unique_id")
             await self.async_set_unique_id("auto_discovery")
             self._abort_if_unique_id_configured()
+        # end if
 
-            # Auto-confirm during onboarding or if no user interaction needed
-            is_onboarded = onboarding.async_is_onboarded(self.hass)
-            _LOGGER.info("System onboarded: %s", is_onboarded)
+        # Auto-confirm during onboarding or if no user interaction needed
+        is_onboarded = onboarding.async_is_onboarded(self.hass)
+        _LOGGER.info("System onboarded: %s", is_onboarded)
 
-            if not is_onboarded:
-                _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
-                return self.async_create_entry(
-                    title="Calendar Alarm Clock (Auto-Discovery)",
-                    data={CONF_AUTO_DISCOVER_CALENDARS: True},
-                )
-
+        if not is_onboarded:
+          _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
+          return self.async_create_entry(
+            title="Calendar Alarm Clock (Auto-Discovery)",
+            data={CONF_AUTO_DISCOVER_CALENDARS: True},
+          )
+        # end if
+        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS, None):
             # Show confirmation to user
             _LOGGER.info("Showing auto-discovery confirmation dialog to user")
             self.context["title_placeholders"] = {"name": "Auto-Discovery"}
