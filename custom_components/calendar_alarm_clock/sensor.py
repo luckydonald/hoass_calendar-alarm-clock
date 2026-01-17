@@ -23,10 +23,11 @@ from .const import (
     ATTR_TIME,
     ATTR_TIMEOUT,
     DOMAIN,
+    LOG_NAME,
 )
 from .models import Alarm
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(LOG_NAME)
 
 
 async def async_setup_entry(

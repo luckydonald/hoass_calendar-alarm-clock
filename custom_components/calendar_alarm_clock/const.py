@@ -3,6 +3,7 @@
 from typing import Final, Literal
 
 DOMAIN: Final[str] = "calendar_alarm_clock"
+LOG_NAME: Final[str] = f"custom-components.{DOMAIN}"
 
 # Configuration keys
 CONF_CALENDAR_ENTITY: Final[str] = "calendar_entity"

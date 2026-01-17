@@ -27,9 +27,10 @@ from .const import (
     SERVICE_LIST_ALARMS,
     SERVICE_SNOOZE_ALARM,
     SERVICE_TRIGGER_ALARM,
+    LOG_NAME,
 )
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(LOG_NAME)
 
 # Service schemas
 SERVICE_CREATE_ALARM_SCHEMA: vol.Schema = vol.Schema(

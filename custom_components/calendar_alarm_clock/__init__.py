@@ -26,10 +26,11 @@ from .const import (
     DEFAULT_SNOOZE_DURATION,
     DOMAIN,
     UPDATE_INTERVAL,
+    LOG_NAME,
 )
 from .services import async_setup_services, async_unload_services
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(LOG_NAME)
 
 # This integration is config entry only (no YAML configuration)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)

@@ -29,9 +29,10 @@ from .const import (
     DEFAULT_MAX_SNOOZES,
     DEFAULT_SNOOZE_DURATION,
     DOMAIN,
+    LOG_NAME,
 )
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(LOG_NAME)
 
 
 def get_calendar_entities(hass: HomeAssistant) -> list[str]:

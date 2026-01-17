@@ -31,10 +31,11 @@ from .const import (
     STATE_SNOOZED,
     STATE_TIMED_OUT,
     SUFFIX_SNOOZE,
+    LOG_NAME,
 )
 from .models import Alarm
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(LOG_NAME)
 
 
 class AlarmManager:
