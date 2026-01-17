@@ -102,6 +102,8 @@ async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
         else:
             # This is a manually configured calendar entry
             has_manual_entries = True
+        # end if
+    # end for
 
     if has_auto_discovery:
         _LOGGER.debug("Auto-discovery entry already exists")
