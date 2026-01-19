@@ -1,4 +1,4 @@
-"""Sensor platform for Plugin Template."""
+"""Sensor platform for Calendar backed Alarm Clock."""
 
 from __future__ import annotations
 
@@ -20,23 +20,23 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Plugin Template sensors."""
+    """Set up Calendar backed Alarm Clock sensors."""
     # Example: Create a basic sensor
     sensors = [
-        PluginTemplateSensor(entry, "example"),
+        CalendarBackedAlarmClockSensor(entry, "example"),
     ]
 
     async_add_entities(sensors)
 
 
-class PluginTemplateSensor(SensorEntity):
-    """Representation of a Plugin Template Sensor."""
+class CalendarBackedAlarmClockSensor(SensorEntity):
+    """Representation of a Calendar backed Alarm Clock Sensor."""
 
     def __init__(self, entry: ConfigEntry, sensor_type: str) -> None:
         """Initialize the sensor."""
         self._entry = entry
         self._sensor_type = sensor_type
-        self._attr_name = f"Plugin Template {sensor_type.title()}"
+        self._attr_name = f"Calendar backed Alarm Clock {sensor_type.title()}"
         self._attr_unique_id = f"{entry.entry_id}_{sensor_type}"
         self._attr_native_value = None
 
@@ -45,9 +45,9 @@ class PluginTemplateSensor(SensorEntity):
         """Return device info."""
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
-            name="Plugin Template",
+            name="Calendar backed Alarm Clock",
             manufacturer="Custom",
-            model="Plugin Template",
+            model="Calendar backed Alarm Clock",
         )
 
     async def async_update(self) -> None:

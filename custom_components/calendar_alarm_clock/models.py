@@ -1,4 +1,4 @@
-"""Data models for Plugin Template."""
+"""Data models for Calendar backed Alarm Clock."""
 
 from __future__ import annotations
 

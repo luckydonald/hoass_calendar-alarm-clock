@@ -24,11 +24,11 @@ describe('main.ts registration', () => {
 
     // Check that customElements.define was called
     expect(global.customElements.define).toHaveBeenCalledWith(
-      'plugin-template-card',
+      'calendar-alarm-clock-card',
       expect.any(Function),
     );
     expect(global.customElements.define).toHaveBeenCalledWith(
-      'plugin-template-card-editor',
+      'calendar-alarm-clock-card-editor',
       expect.any(Function),
     );
   });
