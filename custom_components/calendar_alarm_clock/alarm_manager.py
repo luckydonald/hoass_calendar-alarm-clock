@@ -98,10 +98,20 @@ class AlarmManager:
         end: datetime = now + timedelta(days=7)  # Look ahead one week
 
         try:
-            # Call calendar.get_events service (renamed from list_events in HA 2023.6+)
-            result: dict[str, Any] | None = await self.hass.services.async_call(
+            # Prefer the newer 'get_events' service, fall back to legacy 'list_events'
+            service_name = None
+            if self.hass.services.has_service("calendar", "get_events"):
+                service_name = "get_events"
+            elif self.hass.services.has_service("calendar", "list_events"):
+                service_name = "list_events"
+
+            if service_name is None:
+                _LOGGER.error("No calendar service available to list events (tried get_events and list_events)")
+                return
+
+            result: dict[str, Any] | list | None = await self.hass.services.async_call(
                 "calendar",
-                "get_events",
+                service_name,
                 {
                     "entity_id": self.calendar_entity,
                     "start_date_time": start.isoformat(),
@@ -114,7 +124,17 @@ class AlarmManager:
             if result is None:
                 result = {}
 
-            events: list[dict[str, Any]] = result.get(self.calendar_entity, {}).get("events", [])
+            # Normalize response to list of events
+            events: list[dict[str, Any]] = []
+            if isinstance(result, dict):
+                # Newer get_events returns {entity_id: {"events": [...]}}
+                events = result.get(self.calendar_entity, {}).get("events", [])
+            elif isinstance(result, list):
+                # Some integrations may return a simple list of events
+                events = result
+            else:
+                # Unexpected type
+                _LOGGER.debug("Unexpected calendar service response type: %s", type(result))
 
             # Convert events to alarms
             new_alarms: dict[str, Alarm] = {}
