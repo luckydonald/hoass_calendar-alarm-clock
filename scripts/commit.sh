@@ -21,11 +21,21 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Commit message templates - now using unified format for all repos
+COMMIT_PREFIX_TEMPLATE="📄TEMPLATE | "
 COMMIT_MSG_ERRORS="🐞 ai: updated errors"
 COMMIT_MSG_QUERY="🤌 ai: updated query"
-COMMIT_MSG_STEP="✨ ai: running... ({step}-{substep})"
-COMMIT_MSG_FIX="🫥 own: {msg}"
-COMMIT_MSG_OWN="👩‍💻 own: {msg}"
+COMMIT_MSG_STEP="✨ ai: [{padded_step}] {msg} ({substep}/{total_substeps})"
+
+# Detect if we're in the template repository
+REPO_DIR=$(basename "$(cd "$SCRIPT_DIR/.." && pwd)")
+IS_TEMPLATE_REPO=false
+COMMIT_PREFIX=""
+if echo "$REPO_DIR" | grep -qE "^hoass_(plugin[-_])?template"; then
+    IS_TEMPLATE_REPO=true
+    COMMIT_PREFIX="${COMMIT_PREFIX_TEMPLATE}"
+    echo -e "${YELLOW}Template repository detected - using TEMPLATE prefix${NC}"
+fi
 
 # -------------------------------------------------
 # tmpl  –  expand a template using environment variables
@@ -39,8 +49,10 @@ echo -e "${GREEN}📝 Calendar Alarm Clock - Commit Script${NC}"
 echo ""
 
 # Check we're in the right directory
-if [ ! -f "custom_components/calendar_alarm_clock/manifest.json" ]; then
+# Look for any of: custom_components/*/manifest.json, frontend/, scripts/ directory, or hacs.json
+if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" ] && [ ! -f "hacs.json" ]; then
     echo -e "${RED}Error: Must be run from the repository root${NC}"
+    echo "Expected to find: custom_components/, frontend/, or hacs.json"
     exit 1
 fi
 
@@ -64,12 +76,12 @@ fi
 if git diff --name-only | grep -q "^ai/query.md$"; then
     echo -e "${GREEN}Committing ai/query.md...${NC}"
     git add ai/query.md
-    git commit -m "${COMMIT_MSG_QUERY}"
+    git commit -m "${COMMIT_PREFIX}${COMMIT_MSG_QUERY}"
     echo "  Done"
 elif [ -f "ai/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/query.md$"; then
     echo -e "${GREEN}Committing ai/query.md (new file)...${NC}"
     git add ai/query.md
-    git commit -m "${COMMIT_MSG_QUERY}"
+    git commit -m "${COMMIT_PREFIX}${COMMIT_MSG_QUERY}"
     echo "  Done"
 else
     echo -e "${YELLOW}No changes to ai/query.md${NC}"
@@ -79,15 +91,45 @@ fi
 if git diff --name-only | grep -q "^ai/errors.md$"; then
     echo -e "${GREEN}Committing ai/errors.md...${NC}"
     git add ai/errors.md
-    git commit -m "${COMMIT_MSG_ERRORS}"
+    git commit -m "${COMMIT_PREFIX}${COMMIT_MSG_ERRORS}"
     echo "  Done"
 elif [ -f "ai/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/errors.md$"; then
     echo -e "${GREEN}Committing ai/errors.md (new file)...${NC}"
     git add ai/errors.md
-    git commit -m "${COMMIT_MSG_ERRORS}"
+    git commit -m "${COMMIT_PREFIX}${COMMIT_MSG_ERRORS}"
     echo "  Done"
 else
     echo -e "${YELLOW}No changes to ai/errors.md${NC}"
+fi
+
+# Commit ai/plugin_template/query.md if it has changes
+if git diff --name-only | grep -q "^ai/plugin_template/query.md$"; then
+    echo -e "${GREEN}Committing ai/plugin_template/query.md...${NC}"
+    git add ai/plugin_template/query.md
+    git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_QUERY}"
+    echo "  Done"
+elif [ -f "ai/plugin_template/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/plugin_template/query.md$"; then
+    echo -e "${GREEN}Committing ai/plugin_template/query.md (new file)...${NC}"
+    git add ai/plugin_template/query.md
+    git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_QUERY}"
+    echo "  Done"
+# else
+#     echo -e "${YELLOW}No changes to ai/plugin_template/query.md${NC}"
+fi
+
+# Commit ai/plugin_template/errors.md if it has changes
+if git diff --name-only | grep -q "^ai/plugin_template/errors.md$"; then
+    echo -e "${GREEN}Committing ai/plugin_template/errors.md...${NC}"
+    git add ai/plugin_template/errors.md
+    git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_ERRORS}"
+    echo "  Done"
+elif [ -f "ai/plugin_template/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/plugin_template/errors.md$"; then
+    echo -e "${GREEN}Committing ai/plugin_template/errors.md (new file)...${NC}"
+    git add ai/plugin_template/errors.md
+    git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_ERRORS}"
+    echo "  Done"
+# else
+#     echo -e "${YELLOW}No changes to ai/plugin_template/errors.md${NC}"
 fi
 
 # Restore staged changes before the final commit
@@ -107,22 +149,63 @@ fi
 
 # Check if there are any other changes to commit
 if [ -n "$(git status --porcelain)" ]; then
-    # Find the last "ai: running..." commit and extract the step number
-    # macOS-compatible: use sed instead of grep -P
-    LAST_STEP=$(git log --oneline | grep "ai: running\.\.\. (" | head -1 | sed 's/.*ai: running\.\.\. (\([0-9]*\).*/\1/')
+    # Intelligently determine step and substep numbers from commit history
+    # Look through recent commits to find the last relevant AI commit
 
-    if [ -z "$LAST_STEP" ]; then
-        NEW_STEP=1
-    else
-        NEW_STEP=$((LAST_STEP + 1))
+    step=1
+    substep=1
+    found_running=false
+    found_query_or_error=false
+
+    # Read commit messages one by one
+    while IFS= read -r commit_msg; do
+        # Check for "ai: updated query" or "ai: updated errors" FIRST
+        if echo "$commit_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+            # Found a query/errors update - this means next commit should increment step
+            found_query_or_error=true
+            # Don't break - we need to find the last running commit to get the step number
+            continue
+        fi
+
+        # Check for new unified format: "✨ ai: [007] Any message… (2/X)"
+        # Works with or without TEMPLATE prefix
+        if echo "$commit_msg" | grep -qE "ai: \[[0-9]+\].*\([0-9]+/"; then
+            # Extract step and substep from format
+            last_step=$(echo "$commit_msg" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
+            last_substep=$(echo "$commit_msg" | sed 's/.*(\([0-9]*\)\/.*/\1/')
+
+            if [ -n "$last_step" ] && [ -n "$last_substep" ]; then
+                if [ "$found_query_or_error" = true ]; then
+                    # Found query/error before this running commit - increment step, reset substep
+                    step=$((last_step + 1))
+                    substep=1
+                else
+                    # No query/error - just increment substep
+                    step=$last_step
+                    substep=$((last_substep + 1))
+                fi
+                found_running=true
+                break
+            fi
+        fi
+    done < <(git log --format=%s -20)  # Look at last 20 commits
+
+    # If we didn't find any running commit, start fresh
+    if [ "$found_running" = false ]; then
+        step=1
+        substep=1
     fi
 
-    echo -e "${GREEN}Committing remaining changes as step ${NEW_STEP}...${NC}"
+    echo -e "${GREEN}Committing remaining changes as step ${step}-${substep}...${NC}"
     git add -u
     git add .  # Also add new files that aren't ignored
     # shellcheck disable=SC2034
 
-    git commit -m "$(step="$NEW_STEP" substep="1" tmpl "${COMMIT_MSG_STEP}")"
+    # Use unified template format with zero-padded step
+    padded_step=$(printf "%03d" "$step")
+    total_substeps="X"  # Unknown at this point
+    msg="running…"  # Using … instead of ...
+    git commit -m "${COMMIT_PREFIX}$(padded_step="$padded_step" substep="$substep" total_substeps="$total_substeps" msg="$msg" tmpl "${COMMIT_MSG_STEP}")"
     echo "  Done"
 else
     echo -e "${YELLOW}No other changes to commit${NC}"

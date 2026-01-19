@@ -1,3 +1,4 @@
+# A log of errors given to the AI during processing.
 
 It doesn't appear as integration to add?
 There i would assume the following flow:

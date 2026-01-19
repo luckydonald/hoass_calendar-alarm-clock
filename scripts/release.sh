@@ -35,9 +35,35 @@ COMMIT_MSG_LINT="🔧 lint: {reason}"
 echo -e "${GREEN}🚀 Calendar Alarm Clock - Release Script${NC}"
 echo ""
 
+# Load project settings
+if ! command -v python3 &> /dev/null; then
+    echo -e "${RED}Error: python3 not found${NC}"
+    exit 1
+fi
+
+settings_status=0
+settings_output=$(python3 scripts/get_project_settings.py) || settings_status=$?
+if [ ${settings_status} -ne 0 ]; then
+    echo -e "${RED}Error: Failed to load project settings. Run 'make init' first.${NC}"
+    exit 1
+fi
+eval "${settings_output}"
+# running get_project_settings.py should define:
+# DISPLAY_NAME=settings['display_name']
+# DASH_NAME=settings['dash_name']
+# SNAKE_NAME=settings['snake_name']
+# PASCAL_NAME=settings['pascal_name']
+# GITHUB_USER=settings['github_user']
+# GITHUB_URL=settings['github_url']
+# KEEP_BACKEND=str(settings['keep_backend']).lower()
+# FRONTEND_CHOICE=settings['frontend_choice']
+# CURRENT_YEAR=settings['current_year']
+
 # Check we're in the right directory
-if [ ! -f "custom_components/calendar_alarm_clock/manifest.json" ]; then
+# Look for custom_components directory with any subdirectory containing manifest.json, or hacs.json
+if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" ] && [ ! -f "hacs.json" ]; then
     echo -e "${RED}Error: Must be run from the repository root${NC}"
+    echo "Expected to find: custom_components/, frontend/, or hacs.json"
     exit 1
 fi
 
@@ -54,9 +80,9 @@ if ! git diff --quiet HEAD -- || [ -n "$(git ls-files --others --exclude-standar
 fi
 
 # Get current version from latest git tag
-CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+CURRENT_VERSION=$(git tag --list 'v*' --sort=-version:refname | head -n 1 | sed 's/^v//')
 if [ -z "$CURRENT_VERSION" ]; then
-    echo -e "${YELLOW}No existing tags found, starting at v0.0.0-pre1${NC}"
+    echo -e "${YELLOW}No existing version tags found, starting at v0.0.0-pre1${NC}"
     CURRENT_VERSION="0.0.0-pre0"
 fi
 echo -e "Current version: ${YELLOW}v${CURRENT_VERSION}${NC}"
@@ -86,9 +112,9 @@ fi
 echo -e "New version: ${GREEN}v${NEW_VERSION}${NC}"
 echo ""
 
-read -p "Proceed with release? (y/N) " -n 1 -r
+read -p "Proceed with release? (Y/n) " -n 1 -r
 echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+if [[ $REPLY =~ ^[Nn]$ ]]; then
     echo "Aborted."
     exit 0
 fi
@@ -173,11 +199,11 @@ echo "  Frontend built successfully!"
 # Step 7: Bump version AFTER all tests pass
 echo ""
 echo -e "${GREEN}🏷️  Step 7: Update version${NC}"
-sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' custom_components/calendar_alarm_clock/manifest.json
-rm -f custom_components/calendar_alarm_clock/manifest.json.bak
+sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' "custom_components/${SNAKE_NAME}/manifest.json"
+rm -f "custom_components/${SNAKE_NAME}/manifest.json.bak"
 echo "  Updated manifest.json to ${NEW_VERSION}"
 
-git add custom_components/calendar_alarm_clock/manifest.json
+git add "custom_components/${SNAKE_NAME}/manifest.json"
 git commit -m "$(from="${CURRENT_VERSION}" to="${NEW_VERSION}" tmpl "${COMMIT_MSG_VERSION_BUMP}")"
 echo "  Committed version bump"
 
@@ -224,8 +250,7 @@ echo "  2. Create a release zip"
 echo "  3. Publish to GitHub Releases"
 echo ""
 echo "View the release at:"
-echo "  https://github.com/luckydonald/hoass_calendar-alarm-clock/releases/tag/v${NEW_VERSION}"
+echo "  ${GITHUB_URL%.git}/releases/tag/v${NEW_VERSION}"
 echo ""
 echo "Install via HACS:"
-echo "  https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_calendar-alarm-clock&category=integration"
-
+echo "  https://my.home-assistant.io/redirect/hacs_repository/?owner=${GITHUB_USER}&repository=hoass_${DASH_NAME}&category=integration"

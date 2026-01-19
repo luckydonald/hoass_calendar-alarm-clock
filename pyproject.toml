@@ -1,17 +1,23 @@
 [project]
 name = "hoass_calendar-alarm-clock"
-version = "1.0.0"
-description = "Calendar backed Alarm Clock for Home Assistant"
 readme = "README.md"
-license = { text = "MIT" }
-authors = [{ name = "luckydonald" }]
+version = "0.0.0-pre0"
+description = "Calendar backed Alarm Clock for Home Assistant"
 requires-python = ">=3.12"
+dependencies = [
+]
+license = { text = "MIT" }
+authors = [{ name = "luckydonald" }, { name = "luckylucy" }]
 
 [dependency-groups]
 dev = [
     "ruff>=0.9.0",
     "mypy>=1.14.0",
     "homeassistant>=2024.1.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-homeassistant-custom-component>=0.13.0",
 ]
 
 [tool.ruff]
@@ -50,3 +56,35 @@ disallow_incomplete_defs = true
 check_untyped_defs = true
 strict_optional = true
 
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--cov=custom_components.plugin_template",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+[tool.coverage.run]
+source = ["custom_components/plugin_template"]
+omit = [
+    "tests/*",
+    "**/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
