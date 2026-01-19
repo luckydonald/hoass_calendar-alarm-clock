@@ -106,7 +106,9 @@ class AlarmManager:
                 service_name = "list_events"
 
             if service_name is None:
-                _LOGGER.error("No calendar service available to list events (tried get_events and list_events)")
+                _LOGGER.error(
+                    "No calendar service available to list events (tried get_events and list_events)"
+                )
                 return
 
             result: dict[str, Any] | list | None = await self.hass.services.async_call(
