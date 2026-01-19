@@ -60,7 +60,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             # Older API - best effort registration
             try:
                 hass.http.register_static_path(
-                    f"/local/community/{DOMAIN}", str(Path(__file__).parent / "www"), cache_headers=False
+                    f"/local/community/{DOMAIN}",
+                    str(Path(__file__).parent / "www"),
+                    cache_headers=False,
                 )
             except Exception as e:  # pragma: no cover - best effort fallback
                 _LOGGER.debug("register_static_path exists but failed: %s", e)
@@ -137,7 +139,9 @@ async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
 
     # Check if there's already a pending flow for auto-discovery
     existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
-    _LOGGER.debug(f"Existing flows: {existing_flows!r}",)
+    _LOGGER.debug(
+        f"Existing flows: {existing_flows!r}",
+    )
     if any(flow.get("context", {}).get("unique_id") == "auto_discovery" for flow in existing_flows):
         _LOGGER.debug("Auto-discovery flow already in progress")
         return
@@ -199,7 +203,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # This is a regular calendar entry
     if CONF_CALENDAR_ENTITY not in entry.data:
-        _LOGGER.error("Config entry %s missing %s, aborting setup", entry.entry_id, CONF_CALENDAR_ENTITY)
+        _LOGGER.error(
+            "Config entry %s missing %s, aborting setup", entry.entry_id, CONF_CALENDAR_ENTITY
+        )
         return False
 
     calendar_entity: str = entry.data[CONF_CALENDAR_ENTITY]
