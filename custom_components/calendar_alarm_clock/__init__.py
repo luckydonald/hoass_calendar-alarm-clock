@@ -44,16 +44,30 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Calendar Alarm Clock component."""
     hass.data.setdefault(DOMAIN, {})
 
-    # Register the www folder as static path
-    await hass.http.async_register_static_paths(
-        [
-            StaticPathConfig(
-                f"/local/community/{DOMAIN}",
-                str(Path(__file__).parent / "www"),
-                cache_headers=False,
+    # Register the www folder as static path (guard across HA versions)
+    try:
+        if hasattr(hass.http, "async_register_static_paths"):
+            await hass.http.async_register_static_paths(
+                [
+                    StaticPathConfig(
+                        f"/local/community/{DOMAIN}",
+                        str(Path(__file__).parent / "www"),
+                        cache_headers=False,
+                    )
+                ]
             )
-        ]
-    )
+        elif hasattr(hass.http, "register_static_path"):
+            # Older API - best effort registration
+            try:
+                hass.http.register_static_path(
+                    f"/local/community/{DOMAIN}", str(Path(__file__).parent / "www"), cache_headers=False
+                )
+            except Exception as e:  # pragma: no cover - best effort fallback
+                _LOGGER.debug("register_static_path exists but failed: %s", e)
+        else:
+            _LOGGER.debug("No static path registration API available on hass.http")
+    except Exception as e:  # pragma: no cover - don't fail setup on static path issues
+        _LOGGER.warning("Failed to register static paths: %s", e)
 
     # Set up discovery when HA is fully started
     async def async_discover_on_start(_: HomeAssistant) -> None:
@@ -184,6 +198,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return True
 
     # This is a regular calendar entry
+    if CONF_CALENDAR_ENTITY not in entry.data:
+        _LOGGER.error("Config entry %s missing %s, aborting setup", entry.entry_id, CONF_CALENDAR_ENTITY)
+        return False
+
     calendar_entity: str = entry.data[CONF_CALENDAR_ENTITY]
 
     # Get configuration options with defaults
