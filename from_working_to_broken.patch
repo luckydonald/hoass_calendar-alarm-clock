@@ -1,0 +1,1207 @@
+Subject: [PATCH] 👩‍💻 Move the query for the script files to the plugin template folder, where it should eventually merge.
+⬆️ version: bumped `0.0.0-pre23` → `0.0.0-pre24`
+🔧 lint: ruff
+🔧 lint: ruff autofix
+👩‍💻 idk (2)
+👩‍💻 idk
+👩‍💻 Unified logger name.
+⬆️ version: bumped `0.0.0-pre22` → `0.0.0-pre23`
+🔧 lint: ruff
+🫥 Revert "✨ ai: running... (62-2)"
+✨ ai: running... (62-2)
+✨ ai: running... (62-1)
+🤌 ai: updated query
+✨ ai: running... (61-1)
+🤌 ai: updated query
+🤌 ai: updated query
+✨ ai: running... (60-1)
+🤌 ai: updated query
+⬆️ version: bumped `0.0.0-pre21` → `0.0.0-pre22`
+✨ ai: running... (59-1)
+🤌 ai: updated sidequest query
+✨ ai: running... (58-1)
+🤌 ai: updated sidequest query
+✨ ai: running... (57-1)
+🤌 ai: updated query
+⬆️ version: bumped `0.0.0-pre20` → `0.0.0-pre21`
+👩‍💻 own: Have loglevel info, so it should show up.
+---
+Index: custom_components/calendar_alarm_clock/__init__.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/custom_components/calendar_alarm_clock/__init__.py b/custom_components/calendar_alarm_clock/__init__.py
+--- a/custom_components/calendar_alarm_clock/__init__.py	(revision 36d9c45abd7e2665a268ebdeeba3b113e9b4f49a)
++++ b/custom_components/calendar_alarm_clock/__init__.py	(revision d8215dcfb5648f237840595bceb8a0c3bd516d90)
+@@ -25,11 +25,12 @@
+     DEFAULT_MAX_SNOOZES,
+     DEFAULT_SNOOZE_DURATION,
+     DOMAIN,
++    LOG_NAME,
+     UPDATE_INTERVAL,
+ )
+ from .services import async_setup_services, async_unload_services
+
+-_LOGGER = logging.getLogger(__name__)
++_LOGGER = logging.getLogger(LOG_NAME)
+
+ # This integration is config entry only (no YAML configuration)
+ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+@@ -57,6 +58,7 @@
+     # Set up discovery when HA is fully started
+     async def async_discover_on_start(_: HomeAssistant) -> None:
+         """Discover calendars when HA starts."""
++        _LOGGER.info("Home Assistant started, checking for auto-discovery opportunity...")
+         # First, check if we need to auto-create the auto-discovery entry
+         await _async_auto_create_discovery_entry(hass)
+         # Then discover calendars
+@@ -74,6 +76,7 @@
+             new_state = event.data.get("new_state")
+             # Only trigger discovery if this is a new entity (old_state was None)
+             if old_state is None and new_state is not None:
++                _LOGGER.info("New calendar entity detected: %s, triggering discovery", entity_id)
+                 hass.async_create_task(_async_auto_create_discovery_entry(hass))
+                 hass.async_create_task(_async_discover_calendars(hass))
+
+@@ -90,24 +93,41 @@
+     from .const import CONF_AUTO_DISCOVER_CALENDARS
+
+     # Check if we already have an auto-discovery entry
++    has_auto_discovery = False
++    has_manual_entries = False
++
+     for entry in hass.config_entries.async_entries(DOMAIN):
+         if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
+-            _LOGGER.debug("Auto-discovery entry already exists")
+-            return
++            has_auto_discovery = True
++        else:
++            # This is a manually configured calendar entry
++            has_manual_entries = True
++        # end if
++    # end for
++
++    if has_auto_discovery:
++        _LOGGER.debug("Auto-discovery entry already exists")
++        return
+
++    if has_manual_entries:
++        _LOGGER.debug("User has manually configured calendar entries, skipping auto-discovery")
++        return
++
+     # Check if there are any calendars available
+     calendars = get_calendar_entities(hass)
+     if not calendars:
+         _LOGGER.debug("No calendars found, skipping auto-discovery entry creation")
+         return
+
++    _LOGGER.info("Found %d calendar(s), will create auto-discovery entry", len(calendars))
++
+     # Check if there's already a pending flow for auto-discovery
+     existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
+     if any(flow.get("context", {}).get("unique_id") == "auto_discovery" for flow in existing_flows):
+         _LOGGER.debug("Auto-discovery flow already in progress")
+         return
+
+-    _LOGGER.info("Found %d calendar(s), creating auto-discovery entry", len(calendars))
++    _LOGGER.info("Creating auto-discovery flow...")
+
+     # Create the auto-discovery entry via a discovery flow
+     await hass.config_entries.flow.async_init(
+@@ -143,7 +163,7 @@
+                     )
+                     _LOGGER.info("Registered Lovelace card resource: %s", LOVELACE_CARD_URL)
+     except Exception as e:
+-        _LOGGER.debug("Could not auto-register Lovelace resource: %s", e)
++        _LOGGER.warning("Could not auto-register Lovelace resource: %s", e)
+
+
+ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+Index: custom_components/calendar_alarm_clock/manifest.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/custom_components/calendar_alarm_clock/manifest.json b/custom_components/calendar_alarm_clock/manifest.json
+--- a/custom_components/calendar_alarm_clock/manifest.json	(revision 26477f51efd9f37304585be8ebe027c0b3fac4a1)
++++ b/custom_components/calendar_alarm_clock/manifest.json	(revision f7c47916dc09522db3d4f523efa337e73492b4c2)
+@@ -9,6 +9,6 @@
+   "iot_class": "local_polling",
+   "issue_tracker": "https://github.com/luckydonald/hoass_calendar-alarm-clock/issues",
+   "requirements": [],
+-  "version": "0.0.0-pre20"
++  "version": "0.0.0-pre24"
+ }
+
+Index: ai/query.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/query.md b/ai/query.md
+--- a/ai/query.md	(revision cc17ec59a9b13b36623aad6be286f35229a4c284)
++++ b/ai/query.md	(revision 049f072c11cf99e4832a8176e1be1c424291b0ca)
+@@ -161,4 +161,14 @@
+
+ In fact, can the Autodiscovery integration (`Calendar Alarm Clock (Auto-Discovery)` be itself be autodiscovered if there's at least one calendar available?
+
++——————
++
++I don't see the initial "Calendar Alarm Clock (Auto-Discovery)" auto-discovery popping up now. The calendars did before the change.
+
++"Alarm Clock for Auto-Discovery Calendar backed Alarm Clock"
++appears after I added a calendar manually, so maybe it's logic when to appear is wrong?
++Uh, also I implied with that, that "Alarm Clock for Auto-Discovery Calendar backed Alarm Clock" did NOT apply before adding that intigration basically myself... did you fix that, too?
++
++——————
++
++Do not edit this file (any ai/query*.md), edit ai/progess.md and ai/overview.md instead.
+Index: ai/debugging-auto-discovery.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/debugging-auto-discovery.md b/ai/debugging-auto-discovery.md
+new file mode 100644
+--- /dev/null	(revision 9fa0ddbc9432290bb29453f438e587e78b89d668)
++++ b/ai/debugging-auto-discovery.md	(revision 9fa0ddbc9432290bb29453f438e587e78b89d668)
+@@ -0,0 +1,161 @@
++# Debugging Auto-Discovery Not Appearing
++
++## Issue
++The auto-discovery confirmation dialog "Calendar Alarm Clock (Auto-Discovery)" is not appearing, but calendar discoveries were working before the change.
++
++## Expected Behavior
++When Home Assistant starts and calendars are present:
++1. `_async_auto_create_discovery_entry()` should run
++2. Check if calendars exist
++3. Create discovery flow for auto-discovery entry
++4. Show confirmation dialog (after onboarding) or auto-create (during onboarding)
++5. Once confirmed, individual calendar discoveries should appear
++
++## Debug Steps
++
++### 1. Check Home Assistant Logs
++Look for these log messages in order:
++
++```
++INFO: Found X calendar(s), will create auto-discovery entry
++INFO: Creating auto-discovery flow...
++INFO: Integration discovery triggered with data: {'auto_discover_calendars': True}
++INFO: Auto-discovery entry requested, setting unique_id
++INFO: System onboarded: True/False
++```
++
++**If you see:**
++- `"Auto-discovery entry already exists"` - Entry already configured, remove it first
++- `"No calendars found"` - No calendar integrations set up
++- `"Auto-discovery flow already in progress"` - Flow is pending, check notifications
++- Nothing - Function not being called
++
++### 2. Check for Existing Configuration
++```bash
++# In Home Assistant UI:
++Settings → Devices & Services → Integrations
++```
++
++Look for:
++- "Calendar Alarm Clock (Auto-Discovery)" - If exists, auto-discovery is already set up
++- Individual calendar entries - If exist but no auto-discovery entry
++
++### 3. Check for Pending Flows
++```bash
++# In Home Assistant UI:
++Settings → Devices & Services → Integrations → (Bell icon for notifications)
++```
++
++Look for:
++- "Enable Calendar Alarm Clock Auto-Discovery" notification
++- Individual calendar discovery notifications
++
++### 4. Force Re-trigger Discovery
++
++#### Option A: Reload Integration (if already installed)
++1. Remove the "Calendar Alarm Clock (Auto-Discovery)" entry
++2. Restart Home Assistant
++3. Check logs for discovery messages
++
++#### Option B: Add New Calendar
++1. Add a new calendar integration
++2. This should trigger `async_state_changed` event
++3. Check logs for discovery messages
++
++#### Option C: Manual Trigger (Developer Tools)
++```yaml
++# Not directly possible, but you can:
++# 1. Enable debug logging
++# 2. Restart Home Assistant
++# 3. Watch logs
++```
++
++### 5. Enable Debug Logging
++
++Add to `configuration.yaml`:
++```yaml
++logger:
++  default: info
++  logs:
++    custom_components.calendar_alarm_clock: debug
++    custom_components.calendar_alarm_clock.config_flow: debug
++```
++
++Then restart Home Assistant and check logs.
++
++## Common Issues
++
++### Issue 1: Already Configured
++**Symptom**: Log shows "Auto-discovery entry already exists"
++**Solution**: Remove existing "Calendar Alarm Clock (Auto-Discovery)" entry and restart
++
++### Issue 2: No Calendars
++**Symptom**: Log shows "No calendars found"
++**Solution**: Set up a calendar integration (CalDAV, Google Calendar, etc.) first
++
++### Issue 3: Pending Flow Not Visible
++**Symptom**: Flow created but no notification
++**Solution**:
++- Check notification bell icon in Integrations page
++- Flow might have been dismissed accidentally
++- Check browser console for errors
++
++### Issue 4: Onboarding Check
++**Symptom**: Nothing happens after discovery flow creation
++**Solution**:
++- If system is not onboarded: Entry should auto-create (no notification)
++- If system is onboarded: Should show confirmation dialog
++- Check log for "System onboarded: True/False"
++
++### Issue 5: Flow Aborted
++**Symptom**: Discovery triggered but immediately aborted
++**Solution**: Check for `_abort_if_unique_id_configured()` messages
++
++## Testing Checklist
++
++- [ ] Home Assistant is fully started
++- [ ] At least one calendar integration is set up
++- [ ] No existing "Calendar Alarm Clock (Auto-Discovery)" entry
++- [ ] No pending flows for "auto_discovery" unique_id
++- [ ] Debug logging is enabled
++- [ ] Checked notification bell icon
++- [ ] Checked Home Assistant logs for INFO/DEBUG messages
++
++## Log Message Reference
++
++| Message | Meaning |
++|---------|---------|
++| `Found X calendar(s), will create auto-discovery entry` | Calendars detected, will trigger discovery |
++| `Creating auto-discovery flow...` | Discovery flow being created |
++| `Auto-discovery entry already exists` | Entry already configured |
++| `No calendars found` | No calendar integrations |
++| `Auto-discovery flow already in progress` | Flow pending |
++| `Integration discovery triggered` | Flow handler called |
++| `System onboarded: True` | Will show confirmation dialog |
++| `System onboarded: False` | Will auto-create entry |
++| `Creating auto-discovery entry automatically` | Auto-creating during onboarding |
++| `Showing auto-discovery confirmation dialog` | Showing dialog after onboarding |
++
++## Solution if Still Not Working
++
++If auto-discovery still doesn't appear after checking all above:
++
++1. **Manually add integration**:
++   - Settings → Integrations → Add Integration
++   - Search "Calendar Alarm Clock"
++   - Follow setup wizard
++
++2. **Check for errors**:
++   - Look for Python exceptions in logs
++   - Check browser console for JavaScript errors
++
++3. **Verify integration files**:
++   - Ensure all files are in `custom_components/calendar_alarm_clock/`
++   - Restart Home Assistant after file changes
++
++4. **Report issue with logs**:
++   - Enable debug logging
++   - Restart Home Assistant
++   - Save full log output
++   - Report with specific log messages
++
+Index: custom_components/calendar_alarm_clock/config_flow.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/custom_components/calendar_alarm_clock/config_flow.py b/custom_components/calendar_alarm_clock/config_flow.py
+--- a/custom_components/calendar_alarm_clock/config_flow.py	(revision d5d2b194391daacd6ebafa6017d6523b25a80ad2)
++++ b/custom_components/calendar_alarm_clock/config_flow.py	(revision 1a5a29da190d295e3ee5c27897ef3eb304e4e460)
+@@ -8,6 +8,7 @@
+ import voluptuous as vol
+ from homeassistant import config_entries
+ from homeassistant.components import onboarding
++from homeassistant.config_entries import ConfigFlowResult
+ from homeassistant.core import HomeAssistant, callback
+ from homeassistant.data_entry_flow import FlowResult
+ from homeassistant.helpers import entity_registry as er
+@@ -29,9 +30,10 @@
+     DEFAULT_MAX_SNOOZES,
+     DEFAULT_SNOOZE_DURATION,
+     DOMAIN,
++    LOG_NAME,
+ )
+
+-_LOGGER = logging.getLogger(__name__)
++_LOGGER = logging.getLogger(LOG_NAME)
+
+
+ def get_calendar_entities(hass: HomeAssistant) -> list[str]:
+@@ -163,27 +165,40 @@
+             errors=errors,
+         )
+
+-    async def async_step_integration_discovery(self, discovery_info: dict[str, Any]) -> FlowResult:
++    async def async_step_integration_discovery(
++        self, discovery_info: dict[str, Any]
++    ) -> ConfigFlowResult:
+         """Handle discovery of a calendar entity or auto-discovery setup."""
++        _LOGGER.info("Integration discovery triggered with data: %s", discovery_info)
++
+         # Check if this is an auto-discovery entry request
+-        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS, False):
++        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS) is None:
+             # This is a request to set up the auto-discovery entry
++            _LOGGER.info("Auto-discovery entry requested, setting unique_id")
+             await self.async_set_unique_id("auto_discovery")
+             self._abort_if_unique_id_configured()
++        # end if
+
+-            # Auto-confirm during onboarding or if no user interaction needed
+-            if not onboarding.async_is_onboarded(self.hass):
+-                return self.async_create_entry(
+-                    title="Calendar Alarm Clock (Auto-Discovery)",
+-                    data={CONF_AUTO_DISCOVER_CALENDARS: True},
+-                )
+-
++        # Auto-confirm during onboarding or if no user interaction needed
++        is_onboarded = onboarding.async_is_onboarded(self.hass)
++        _LOGGER.info("System onboarded: %s", is_onboarded)
++
++        if not is_onboarded:
++            _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
++            return self.async_create_entry(
++                title="Calendar Alarm Clock (Auto-Discovery)",
++                data={CONF_AUTO_DISCOVER_CALENDARS: True},
++            )
++        # end if
++        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS):
+             # Show confirmation to user
++            _LOGGER.info("Showing auto-discovery confirmation dialog to user")
+             self.context["title_placeholders"] = {"name": "Auto-Discovery"}
+             return await self.async_step_auto_discovery_confirm()
+
+         # This is a regular calendar discovery
+         calendar_entity: str = discovery_info[CONF_CALENDAR_ENTITY]
++        _LOGGER.info("Regular calendar discovery for: %s", calendar_entity)
+
+         # Check if this calendar is already configured
+         await self.async_set_unique_id(calendar_entity)
+Index: ai/fix-commit-script-stash.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/fix-commit-script-stash.md b/ai/fix-commit-script-stash.md
+new file mode 100644
+--- /dev/null	(revision ab2cbaa2263689cb0acdc51ed5b73339847ad93e)
++++ b/ai/fix-commit-script-stash.md	(revision ab2cbaa2263689cb0acdc51ed5b73339847ad93e)
+@@ -0,0 +1,58 @@
++# Fix for commit.sh Stash Error
++
++## Problem
++The commit script was using `git stash push --staged` and `git stash pop` to temporarily save staged changes. When trying to pop the stash, it encountered conflicts because the files had changed.
++
++## Solution
++Changed the approach to be simpler and more reliable:
++
++### Before (Problematic):
++```bash
++# Save staged changes
++git stash push --staged -m "commit-script-staged-backup"
++
++# ... do commits ...
++
++# Restore staged changes
++git stash pop  # ← This could fail with conflicts
++```
++
++### After (Fixed):
++```bash
++# Save list of staged files and unstage them
++STAGED_FILES=$(git diff --cached --name-only)
++git reset HEAD
++
++# ... do commits ...
++
++# Re-stage the files that were originally staged
++echo "$STAGED_FILES" | while IFS= read -r file; do
++    if [ -f "$file" ] || [ -d "$file" ]; then
++        git add "$file"
++    fi
++done
++```
++
++## Why This Works Better
++1. **No stash conflicts**: We don't use stash at all, just track which files were staged
++2. **Simpler**: Just unstage → commit → re-stage
++3. **More reliable**: No patch application that can fail
++4. **Cleaner**: No stash entries left behind
++
++## Cleanup Old Stash (if needed)
++If you have the old stash entry from the failed run:
++
++```bash
++# List stashes
++git stash list
++
++# If you see "commit-script-staged-backup", drop it:
++git stash drop stash@{0}  # or whatever index it is
++```
++
++## Testing
++The script should now work without the stash pop error:
++```bash
++make commit
++```
++
+Index: scripts/commit.sh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/scripts/commit.sh b/scripts/commit.sh
+--- a/scripts/commit.sh	(revision 1a903c2c4f2a8425cfcb39b5ced2934ea37294bd)
++++ b/scripts/commit.sh	(revision 15a1d13b47f7f6411f324815d5b11e66cdeb8aa2)
+@@ -46,9 +46,17 @@
+
+ # Save any currently staged changes
+ STASH_STAGED=false
++STAGED_FILES=""
+ if [ -n "$(git diff --cached --name-only)" ]; then
+     echo -e "${YELLOW}Saving staged changes...${NC}"
+-    git stash push --staged -m "commit-script-staged-backup"
++    # Store the list of staged files
++    STAGED_FILES=$(git diff --cached --name-only)
++    echo "  Files to restore later:"
++    echo "$STAGED_FILES" | sed 's/^/    - /'
++
++    # Unstage them (this does NOT delete anything, just moves from staging to working directory)
++    git reset HEAD --quiet
++    echo "  Unstaged files (they remain in your working directory)"
+     STASH_STAGED=true
+ fi
+
+@@ -85,7 +93,16 @@
+ # Restore staged changes before the final commit
+ if [ "$STASH_STAGED" = true ]; then
+     echo -e "${YELLOW}Restoring staged changes...${NC}"
+-    git stash pop
++    # Re-stage the files that were originally staged
++    # (They've been in the working directory this whole time, unchanged)
++    RESTORED_COUNT=0
++    echo "$STAGED_FILES" | while IFS= read -r file; do
++        if [ -n "$file" ] && ([ -f "$file" ] || [ -d "$file" ]); then
++            git add "$file"
++            RESTORED_COUNT=$((RESTORED_COUNT + 1))
++        fi
++    done
++    echo "  Re-staged files"
+ fi
+
+ # Check if there are any other changes to commit
+Index: ai/git-reset-safety.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/git-reset-safety.md b/ai/git-reset-safety.md
+new file mode 100644
+--- /dev/null	(revision 15a1d13b47f7f6411f324815d5b11e66cdeb8aa2)
++++ b/ai/git-reset-safety.md	(revision 15a1d13b47f7f6411f324815d5b11e66cdeb8aa2)
+@@ -0,0 +1,135 @@
++# Git Reset HEAD - Safety Explanation
++
++## The Question
++> "But using `git reset HEAD` sounds like it could delete stuff we still need?"
++
++## Short Answer
++**No, `git reset HEAD` is completely safe.** It does NOT delete anything. It only **unstages** files.
++
++## What Actually Happens
++
++### Git Has Three "Places" for Your Files:
++1. **Working Directory** - Your actual files on disk
++2. **Staging Area** (Index) - Files you've marked with `git add`
++3. **Repository** (Commits) - Files that have been committed
++
++### What `git reset HEAD` Does:
++```
++Before:
++  Working Directory: file.txt (modified)
++  Staging Area:      file.txt (ready to commit) ✓
++  Repository:        file.txt (old version)
++
++After git reset HEAD:
++  Working Directory: file.txt (modified) ← UNCHANGED!
++  Staging Area:      (empty)
++  Repository:        file.txt (old version)
++```
++
++**Result**: Your modified `file.txt` is still there, with all your changes. It's just not staged anymore.
++
++## Why It's Safe
++
++1. **Your changes stay in working directory**
++   - All your modifications remain
++   - Files are still on disk
++   - Nothing is deleted
++
++2. **Only affects staging area**
++   - Removes files from "ready to commit" list
++   - Doesn't touch your actual files
++
++3. **Easy to undo**
++   - Just `git add` the files again
++   - That's exactly what our script does!
++
++## What WOULD Be Dangerous
++
++These commands CAN delete/modify your work:
++```bash
++git reset --hard HEAD    # ⚠️ DANGEROUS - discards working directory changes
++git checkout -- file.txt # ⚠️ DANGEROUS - discards changes to file.txt
++git clean -fd            # ⚠️ DANGEROUS - deletes untracked files
++rm file.txt              # ⚠️ DANGEROUS - deletes the file
++```
++
++But `git reset HEAD` (without `--hard`) is safe!
++
++## Our Script's Flow
++
++```bash
++# 1. Save list of staged files
++STAGED_FILES="ai/debugging.md
++custom_components/__init__.py"
++
++# 2. Unstage them (git reset HEAD)
++# Working directory: UNCHANGED ✓
++# Staging area: now empty
++# Your files: STILL THERE ✓
++
++# 3. Do our commits (ai/query.md, ai/errors.md)
++git add ai/query.md
++git commit -m "ai: updated query"
++
++# 4. Re-stage the original files
++for file in $STAGED_FILES; do
++    git add "$file"  # Stage them again
++done
++
++# 5. Commit everything else
++git add -u
++git commit -m "ai: running... (4-1)"
++```
++
++## Visual Example
++
++```
++Start:
++  Modified but unstaged:    [config_flow.py]
++  Staged (ready to commit): [debugging.md, __init__.py]
++
++After "git reset HEAD":
++  Modified but unstaged:    [config_flow.py, debugging.md, __init__.py]
++  Staged (ready to commit): []
++
++All files still exist! Just moved from staged → unstaged.
++
++After re-staging:
++  Modified but unstaged:    [config_flow.py]
++  Staged (ready to commit): [debugging.md, __init__.py]
++
++Back to the beginning!
++```
++
++## Proof It's Safe
++
++Try it yourself:
++```bash
++# Create a test file
++echo "important data" > test.txt
++git add test.txt
++
++# Check it's staged
++git status  # Shows: "Changes to be committed: test.txt"
++
++# Unstage it
++git reset HEAD test.txt
++
++# Check the file is still there
++cat test.txt  # Outputs: "important data" ✓
++git status    # Shows: "Untracked files: test.txt" ✓
++```
++
++The file is still there with all your changes!
++
++## Summary
++
++- ✅ `git reset HEAD` - **SAFE**: Only unstages files
++- ✅ Your changes remain in working directory
++- ✅ Nothing is deleted
++- ✅ Easy to re-stage files
++- ⚠️ `git reset --hard HEAD` - **DANGEROUS**: Would discard changes
++- ⚠️ We never use `--hard` in our script
++
++**The script is safe!** Your work is protected.
++
+Index: ai/auto-discovery-implementation-summary.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/auto-discovery-implementation-summary.md b/ai/auto-discovery-implementation-summary.md
+--- a/ai/auto-discovery-implementation-summary.md	(revision 549e17f4956673d9946628f5a49468ec0c3fe364)
++++ b/ai/auto-discovery-implementation-summary.md	(revision 309d0bc53bb864040c4141b8cf9c6c8e314560bf)
+@@ -127,3 +127,37 @@
+ - Add "Don't ask again" option in confirmation dialog
+ - Provide way to disable auto-discovery globally via config
+
++## Bug Fixes
++
++### Fix: Auto-Discovery Appearing After Manual Setup (Jan 16, 2026)
++
++**Problem**: When a user manually added a calendar entry, the auto-discovery confirmation dialog appeared afterward, even though the user had explicitly chosen manual setup by not using auto-discovery.
++
++**Root Cause**: The `_async_auto_create_discovery_entry()` function only checked if an auto-discovery entry existed, not if the user had already manually configured calendar entries. So:
++1. User manually adds calendar → No auto-discovery entry exists
++2. System sees no auto-discovery entry → Creates one
++3. User gets unwanted notification
++
++**Solution**: Enhanced the logic to also check for manually configured entries:
++- If auto-discovery entry exists → Don't create (already using auto-discovery)
++- **If manual calendar entries exist → Don't create (user chose manual setup)**
++- If no entries exist and calendars available → Create auto-discovery entry
++
++**Code Change**:
++```python
++# Check both conditions
++has_auto_discovery = False
++has_manual_entries = False
++
++for entry in hass.config_entries.async_entries(DOMAIN):
++    if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
++        has_auto_discovery = True
++    else:
++        has_manual_entries = True  # User manually configured this
++
++if has_auto_discovery or has_manual_entries:
++    return  # Respect user's choice
++```
++
++**Result**: Users who manually set up calendars won't see the auto-discovery notification, respecting their explicit choice to use manual setup.
++
+Index: ai/fix-auto-discovery-after-manual.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/fix-auto-discovery-after-manual.md b/ai/fix-auto-discovery-after-manual.md
+new file mode 100644
+--- /dev/null	(revision 309d0bc53bb864040c4141b8cf9c6c8e314560bf)
++++ b/ai/fix-auto-discovery-after-manual.md	(revision 309d0bc53bb864040c4141b8cf9c6c8e314560bf)
+@@ -0,0 +1,145 @@
++# Bug Fix: Auto-Discovery Appearing After Manual Setup
++
++## Problem Report
++> "Alarm Clock for Auto-Discovery Calendar backed Alarm Clock" appears _after_ I added a calendar manually, so maybe it's logic when to appear is wrong?
++
++## The Issue
++
++When a user manually added a calendar through the integration setup, they would see the auto-discovery confirmation dialog appear afterward. This was confusing and annoying because:
++
++1. User explicitly chose manual setup by adding the integration manually
++2. User selected a specific calendar to configure
++3. System should have respected this choice
++4. Instead, system offered auto-discovery, which the user already declined by choosing manual
++
++## Root Cause
++
++The `_async_auto_create_discovery_entry()` function had incomplete logic:
++
++```python
++# OLD LOGIC (BROKEN)
++for entry in hass.config_entries.async_entries(DOMAIN):
++    if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
++        return  # Auto-discovery entry exists, don't create
++
++# If we get here, no auto-discovery entry exists
++# → Create one!
++```
++
++**Problem**: This only checked if an auto-discovery entry existed. It didn't check if the user had already manually configured calendars.
++
++**Scenario**:
++1. User manually adds calendar → Creates entry with `{CONF_CALENDAR_ENTITY: "calendar.foo"}`
++2. System checks for auto-discovery entry → Not found
++3. System thinks: "No auto-discovery! Let me offer it!"
++4. User gets unwanted notification
++
++## The Fix
++
++Enhanced the logic to detect and respect manual setup:
++
++```python
++# NEW LOGIC (FIXED)
++has_auto_discovery = False
++has_manual_entries = False
++
++for entry in hass.config_entries.async_entries(DOMAIN):
++    if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
++        has_auto_discovery = True
++    else:
++        # This entry has a calendar_entity, so it's manually configured
++        has_manual_entries = True
++
++if has_auto_discovery:
++    return  # Already using auto-discovery
++
++if has_manual_entries:
++    return  # User chose manual setup, respect that choice!
++
++# Only create auto-discovery if no entries exist yet
++```
++
++## How Entries Are Distinguished
++
++**Auto-Discovery Entry**:
++```python
++{
++    "auto_discover_calendars": True
++}
++```
++
++**Manual Calendar Entry**:
++```python
++{
++    "calendar_entity": "calendar.my_calendar"
++}
++```
++
++If an entry has `calendar_entity`, it's a manual entry.
++If an entry has `auto_discover_calendars`, it's the auto-discovery entry.
++
++## New Behavior
++
++### Scenario 1: Fresh Install, No Calendars
++- No calendars exist → No entries created
++- User adds calendar integration → Auto-discovery notification appears
++- User can accept or decline
++
++### Scenario 2: Fresh Install, Manual Setup
++- User manually adds integration → Chooses specific calendar
++- Entry created with `calendar_entity`
++- Auto-discovery check sees manual entry → Skips creation
++- **No auto-discovery notification appears** ✓
++
++### Scenario 3: Auto-Discovery Enabled
++- User accepts auto-discovery → Entry created with `auto_discover_calendars`
++- Auto-discovery check sees auto-discovery entry → Skips creation
++- Individual calendar discoveries appear as normal ✓
++
++### Scenario 4: Mixed Setup
++- User has manual entries already
++- Auto-discovery is never offered (respects manual choice)
++- User can still manually add more calendars ✓
++
++## Testing
++
++To verify the fix:
++
++1. **Clean install**: Remove all Calendar Alarm Clock entries
++2. **Manual setup**: Go to Integrations → Add → Calendar Alarm Clock → Select calendar
++3. **Restart HA**: Restart Home Assistant
++4. **Check notifications**: No auto-discovery notification should appear
++5. **Check logs**: Should see "User has manually configured calendar entries, skipping auto-discovery"
++
++## Log Messages
++
++**Before Fix** (wrong behavior):
++```
++INFO: Found 1 calendar(s), will create auto-discovery entry
++INFO: Creating auto-discovery flow...
++```
++(Even though user manually set up a calendar)
++
++**After Fix** (correct behavior):
++```
++DEBUG: User has manually configured calendar entries, skipping auto-discovery
++```
++(Respects user's manual setup choice)
++
++## Impact
++
++- ✅ Respects user's explicit choice to use manual setup
++- ✅ No unwanted notifications after manual configuration
++- ✅ Auto-discovery still works for fresh installs
++- ✅ Users can still choose auto-discovery if they want
++- ✅ Cleaner, less confusing user experience
++
++## Related Files
++
++- `custom_components/calendar_alarm_clock/__init__.py` - `_async_auto_create_discovery_entry()`
++- `ai/auto-discovery-implementation-summary.md` - Full implementation details
++- `ai/progress.md` - Change log
++
++## Date
++Fixed: January 16, 2026
++
+Index: ai/progress.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/progress.md b/ai/progress.md
+--- a/ai/progress.md	(revision 549e17f4956673d9946628f5a49468ec0c3fe364)
++++ b/ai/progress.md	(revision 309d0bc53bb864040c4141b8cf9c6c8e314560bf)
+@@ -6,6 +6,11 @@
+ ## Status: ✅ Enhanced UI Complete
+
+ ## Recent Changes (January 16, 2026)
++- **Fixed auto-discovery appearing after manual setup**: Auto-discovery entry now respects user's choice:
++  - Added check for manually configured calendar entries
++  - If manual entries exist, auto-discovery entry is NOT created
++  - Prevents unwanted "Auto-Discovery" notification after user explicitly chose manual setup
++  - Log message: "User has manually configured calendar entries, skipping auto-discovery"
+ - **Fixed auto-discovery entry setup**: Auto-discovery entries don't have a calendar entity, so they're handled separately in `async_setup_entry` and `async_unload_entry`:
+   - Auto-discovery entries are lightweight - they just enable the discovery mechanism
+   - Regular calendar entries create AlarmManager instances and set up sensors
+Index: ai/debug-logging-not-working.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/debug-logging-not-working.md b/ai/debug-logging-not-working.md
+new file mode 100644
+--- /dev/null	(revision b1c037ae62163401f57cd84508ccecaec5a6d6f1)
++++ b/ai/debug-logging-not-working.md	(revision b1c037ae62163401f57cd84508ccecaec5a6d6f1)
+@@ -0,0 +1,195 @@
++# Debug Logging Not Working
++
++## Problem
++Adding this to `configuration.yaml` doesn't seem to enable debug logging:
++```yaml
++logger:
++  logs:
++    custom_components.calendar_alarm_clock: debug
++```
++
++## Solutions
++
++### Solution 1: Full Logger Configuration
++Make sure you have the complete logger configuration in `configuration.yaml`:
++
++```yaml
++logger:
++  default: info
++  logs:
++    custom_components.calendar_alarm_clock: debug
++    custom_components.calendar_alarm_clock.config_flow: debug
++    custom_components.calendar_alarm_clock.alarm_manager: debug
++```
++
++**Then restart Home Assistant** (full restart, not just reload).
++
++### Solution 2: Set Logging via Developer Tools (No Restart Needed)
++
++1. Go to **Developer Tools** → **Services**
++2. Choose service: `logger.set_level`
++3. Service data:
++```yaml
++custom_components.calendar_alarm_clock: debug
++custom_components.calendar_alarm_clock.config_flow: debug
++custom_components.calendar_alarm_clock.alarm_manager: debug
++```
++4. Click **Call Service**
++
++**Note**: This is temporary and will reset on HA restart.
++
++### Solution 3: Set Default Logging Level Higher
++
++Sometimes components inherit the default level. Try:
++
++```yaml
++logger:
++  default: debug  # This is verbose but will show everything
++  logs:
++    homeassistant: info  # Keep HA core at info to reduce noise
++    custom_components.calendar_alarm_clock: debug
++```
++
++### Solution 4: Check Logger Configuration
++
++Make sure there's no conflicting configuration:
++
++1. Check if logger is defined multiple times in different files
++2. Check `configuration.yaml` for includes that might override
++3. Verify indentation is correct (YAML is strict about spaces)
++
++### Solution 5: Enable via UI (Home Assistant 2023.4+)
++
++1. Go to **Settings** → **System** → **Logs**
++2. Click **Settings** (gear icon)
++3. Find or add `custom_components.calendar_alarm_clock`
++4. Set to **Debug**
++
++### Solution 6: Check if Logs Are Being Written
++
++Even if not visible in the UI, logs might be written to file:
++
++```bash
++# SSH into Home Assistant or open terminal
++tail -f /config/home-assistant.log | grep calendar_alarm_clock
++```
++
++Or check the log file:
++```bash
++grep -i "calendar_alarm_clock" /config/home-assistant.log
++```
++
++## Verification Steps
++
++After enabling debug logging, you should see these messages on HA startup:
++
++```
++2026-01-16 12:00:00 INFO (MainThread) [custom_components.calendar_alarm_clock] Home Assistant started, checking for auto-discovery opportunity...
++2026-01-16 12:00:00 DEBUG (MainThread) [custom_components.calendar_alarm_clock] Auto-discovery entry already exists
++```
++
++Or when adding a calendar:
++```
++2026-01-16 12:05:30 INFO (MainThread) [custom_components.calendar_alarm_clock] New calendar entity detected: calendar.personal, triggering discovery
++2026-01-16 12:05:30 INFO (custom_components.calendar_alarm_clock) Found 2 calendar(s), will create auto-discovery entry
++```
++
++## If Still Not Working
++
++### Check Integration is Loaded
++```yaml
++# In Developer Tools → Services
++# Call: system_log.write
++service_data:
++  message: "Test message from Calendar Alarm Clock"
++  level: debug
++  logger: custom_components.calendar_alarm_clock
++```
++
++### Force Reload Integration
++1. Go to **Settings** → **Devices & Services**
++2. Find **Calendar Alarm Clock**
++3. Click **•••** → **Reload**
++4. Check logs again
++
++### Restart Home Assistant
++Sometimes configuration changes only take effect after a full restart:
++1. **Settings** → **System** → **Restart**
++2. Choose **Restart Home Assistant**
++3. Wait for restart to complete
++4. Check logs
++
++## Temporary High-Level Logging (For Debugging)
++
++Add this to `configuration.yaml` to see EVERYTHING (very verbose):
++
++```yaml
++logger:
++  default: debug
++  filters:
++    # Reduce noise from these
++    homeassistant.core:
++      - ".*"
++    homeassistant.loader:
++      - ".*"
++```
++
++**Warning**: This will make logs very large very quickly. Only use temporarily.
++
++## Alternative: Add Print Statements (Development Only)
++
++If logging still doesn't work, temporarily add print statements:
++
++```python
++# In __init__.py
++print("=" * 80)
++print(f"CALENDAR ALARM CLOCK: Found {len(calendars)} calendars")
++print("=" * 80)
++```
++
++These will appear in the Home Assistant logs regardless of log level.
++
++**Remember to remove these before committing!**
++
++## Expected Log Output
++
++With debug logging enabled, you should see:
++
++```
++# On HA startup
++INFO: Home Assistant started, checking for auto-discovery opportunity...
++DEBUG: Auto-discovery entry already exists
++  OR
++DEBUG: User has manually configured calendar entries, skipping auto-discovery
++  OR
++INFO: Found X calendar(s), will create auto-discovery entry
++
++# On calendar detection
++INFO: New calendar entity detected: calendar.X, triggering discovery
++
++# On config flow
++INFO: Integration discovery triggered with data: {...}
++INFO: Auto-discovery entry requested, setting unique_id
++INFO: System onboarded: True
++INFO: Showing auto-discovery confirmation dialog to user
++```
++
++## Summary
++
++**Quick Fix** (No restart needed):
++```
++Developer Tools → Services → logger.set_level
++custom_components.calendar_alarm_clock: debug
++```
++
++**Permanent Fix** (Requires restart):
++```yaml
++# configuration.yaml
++logger:
++  default: info
++  logs:
++    custom_components.calendar_alarm_clock: debug
++```
++
++Then **Settings → System → Restart**.
++
+Index: custom_components/calendar_alarm_clock/alarm_manager.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/custom_components/calendar_alarm_clock/alarm_manager.py b/custom_components/calendar_alarm_clock/alarm_manager.py
+--- a/custom_components/calendar_alarm_clock/alarm_manager.py	(revision 8b742e77a9f5626027d5cdb0e778ea7005b80242)
++++ b/custom_components/calendar_alarm_clock/alarm_manager.py	(revision d8215dcfb5648f237840595bceb8a0c3bd516d90)
+@@ -21,6 +21,7 @@
+     EVENT_ALARM_RINGING,
+     EVENT_ALARM_SNOOZED,
+     EVENT_ALARM_TIMED_OUT,
++    LOG_NAME,
+     PREFIX_DISABLED,
+     PREFIX_DISMISSED,
+     PREFIX_SNOOZE,
+@@ -34,7 +35,7 @@
+ )
+ from .models import Alarm
+
+-_LOGGER = logging.getLogger(__name__)
++_LOGGER = logging.getLogger(LOG_NAME)
+
+
+ class AlarmManager:
+Index: custom_components/calendar_alarm_clock/const.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/custom_components/calendar_alarm_clock/const.py b/custom_components/calendar_alarm_clock/const.py
+--- a/custom_components/calendar_alarm_clock/const.py	(revision 8b742e77a9f5626027d5cdb0e778ea7005b80242)
++++ b/custom_components/calendar_alarm_clock/const.py	(revision 02d37f8d3b375bf4ad41ea522253e4614862bc01)
+@@ -3,6 +3,7 @@
+ from typing import Final, Literal
+
+ DOMAIN: Final[str] = "calendar_alarm_clock"
++LOG_NAME: Final[str] = f"custom-components.{DOMAIN}"
+
+ # Configuration keys
+ CONF_CALENDAR_ENTITY: Final[str] = "calendar_entity"
+Index: custom_components/calendar_alarm_clock/sensor.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/custom_components/calendar_alarm_clock/sensor.py b/custom_components/calendar_alarm_clock/sensor.py
+--- a/custom_components/calendar_alarm_clock/sensor.py	(revision 8b742e77a9f5626027d5cdb0e778ea7005b80242)
++++ b/custom_components/calendar_alarm_clock/sensor.py	(revision 02d37f8d3b375bf4ad41ea522253e4614862bc01)
+@@ -23,10 +23,11 @@
+     ATTR_TIME,
+     ATTR_TIMEOUT,
+     DOMAIN,
++    LOG_NAME,
+ )
+ from .models import Alarm
+
+-_LOGGER = logging.getLogger(__name__)
++_LOGGER = logging.getLogger(LOG_NAME)
+
+
+ async def async_setup_entry(
+Index: custom_components/calendar_alarm_clock/services.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/custom_components/calendar_alarm_clock/services.py b/custom_components/calendar_alarm_clock/services.py
+--- a/custom_components/calendar_alarm_clock/services.py	(revision 8b742e77a9f5626027d5cdb0e778ea7005b80242)
++++ b/custom_components/calendar_alarm_clock/services.py	(revision d8215dcfb5648f237840595bceb8a0c3bd516d90)
+@@ -18,6 +18,7 @@
+     ATTR_TIME,
+     DEFAULT_NAME,
+     DOMAIN,
++    LOG_NAME,
+     SERVICE_CREATE_ALARM,
+     SERVICE_DELETE_ALARM,
+     SERVICE_DISABLE_ALARM,
+@@ -29,7 +30,7 @@
+     SERVICE_TRIGGER_ALARM,
+ )
+
+-_LOGGER = logging.getLogger(__name__)
++_LOGGER = logging.getLogger(LOG_NAME)
+
+ # Service schemas
+ SERVICE_CREATE_ALARM_SCHEMA: vol.Schema = vol.Schema(
+Index: ai/query-sidequest-1-scripts.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ai/query-sidequest-1-scripts.md b/ai/plugin_template/query.md
+rename from ai/query-sidequest-1-scripts.md
+rename to ai/plugin_template/query.md
+--- a/ai/query-sidequest-1-scripts.md	(revision 9fa0ddbc9432290bb29453f438e587e78b89d668)
++++ b/ai/plugin_template/query.md	(revision e289c43877a1d33f7cf974d3dc43b9d61487294a)
+@@ -62,3 +62,17 @@
+ Ask to move the tag (delete the old one and recreate as intended)
+
+ ——————————
++
++➜ make commit
++Script directory: /Users/user/Documents/programming/Python/HomeAssistant/hoass_calendar-alarm-clock/scripts
++📝 Calendar Alarm Clock - Commit Script
++
++Saving staged changes...
++Saved working directory and index state On mane: commit-script-staged-backup
++error: removal patch leaves file contents
++error: ai/debugging-auto-discovery.md: patch does not apply
++Cannot remove worktree changes
++make: *** [commit] Error 1
++
++But using `git reset HEAD` sounds like it could delete stuff we still need?
++——————————

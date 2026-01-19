@@ -123,6 +123,7 @@ async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
 
     # Check if there's already a pending flow for auto-discovery
     existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
+    _LOGGER.debug(f"Existing flows: {existing_flows!r}",)
     if any(flow.get("context", {}).get("unique_id") == "auto_discovery" for flow in existing_flows):
         _LOGGER.debug("Auto-discovery flow already in progress")
         return
