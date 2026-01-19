@@ -78,8 +78,8 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def async_get_options_flow(
         config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
-        """Create the options flow."""
-        return OptionsFlowHandler()
+        """Create the options flow and pass the config_entry to the handler."""
+        return OptionsFlowHandler(config_entry)
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the initial step - ask about auto-discovery."""
@@ -171,33 +171,33 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle discovery of a calendar entity or auto-discovery setup."""
         _LOGGER.info("Integration discovery triggered with data: %s", discovery_info)
 
-        # Check if this is an auto-discovery entry request
-        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS) is None:
-            # This is a request to set up the auto-discovery entry
+        # If this is an auto-discovery entry request, treat truthy value as intent
+        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS):
             _LOGGER.info("Auto-discovery entry requested, setting unique_id")
             await self.async_set_unique_id("auto_discovery")
             self._abort_if_unique_id_configured()
-        # end if
 
-        # Auto-confirm during onboarding or if no user interaction needed
-        is_onboarded = onboarding.async_is_onboarded(self.hass)
-        _LOGGER.info("System onboarded: %s", is_onboarded)
+            # Auto-confirm during onboarding or if no user interaction needed
+            is_onboarded = onboarding.async_is_onboarded(self.hass)
+            _LOGGER.info("System onboarded: %s", is_onboarded)
 
-        if not is_onboarded:
-            _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
-            return self.async_create_entry(
-                title="Calendar Alarm Clock (Auto-Discovery)",
-                data={CONF_AUTO_DISCOVER_CALENDARS: True},
-            )
-        # end if
-        if discovery_info.get(CONF_AUTO_DISCOVER_CALENDARS):
-            # Show confirmation to user
+            if not is_onboarded:
+                _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
+                return self.async_create_entry(
+                    title="Calendar Alarm Clock (Auto-Discovery)",
+                    data={CONF_AUTO_DISCOVER_CALENDARS: True},
+                )
+
             _LOGGER.info("Showing auto-discovery confirmation dialog to user")
             self.context["title_placeholders"] = {"name": "Auto-Discovery"}
             return await self.async_step_auto_discovery_confirm()
 
         # This is a regular calendar discovery
-        calendar_entity: str = discovery_info[CONF_CALENDAR_ENTITY]
+        calendar_entity: str | None = discovery_info.get(CONF_CALENDAR_ENTITY)
+        if not calendar_entity:
+            _LOGGER.warning("Discovery info missing %s, aborting", CONF_CALENDAR_ENTITY)
+            return self.async_abort(reason="invalid_discovery")
+
         _LOGGER.info("Regular calendar discovery for: %s", calendar_entity)
 
         # Check if this calendar is already configured
@@ -254,6 +254,10 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow for Calendar Alarm Clock."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Store provided config_entry for access to options."""
+        self.config_entry = config_entry
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage the options."""
