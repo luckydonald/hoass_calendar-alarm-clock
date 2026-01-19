@@ -190,3 +190,8 @@ Traceback (most recent call last):
     calendar_entity: str = entry.data[CONF_CALENDAR_ENTITY]
                            ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
 KeyError: 'calendar_entity'
+
+———
+
+In version 20 uppon installation it immedly spammed integration recommendations for all calendars it found. I then tried to change it to first have an integration which will show a checkbox, asking you if you want that (it's spammy with 40+ calendars).
+However, with that change somehow I broke it, and it no longer auto-discovers anything...
