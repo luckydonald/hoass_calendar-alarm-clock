@@ -195,3 +195,18 @@ KeyError: 'calendar_entity'
 
 In version 20 uppon installation it immedly spammed integration recommendations for all calendars it found. I then tried to change it to first have an integration which will show a checkbox, asking you if you want that (it's spammy with 40+ calendars).
 However, with that change somehow I broke it, and it no longer auto-discovers anything...
+
+
+———
+
+The flow is:
+1. Install
+2. Autodiscovery triggers (with no prior config)
+  - Realizes that there is no auto_discovery entity created
+  - Creates a auto-discovery request with id auto_discovery
+3. auto_discovery is configured by a user (either via the suggestion, or via [+ Integration] -> Calendar Alram Clock
+  - Checkbox if calendar auto discovery
+4. User saves if or if no auto discovery.
+5.
+  a) If no auto discovery is turned on, have ` [+ Integration] -> Calendar Alram Clock`  give you the gui with entity_id selector for calendars.
+  b) if discovery is on, now scan all calendars and generate suggestions for those elements.
