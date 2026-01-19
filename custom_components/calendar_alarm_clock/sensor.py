@@ -36,7 +36,13 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Calendar Alarm Clock sensors."""
-    manager: AlarmManager = hass.data[DOMAIN][entry.entry_id]["manager"]
+    # Defensive: ensure manager exists for this entry_id
+    entry_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    if not entry_data or "manager" not in entry_data:
+        _LOGGER.debug("No manager found for entry %s, skipping sensor setup", entry.entry_id)
+        return
+
+    manager: AlarmManager = entry_data["manager"]
 
     entities: dict[str, AlarmSensor] = {}
 
