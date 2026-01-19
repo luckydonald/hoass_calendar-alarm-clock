@@ -199,6 +199,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "auto_discovery": True,
         }
         _LOGGER.info("Auto-discovery enabled for Calendar Alarm Clock")
+        # Trigger a discovery run now that auto-discovery is enabled
+        hass.async_create_task(_async_discover_calendars(hass))
         return True
 
     # This is a regular calendar entry
