@@ -1,4 +1,4 @@
-"""Alarm data models for Calendar Alarm Clock."""
+"""Alarm data models for Calendar backed Alarm Clock."""
 
 from __future__ import annotations
 

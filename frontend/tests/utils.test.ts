@@ -6,8 +6,8 @@ describe('Example utility tests', () => {
   });
 
   it('should test string operations', () => {
-    const result = 'plugin_template'.replace(/_/g, '-');
-    expect(result).toBe('plugin-template');
+    const result = 'calendar_alarm_clock'.replace(/_/g, '-');
+    expect(result).toBe('calendar-alarm-clock');
   });
 
   it('should test date formatting', () => {

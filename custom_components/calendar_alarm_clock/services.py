@@ -1,9 +1,10 @@
-"""Services for Calendar Alarm Clock."""
+"""Services for Calendar backed Alarm Clock."""
 
 from __future__ import annotations
 
 import logging
 from typing import Any
+
 
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -94,7 +95,7 @@ def _get_alarm_id_from_call(hass: HomeAssistant, call: ServiceCall) -> str | Non
 
 
 async def async_setup_services(hass: HomeAssistant) -> None:
-    """Set up services for Calendar Alarm Clock."""
+    """Set up services for Calendar backed Alarm Clock."""
 
     async def handle_create_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle create_alarm service call."""

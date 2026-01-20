@@ -1,7 +1,7 @@
 {
   "domain": "calendar_alarm_clock",
   "name": "Calendar backed Alarm Clock",
-  "codeowners": ["@luckydonald"],
+  "codeowners": ["@luckydonald", "@luckylucy"],
   "config_flow": true,
   "dependencies": ["calendar", "http", "lovelace"],
   "documentation": "https://github.com/luckydonald/hoass_calendar-alarm-clock",

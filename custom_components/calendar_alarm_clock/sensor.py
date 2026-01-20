@@ -1,4 +1,4 @@
-"""Sensor platform for Calendar Alarm Clock."""
+"""Sensor platform for Calendar backed Alarm Clock."""
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Calendar Alarm Clock sensors."""
+    """Set up Calendar backed Alarm Clock sensors."""
     # Defensive: ensure manager exists for this entry_id
     entry_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if not entry_data or "manager" not in entry_data:
@@ -116,9 +116,9 @@ class AlarmSensor(SensorEntity):
         """Return device info."""
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
-            name="Calendar Alarm Clock",
+            name="Calendar backed Alarm Clock",
             manufacturer="Custom",
-            model="Alarm Clock",
+            model="Calendar backed Alarm Clock",
         )
 
     @property

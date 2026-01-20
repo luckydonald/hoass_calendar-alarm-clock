@@ -73,13 +73,13 @@ class AlarmClockCardElement extends HTMLElement {
   }
 
   public static getConfigElement(): AlarmClockCardEditor {
-    return document.createElement('calender-alarm-clock-card-editor') as AlarmClockCardEditor;
+    return document.createElement('calendar-alarm-clock-card-editor') as AlarmClockCardEditor;
   }
 
   public static getStubConfig(): AlarmClockCardConfig {
     return {
-      type: 'custom:calender-alarm-clock-card',
-      title: 'Calendar Alarm Clock',
+      type: 'custom:calendar-alarm-clock-card',
+      title: 'Calendar backed Alarm Clock',
       clock_display: 'analog',
       alarm_list_mode: 'days',
       alarm_list_days: 7,
@@ -123,7 +123,7 @@ class AlarmClockCardEditor extends HTMLElement {
     wrapper.appendChild(this._createTextInput(
       'title',
       'Card Title',
-      this._config.title ?? 'Calendar Alarm Clock',
+      this._config.title ?? 'Calendar backed Alarm Clock',
     ));
 
     // Entity picker (for single alarm view)
@@ -398,20 +398,31 @@ class AlarmClockCardEditor extends HTMLElement {
 }
 
 // Register custom elements
-customElements.define('calender-alarm-clock-card', AlarmClockCardElement);
-customElements.define('calender-alarm-clock-card-editor', AlarmClockCardEditor);
+customElements.define('calendar-alarm-clock-card', AlarmClockCardElement);
+customElements.define('calendar-alarm-clock-card-editor', AlarmClockCardEditor);
 
 // Register with Home Assistant's custom card registry
+declare global {
+  interface Window {
+    customCards: Array<{
+      type: string;
+      name: string;
+      description: string;
+      preview?: boolean;
+    }>;
+  }
+}
+
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: 'calender-alarm-clock-card',
-  name: 'Calendar Alarm Clock Card',
+  type: 'calendar-alarm-clock-card',
+  name: 'Calendar based Alarm Clock Card',
   description: 'A card for managing calendar-based alarms with clock display, quick alarms, snooze and dismiss',
   preview: true,
 });
 
 console.info(
-  '%c CALENDAR-ALARM-CLOCK-CARD %c 1.0.2 ',
+  '%c CALENDAR-ALARM-CLOCK-CARD %c 0.0.0-dev0 ',
   'color: white; background: #3498db; font-weight: bold;',
   'color: #3498db; background: white; font-weight: bold;',
 );

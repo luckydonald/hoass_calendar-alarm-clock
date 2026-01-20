@@ -1,4 +1,4 @@
-"""Calendar Alarm Clock integration for Home Assistant."""
+"""Calendar backed Alarm Clock integration for Home Assistant."""
 
 from __future__ import annotations
 
@@ -35,6 +35,7 @@ _LOGGER = logging.getLogger(LOG_NAME)
 # This integration is config entry only (no YAML configuration)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
+# List the platforms that your integration supports
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 LOVELACE_CARD_URL = "/local/community/calendar_alarm_clock/alarm-clock-card.js"
 LOVELACE_CARD_URL_ALT = "/hacsfiles/calendar_alarm_clock/alarm-clock-card.js"
@@ -186,7 +187,7 @@ async def _async_register_card(hass: HomeAssistant) -> None:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Calendar Alarm Clock from a config entry."""
+    """Set up Calendar backed Alarm Clock from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
     # Check if this is an auto-discovery entry (doesn't have calendar_entity)

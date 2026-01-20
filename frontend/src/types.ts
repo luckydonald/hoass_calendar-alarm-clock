@@ -33,6 +33,8 @@ export interface CardConfig {
   type?: string;
   entity?: string;
   title?: string;
+  // Add your custom config options here
+
   // Clock display options
   clock_display?: 'analog' | '24h' | '12h' | 'none';
   // Alarm list options
