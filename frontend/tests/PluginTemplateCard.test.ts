@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import CalendarBackedAlarmClockCard from '../src/CalendarBackedAlarmClockCard.vue';
+import AlarmClockCard from '../src/AlarmClockCard.vue';
 import type { HomeAssistant, CardConfig } from '../src/types';
 
-describe('CalendarBackedAlarmClockCard', () => {
+describe('AlarmClockCard', () => {
   let mockHass: HomeAssistant;
   let mockConfig: CardConfig;
 
@@ -40,7 +40,7 @@ describe('CalendarBackedAlarmClockCard', () => {
   });
 
   it('renders with title', () => {
-    const wrapper = mount(CalendarBackedAlarmClockCard, {
+    const wrapper = mount(AlarmClockCard, {
       props: {
         hass: mockHass,
         config: mockConfig,
@@ -51,7 +51,7 @@ describe('CalendarBackedAlarmClockCard', () => {
   });
 
   it('uses default title when not configured', () => {
-    const wrapper = mount(CalendarBackedAlarmClockCard, {
+    const wrapper = mount(AlarmClockCard, {
       props: {
         hass: mockHass,
         config: {},
@@ -62,7 +62,7 @@ describe('CalendarBackedAlarmClockCard', () => {
   });
 
   it('displays current time', async () => {
-    const wrapper = mount(CalendarBackedAlarmClockCard, {
+    const wrapper = mount(AlarmClockCard, {
       props: {
         hass: mockHass,
         config: mockConfig,
@@ -82,7 +82,7 @@ describe('CalendarBackedAlarmClockCard', () => {
       entity: 'sensor.test',
     };
 
-    const wrapper = mount(CalendarBackedAlarmClockCard, {
+    const wrapper = mount(AlarmClockCard, {
       props: {
         hass: mockHass,
         config: configWithEntity,
@@ -99,7 +99,7 @@ describe('CalendarBackedAlarmClockCard', () => {
       entity: 'sensor.nonexistent',
     };
 
-    const wrapper = mount(CalendarBackedAlarmClockCard, {
+    const wrapper = mount(AlarmClockCard, {
       props: {
         hass: mockHass,
         config: configWithEntity,
@@ -110,7 +110,7 @@ describe('CalendarBackedAlarmClockCard', () => {
   });
 
   it('does not show entity section when no entity configured', () => {
-    const wrapper = mount(CalendarBackedAlarmClockCard, {
+    const wrapper = mount(AlarmClockCard, {
       props: {
         hass: mockHass,
         config: mockConfig,
@@ -121,7 +121,7 @@ describe('CalendarBackedAlarmClockCard', () => {
   });
 
   it('handles null hass gracefully', () => {
-    const wrapper = mount(CalendarBackedAlarmClockCard, {
+    const wrapper = mount(AlarmClockCard, {
       props: {
         hass: null,
         config: mockConfig,
