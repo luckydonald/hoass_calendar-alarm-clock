@@ -401,18 +401,6 @@ class AlarmClockCardEditor extends HTMLElement {
 customElements.define('calendar-alarm-clock-card', AlarmClockCardElement);
 customElements.define('calendar-alarm-clock-card-editor', AlarmClockCardEditor);
 
-// Register with Home Assistant's custom card registry
-declare global {
-  interface Window {
-    customCards: Array<{
-      type: string;
-      name: string;
-      description: string;
-      preview?: boolean;
-    }>;
-  }
-}
-
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'calendar-alarm-clock-card',
