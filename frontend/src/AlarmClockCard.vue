@@ -549,15 +549,7 @@ function handleAddButtonClick(): void {
 </script>
 
 <template>
-  <ha-card
-    :style="{
-      '--clock-bg-color': clockBgColor,
-      '--clock-hour-color': clockHourColor,
-      '--clock-minute-color': clockMinuteColor,
-      '--clock-second-color': clockSecondColor,
-      '--clock-middle-color': clockMiddleColor,
-    }"
-  >
+  <ha-card>
     <h1 class="card-header">
       <ha-icon icon="mdi:calendar-clock" class="header-icon" />
       {{ cardTitle }}
@@ -681,6 +673,13 @@ function handleAddButtonClick(): void {
           <div
             class="clock-section"
             :class="{ night: isNightTime }"
+            :style="{
+              '--clock-bg-color': clockBgColor,
+              '--clock-hour-color': clockHourColor,
+              '--clock-minute-color': clockMinuteColor,
+              '--clock-second-color': clockSecondColor,
+              '--clock-middle-color': clockMiddleColor,
+            }"
           >
             <!-- Analog Clock -->
             <div v-if="clockDisplay === 'analog'" class="analog-clock-container">
