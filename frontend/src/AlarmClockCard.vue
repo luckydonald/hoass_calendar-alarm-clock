@@ -678,7 +678,10 @@ function handleAddButtonClick(): void {
             <span>Current Time</span>
           </div>
 
-          <div class="clock-section" :class="{ night: isNightTime }">
+          <div
+            class="clock-section"
+            :class="{ night: isNightTime }"
+          >
             <!-- Analog Clock -->
             <div v-if="clockDisplay === 'analog'" class="analog-clock-container">
               <svg class="analog-clock" viewBox="0 0 200 200">
