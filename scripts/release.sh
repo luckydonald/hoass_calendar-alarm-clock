@@ -109,16 +109,6 @@ else
     exit 1
 fi
 
-echo -e "New version: ${GREEN}v${NEW_VERSION}${NC}"
-echo ""
-
-read -p "Proceed with release? (Y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Nn]$ ]]; then
-    echo "Aborted."
-    exit 0
-fi
-
 # Step 1: Check for type errors (not lint - we'll fix those in step 3)
 echo ""
 echo -e "${GREEN}🔍 Step 1: Check for type errors${NC}"
@@ -165,7 +155,7 @@ echo -e "${GREEN}🐍 Step 4: Format Python code${NC}"
 uv run ruff format custom_components/
 if ! git diff --quiet -- custom_components/; then
     git add -u custom_components/
-    git commit -m "$(reason="ruff" tmpl "${COMMIT_MSG_LINT}")"
+    git commit -m "$(reason="ruff autoformat" tmpl "${COMMIT_MSG_LINT}")"
     echo "  Committed Python formatting changes"
 else
     echo "  No Python formatting changes needed"
@@ -179,7 +169,7 @@ yarn format
 cd ..
 if ! git diff --quiet -- frontend/; then
     git add -u frontend/
-    git commit -m "$(reason="ts" tmpl "${COMMIT_MSG_LINT}")"
+    git commit -m "$(reason="ts autoformat" tmpl "${COMMIT_MSG_LINT}")"
     echo "  Committed TypeScript formatting changes"
 else
     echo "  No TypeScript formatting changes needed"
@@ -197,6 +187,19 @@ cd ..
 echo "  Frontend built successfully!"
 
 # Step 7: Bump version AFTER all tests pass
+
+# but first let the user confirm, lol
+echo -e "New version: ${GREEN}v${NEW_VERSION}${NC}"
+echo ""
+
+read -p "Proceed with release? (Y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Nn]$ ]]; then
+    echo "Aborted."
+    exit 0
+fi
+
+# now actually bump the version
 echo ""
 echo -e "${GREEN}🏷️  Step 7: Update version${NC}"
 sed -i.bak 's/"version": "[^"]*"/"version": "'"${NEW_VERSION}"'"/' "custom_components/${SNAKE_NAME}/manifest.json"
