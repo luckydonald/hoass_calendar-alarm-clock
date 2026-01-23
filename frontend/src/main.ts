@@ -148,30 +148,30 @@ class AlarmClockCardEditor extends HTMLElement {
       ],
     ));
 
-    // Clock color settings
-    wrapper.appendChild(this._createTextInput(
+    // Clock color settings (use color picker helper)
+    wrapper.appendChild(this._createColorInput(
       'clock_bg_color',
-      'Clock Background Color (CSS color)',
+      'Clock Background Color',
       this._config.clock_bg_color ?? 'var(--clock-day-bg)'
     ));
-    wrapper.appendChild(this._createTextInput(
+    wrapper.appendChild(this._createColorInput(
       'clock_hour_color',
-      'Clock Hour Color (CSS color)',
+      'Clock Hour Color',
       this._config.clock_hour_color ?? 'var(--primary-text-color)'
     ));
-    wrapper.appendChild(this._createTextInput(
+    wrapper.appendChild(this._createColorInput(
       'clock_minute_color',
-      'Clock Minute Color (CSS color)',
+      'Clock Minute Color',
       this._config.clock_minute_color ?? 'var(--primary-text-color)'
     ));
-    wrapper.appendChild(this._createTextInput(
+    wrapper.appendChild(this._createColorInput(
       'clock_second_color',
-      'Clock Second Color (CSS color)',
+      'Clock Second Color',
       this._config.clock_second_color ?? 'var(--primary-color)'
     ));
-    wrapper.appendChild(this._createTextInput(
+    wrapper.appendChild(this._createColorInput(
       'clock_middle_color',
-      'Clock Middle (dot/separator) Color (CSS color)',
+      'Clock Middle (dot/separator) Color',
       this._config.clock_middle_color ?? 'var(--primary-color)'
     ));
 
@@ -419,6 +419,173 @@ class AlarmClockCardEditor extends HTMLElement {
 
     row.appendChild(labelEl);
     row.appendChild(entityPicker);
+    return row;
+  }
+
+  private _createColorInput(
+    name: string,
+    label: string,
+    value: string,
+  ): HTMLDivElement {
+    const row = document.createElement('div');
+
+    const labelEl = document.createElement('label');
+    labelEl.textContent = label;
+    labelEl.style.display = 'block';
+    labelEl.style.marginBottom = '4px';
+    labelEl.style.fontWeight = '500';
+    labelEl.style.color = 'var(--primary-text-color)';
+
+    // Container holds the textfield, dropdown/search and native color input
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.gap = '8px';
+    container.style.alignItems = 'center';
+
+    // Text input where user can paste any CSS color string
+    const textInput = document.createElement('ha-textfield') as HTMLInputElement;
+    textInput.setAttribute('label', label);
+    textInput.setAttribute('value', value || '');
+    textInput.style.flex = '1';
+
+    // Search box to filter the dropdown
+    const searchInput = document.createElement('ha-textfield') as HTMLInputElement;
+    searchInput.setAttribute('label', 'Search Colors');
+    searchInput.setAttribute('value', '');
+    searchInput.style.width = '180px';
+
+    // Dropdown select showing vars + color names
+    const select = document.createElement('ha-select') as HTMLSelectElement;
+    select.setAttribute('label', 'Colors');
+    select.style.width = '260px';
+
+    // Native color input for color chooser
+    const colorInput = document.createElement('input') as HTMLInputElement;
+    colorInput.type = 'color';
+    colorInput.title = 'Pick color';
+    colorInput.style.width = '48px';
+    colorInput.style.height = '32px';
+    colorInput.style.padding = '0';
+    colorInput.style.border = 'none';
+    colorInput.style.background = 'transparent';
+
+    // Build options list (vars + color names)
+    const VAR_OPTIONS: Array<{ value: string; label: string; }> = [
+      { value: 'var(--clock-day-bg)', label: 'var(--clock-day-bg)' },
+      { value: 'var(--clock-night-bg)', label: 'var(--clock-night-bg)' },
+      { value: 'var(--primary-text-color)', label: 'var(--primary-text-color)' },
+      { value: 'var(--primary-color)', label: 'var(--primary-color)' },
+      { value: 'var(--error-color)', label: 'var(--error-color)' },
+      { value: 'var(--warning-color)', label: 'var(--warning-color)' },
+    ];
+
+    // A compact set of common CSS color names (keeps file size reasonable)
+    const COLOR_NAMES = [
+      'black','white','red','green','blue','yellow','orange','purple','pink','gray','brown','cyan','magenta','lime','navy','teal','olive','maroon','silver','gold','beige','coral','salmon','indigo','violet','chocolate','crimson','darkblue','darkgreen'
+    ];
+
+    const ALL_OPTIONS: Array<{ value: string; label: string; }> = [
+      ...VAR_OPTIONS,
+      ...COLOR_NAMES.map((n) => ({ value: n, label: n })),
+    ];
+
+    function rebuildOptions(filter = '') {
+      select.innerHTML = '';
+      const f = filter.trim().toLowerCase();
+      ALL_OPTIONS.forEach((opt) => {
+        if (f && !(opt.label.toLowerCase().includes(f))) return;
+        const optionEl = document.createElement('ha-list-item');
+        optionEl.setAttribute('value', opt.value);
+        // Render color swatch if possible
+        const swatch = `<span style="display:inline-block;width:12px;height:12px;margin-right:8px;border:1px solid rgba(0,0,0,0.15);background:${opt.value};vertical-align:middle;"></span>`;
+        optionEl.innerHTML = `${swatch}${opt.label}`;
+        select.appendChild(optionEl);
+      });
+    }
+
+    // Try to set color input based on a CSS color string (returns hex or null)
+    function colorToHex(cssColor: string): string | null {
+      try {
+        const el = document.createElement('div');
+        el.style.color = cssColor;
+        document.body.appendChild(el);
+        const cs = getComputedStyle(el).color;
+        document.body.removeChild(el);
+        if (!cs) return null;
+        // cs is like 'rgb(r, g, b)' or 'rgba(...)'
+        const m = cs.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+        if (!m) return null;
+        const r = parseInt(m[1], 10);
+        const g = parseInt(m[2], 10);
+        const b = parseInt(m[3], 10);
+        const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+        return hex;
+      } catch {
+        return null;
+      }
+    }
+
+    // Initialize select options
+    rebuildOptions();
+
+    // Try to sync initial color input value
+    const initialHex = colorToHex(value);
+    if (initialHex) colorInput.value = initialHex;
+
+    // Event wiring
+    // text input changes
+    textInput.addEventListener('input', (e: Event) => {
+      const v = (e.target as HTMLInputElement).value;
+      this._updateConfig({ [name]: v });
+      const hex = colorToHex(v);
+      if (hex) colorInput.value = hex;
+    });
+
+    // search input filters dropdown
+    searchInput.addEventListener('input', (e: Event) => {
+      const v = (e.target as HTMLInputElement).value;
+      rebuildOptions(v);
+    });
+
+    // select choose option
+    select.addEventListener('selected', (e: Event) => {
+      const targ = e.target as HTMLSelectElement;
+      const chosen = (targ.value as string) || '';
+      // set text input and color input (if convertible)
+      textInput.setAttribute('value', chosen);
+      this._updateConfig({ [name]: chosen });
+      const hex = colorToHex(chosen);
+      if (hex) colorInput.value = hex;
+    });
+
+    // color input (native picker) change
+    colorInput.addEventListener('input', (e: Event) => {
+      const v = (e.target as HTMLInputElement).value;
+      // write hex to text input
+      textInput.setAttribute('value', v);
+      this._updateConfig({ [name]: v });
+    });
+
+    // Put pieces together
+    const leftGroup = document.createElement('div');
+    leftGroup.style.display = 'flex';
+    leftGroup.style.flexDirection = 'column';
+    leftGroup.style.flex = '1';
+    leftGroup.appendChild(textInput);
+
+    const rightGroup = document.createElement('div');
+    rightGroup.style.display = 'flex';
+    rightGroup.style.flexDirection = 'column';
+    rightGroup.style.gap = '6px';
+    rightGroup.appendChild(searchInput);
+    rightGroup.appendChild(select);
+
+    container.appendChild(leftGroup);
+    container.appendChild(rightGroup);
+    container.appendChild(colorInput);
+
+    row.appendChild(labelEl);
+    row.appendChild(container);
     return row;
   }
 
