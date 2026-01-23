@@ -804,9 +804,7 @@ function handleAddButtonClick(): void {
                 class="custom-minutes-input"
               />
               <span class="custom-label">min</span>
-              <ha-button outlined
-                @click="createQuickAlarm(quickAlarmCustomMinutes)"
-              >
+              <ha-button outlined @click="createQuickAlarm(quickAlarmCustomMinutes)">
                 Set
               </ha-button>
             </div>
