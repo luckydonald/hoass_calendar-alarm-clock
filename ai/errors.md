@@ -220,3 +220,23 @@ also all other `mwc-*` elements. Use ha's own components.
 ———
 
 src/main.ts:183:20 - error TS2339: Property 'clock_show_seconds' does not exist on type 'AlarmClockCardConfig'.
+
+———
+
+src/AlarmClockCard.vue:757:42 - error TS2339: Property 'formattedDate' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<__VLS_Props, {}>, { showDialog: typeof showDialog; isEditing: typeof isEditing; dialogData: typeof dialogData; clockCollapsed: typeof clockCollapsed; ... 49 more ...; handleAddButtonClick: typeof handleAddButtonClick; }, ... 23 more ..., {}>'.
+
+757               <div class="clock-date">{{ formattedDate }}</div>
+                                             ~~~~~~~~~~~~~
+
+src/AlarmClockCard.vue:768:45 - error TS2339: Property 'formattedDate' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<__VLS_Props, {}>, { showDialog: typeof showDialog; isEditing: typeof isEditing; dialogData: typeof dialogData; clockCollapsed: typeof clockCollapsed; ... 49 more ...; handleAddButtonClick: typeof handleAddButtonClick; }, ... 23 more ..., {}>'.
+
+768                <div class="digital-date">{{ formattedDate }}</div>
+                                                ~~~~~~~~~~~~~
+
+src/AlarmClockCard.vue:787:45 - error TS2339: Property 'formattedDate' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<__VLS_Props, {}>, { showDialog: typeof showDialog; isEditing: typeof isEditing; dialogData: typeof dialogData; clockCollapsed: typeof clockCollapsed; ... 49 more ...; handleAddButtonClick: typeof handleAddButtonClick; }, ... 23 more ..., {}>'.
+
+787                <div class="digital-date">{{ formattedDate }}</div>
+                                                ~~~~~~~~~~~~~
+
+
+Found 3 errors.
