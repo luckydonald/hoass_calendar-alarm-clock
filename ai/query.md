@@ -216,3 +216,5 @@ Then after that is a real color input, which is synced to the text field-
 So you can shove in text, search in the dropdown, or have your browser display a chooser.
 The dropdown shall be a ha component, too.
 Preferable searchable, and with the color rendered as square icon or whatever in front of the text.
+———
+Write the config editor part as Vue component, too. That way it's more consistent, and also that should remove the issue that it now each time unfocus the field you're editing every second.
