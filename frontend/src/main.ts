@@ -1,6 +1,7 @@
 import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
 import AlarmClockCard from './AlarmClockCard.vue';
 import type { CardConfig, HomeAssistant } from './types';
+import colorName from 'color-name';
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;
@@ -480,9 +481,7 @@ class AlarmClockCardEditor extends HTMLElement {
     ];
 
     // A compact set of common CSS color names (keeps file size reasonable)
-    const COLOR_NAMES = [
-      'black','white','red','green','blue','yellow','orange','purple','pink','gray','brown','cyan','magenta','lime','navy','teal','olive','maroon','silver','gold','beige','coral','salmon','indigo','violet','chocolate','crimson','darkblue','darkgreen'
-    ];
+    const COLOR_NAMES = Object.keys(colorName).sort();
 
     const ALL_OPTIONS: Array<{ value: string; label: string; }> = [
       ...VAR_OPTIONS,
