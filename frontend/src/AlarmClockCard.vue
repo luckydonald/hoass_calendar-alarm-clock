@@ -561,6 +561,13 @@ function handleAddButtonClick(): void {
     <h1 class="card-header">
       <ha-icon icon="mdi:calendar-clock" class="header-icon" />
       {{ cardTitle }}
+      <span
+        v-if="nextAlarm && nextAlarmUrgency !== 'none'"
+        class="alarm-indicator"
+        :class="nextAlarmUrgency"
+      >
+        <ha-icon icon="mdi:alarm" />
+      </span>
     </h1>
 
     <div class="card-content">
@@ -669,13 +676,6 @@ function handleAddButtonClick(): void {
           <div slot="header" class="section-header">
             <ha-icon icon="mdi:clock-outline" />
             <span>Current Time</span>
-            <span
-              v-if="nextAlarm && nextAlarmUrgency !== 'none'"
-              class="alarm-indicator"
-              :class="nextAlarmUrgency"
-            >
-              <ha-icon icon="mdi:alarm" />
-            </span>
           </div>
 
           <div class="clock-section" :class="{ night: isNightTime }">
