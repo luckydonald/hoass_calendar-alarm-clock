@@ -37,6 +37,13 @@ export interface CardConfig {
 
   // Clock display options
   clock_display?: 'analog' | '24h' | '12h' | 'none';
+  // Clock color and seconds options
+  clock_bg_color?: string;
+  clock_hour_color?: string;
+  clock_minute_color?: string;
+  clock_second_color?: string;
+  clock_middle_color?: string;
+  clock_show_seconds?: boolean;
   // Alarm list options
   alarm_list_mode?: 'days' | 'count';
   alarm_list_days?: number;
