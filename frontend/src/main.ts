@@ -1,7 +1,7 @@
+import colorName from 'color-name';
 import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
 import AlarmClockCard from './AlarmClockCard.vue';
 import type { CardConfig, HomeAssistant } from './types';
-import colorName from 'color-name';
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;
@@ -153,27 +153,27 @@ class AlarmClockCardEditor extends HTMLElement {
     wrapper.appendChild(this._createColorInput(
       'clock_bg_color',
       'Clock Background Color',
-      this._config.clock_bg_color ?? 'var(--clock-day-bg)'
+      this._config.clock_bg_color ?? 'var(--clock-day-bg)',
     ));
     wrapper.appendChild(this._createColorInput(
       'clock_hour_color',
       'Clock Hour Color',
-      this._config.clock_hour_color ?? 'var(--primary-text-color)'
+      this._config.clock_hour_color ?? 'var(--primary-text-color)',
     ));
     wrapper.appendChild(this._createColorInput(
       'clock_minute_color',
       'Clock Minute Color',
-      this._config.clock_minute_color ?? 'var(--primary-text-color)'
+      this._config.clock_minute_color ?? 'var(--primary-text-color)',
     ));
     wrapper.appendChild(this._createColorInput(
       'clock_second_color',
       'Clock Second Color',
-      this._config.clock_second_color ?? 'var(--primary-color)'
+      this._config.clock_second_color ?? 'var(--primary-color)',
     ));
     wrapper.appendChild(this._createColorInput(
       'clock_middle_color',
       'Clock Middle (dot/separator) Color',
-      this._config.clock_middle_color ?? 'var(--primary-color)'
+      this._config.clock_middle_color ?? 'var(--primary-color)',
     ));
 
     // Seconds toggle

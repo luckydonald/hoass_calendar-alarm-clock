@@ -549,13 +549,15 @@ function handleAddButtonClick(): void {
 </script>
 
 <template>
-  <ha-card :style="{
-    '--clock-bg-color': clockBgColor,
-    '--clock-hour-color': clockHourColor,
-    '--clock-minute-color': clockMinuteColor,
-    '--clock-second-color': clockSecondColor,
-    '--clock-middle-color': clockMiddleColor,
-  }">
+  <ha-card
+    :style="{
+      '--clock-bg-color': clockBgColor,
+      '--clock-hour-color': clockHourColor,
+      '--clock-minute-color': clockMinuteColor,
+      '--clock-second-color': clockSecondColor,
+      '--clock-middle-color': clockMiddleColor,
+    }"
+  >
     <h1 class="card-header">
       <ha-icon icon="mdi:calendar-clock" class="header-icon" />
       {{ cardTitle }}
@@ -774,35 +776,35 @@ function handleAddButtonClick(): void {
                 <span class="digital-minutes">{{ digitalParts.mm }}</span>
                 <span v-if="showSeconds" class="digital-sep-sec">:{{ digitalParts.ss }}</span>
               </div>
-               <div class="digital-date">{{ formattedDate }}</div>
-               <div
-                 v-if="nextAlarm"
-                 class="digital-next-alarm"
-                 :class="nextAlarmUrgency"
-               >
-                 <ha-icon icon="mdi:alarm" />
-                 <span>{{ formatTime(nextAlarm.time) }}</span>
-               </div>
-             </div>
+              <div class="digital-date">{{ formattedDate }}</div>
+              <div
+                v-if="nextAlarm"
+                class="digital-next-alarm"
+                :class="nextAlarmUrgency"
+              >
+                <ha-icon icon="mdi:alarm" />
+                <span>{{ formatTime(nextAlarm.time) }}</span>
+              </div>
+            </div>
 
-             <!-- Digital Clock 12h -->
-             <div v-else-if="clockDisplay === '12h'" class="digital-clock-container">
+            <!-- Digital Clock 12h -->
+            <div v-else-if="clockDisplay === '12h'" class="digital-clock-container">
               <div class="digital-time">
                 <span class="digital-hours">{{ digitalParts.hh12 }}</span>
                 <span class="digital-sep">:</span>
                 <span class="digital-minutes">{{ digitalParts.mm }}</span>
                 <span v-if="showSeconds" class="digital-sep-sec">:{{ digitalParts.ss }}</span>
               </div>
-               <div class="digital-date">{{ formattedDate }}</div>
-               <div
-                 v-if="nextAlarm"
-                 class="digital-next-alarm"
-                 :class="nextAlarmUrgency"
-               >
-                 <ha-icon icon="mdi:alarm" />
-                 <span>{{ formatTime(nextAlarm.time) }}</span>
-               </div>
-             </div>
+              <div class="digital-date">{{ formattedDate }}</div>
+              <div
+                v-if="nextAlarm"
+                class="digital-next-alarm"
+                :class="nextAlarmUrgency"
+              >
+                <ha-icon icon="mdi:alarm" />
+                <span>{{ formatTime(nextAlarm.time) }}</span>
+              </div>
+            </div>
 
             <!-- Add alarm button in clock section -->
             <ha-icon-button
