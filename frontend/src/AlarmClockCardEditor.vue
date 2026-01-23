@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, reactive, watch, toRefs, computed } from 'vue';
 import colorName from 'color-name';
+import { computed, reactive, ref, toRefs, watch } from 'vue';
 import ColorPicker from './ColorPicker.vue';
 
 interface Props {
@@ -58,7 +58,6 @@ function onShowSecondsChange(e: Event) {
   const targ = e.target as HTMLInputElement;
   localConfig.clock_show_seconds = !!targ.checked;
 }
-
 </script>
 
 <template>
@@ -132,7 +131,6 @@ function onShowSecondsChange(e: Event) {
         <p style="margin:0"><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
       </div>
     </div>
-
   </div>
 </template>
 

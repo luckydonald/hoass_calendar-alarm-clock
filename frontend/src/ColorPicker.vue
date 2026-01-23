@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue';
 import colorName from 'color-name';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
   modelValue?: string;
@@ -103,7 +103,6 @@ function onColorInput(e: Event) {
   const targ = e.target as HTMLInputElement;
   hex.value = targ.value;
 }
-
 </script>
 
 <template>
