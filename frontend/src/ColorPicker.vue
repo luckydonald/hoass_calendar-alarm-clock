@@ -30,6 +30,9 @@ function colorToHex(cssColor: string): string | null {
   try {
     const el = document.createElement('div');
     el.style.color = cssColor;
+    // Make sure element is not visible
+    el.style.position = 'fixed';
+    el.style.left = '-9999px';
     document.body.appendChild(el);
     const cs = getComputedStyle(el).color;
     document.body.removeChild(el);
@@ -79,9 +82,9 @@ const filteredOptions = computed(() => {
 });
 
 function onSelect(e: Event) {
-  const target = e.target as HTMLSelectElement | HTMLElement;
-  // ha-select may put value on target.value; try to read it safely
-  const val = (target as any).value as string || '';
+  const target = e.target as HTMLSelectElement | HTMLElement | any;
+  // ha-select/ha-list-item may provide value in different places; try common ones
+  const val = (target && (target.value ?? target.getAttribute?.('value'))) as string || '';
   if (val) {
     text.value = val;
     const h = colorToHex(val);
@@ -113,9 +116,8 @@ function onColorInput(e: Event) {
       <ha-textfield label="Search Colors" :value="search" @input="onSearchInput" />
       <ha-select label="Colors" style="width:100%" @selected="onSelect">
         <ha-list-item v-for="opt in filteredOptions" :key="opt" :value="opt">
-          <svg width="12" height="12" style="margin-right:8px; vertical-align:middle;" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-            <rect width="12" height="12" :fill="opt" :stroke="'rgba(0,0,0,0.15)'" />
-          </svg>
+          <!-- Use a simple color square instead of SVG to ensure CSS variables and named colors render correctly -->
+          <span :style="{ display: 'inline-block', width: '12px', height: '12px', marginRight: '8px', verticalAlign: 'middle', background: opt, border: '1px solid rgba(0,0,0,0.15)' }"></span>
           {{ opt }}
         </ha-list-item>
       </ha-select>
