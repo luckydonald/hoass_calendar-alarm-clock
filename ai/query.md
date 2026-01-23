@@ -220,3 +220,9 @@ Preferable searchable, and with the color rendered as square icon or whatever in
 Write the config editor part as Vue component, too. That way it's more consistent, and also that should remove the issue that it now each time unfocus the field you're editing every second.
 ———
 Please extract the 3 related color picker inputs as single component with `v-model` support.
+———
+Be mindful of the shadow-dom inside `ha-*` components.
+———
+The analog clock should have an additional setting for "tick marks" yes/no, and "numbers" yes/no.
+Also, there should be a setting for "show next alarm time" yes/no, which displays the next alarm time in the bottom center of the clock.
+Lastly there'd be a "smooth" mode, which uses pure css animations to move the hands smoothly, instead of ticking each second. Use `animation-delay: +/- Xs` to sync it properly, make sure to sync that every minute, and on all events indicating the window was inactive.
