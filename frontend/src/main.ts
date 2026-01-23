@@ -304,7 +304,7 @@ class AlarmClockCardEditor extends HTMLElement {
     select.style.width = '100%';
 
     options.forEach((opt) => {
-      const optionEl = document.createElement('mwc-list-item');
+      const optionEl = document.createElement('ha-list-item');
       optionEl.setAttribute('value', opt.value);
       optionEl.textContent = opt.label;
       if (opt.value === value) {

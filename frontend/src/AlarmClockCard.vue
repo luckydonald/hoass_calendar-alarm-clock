@@ -543,22 +543,22 @@ function handleAddButtonClick(): void {
           <div class="ringing-alarm-name">{{ alarm.name }}</div>
         </div>
         <div class="ringing-alarm-actions">
-          <mwc-button
+          <ha-button
             raised
             class="snooze-button"
             @click="snoozeAlarm(alarm)"
           >
             <ha-icon icon="mdi:alarm-snooze" slot="icon" />
             Snooze
-          </mwc-button>
-          <mwc-button
+          </ha-button>
+          <ha-button
             raised
             class="dismiss-button"
             @click="dismissAlarm(alarm)"
           >
             <ha-icon icon="mdi:alarm-off" slot="icon" />
             Dismiss
-          </mwc-button>
+          </ha-button>
         </div>
       </div>
 
@@ -580,14 +580,14 @@ function handleAddButtonClick(): void {
         </div>
 
         <div v-if="isAlarmRinging(selectedAlarm)" class="single-alarm-actions">
-          <mwc-button raised class="snooze-button" @click="snoozeAlarm(selectedAlarm)">
+          <ha-button raised class="snooze-button" @click="snoozeAlarm(selectedAlarm)">
             <ha-icon icon="mdi:alarm-snooze" slot="icon" />
             Snooze
-          </mwc-button>
-          <mwc-button raised class="dismiss-button" @click="dismissAlarm(selectedAlarm)">
+          </ha-button>
+          <ha-button raised class="dismiss-button" @click="dismissAlarm(selectedAlarm)">
             <ha-icon icon="mdi:alarm-off" slot="icon" />
             Dismiss
-          </mwc-button>
+          </ha-button>
         </div>
 
         <div v-else class="single-alarm-toggle">
@@ -783,7 +783,7 @@ function handleAddButtonClick(): void {
 
           <div class="quick-alarm-section">
             <div class="quick-alarm-presets">
-              <mwc-button
+              <ha-button
                 v-for="option in quickAlarmOptions"
                 :key="option.minutes"
                 outlined
@@ -792,7 +792,7 @@ function handleAddButtonClick(): void {
               >
                 <ha-icon :icon="option.icon" slot="icon" />
                 {{ option.label }}
-              </mwc-button>
+              </ha-button>
             </div>
 
             <div class="quick-alarm-custom">
@@ -804,13 +804,11 @@ function handleAddButtonClick(): void {
                 class="custom-minutes-input"
               />
               <span class="custom-label">min</span>
-              <mwc-button
-                outlined
-                dense
+              <ha-button outlined
                 @click="createQuickAlarm(quickAlarmCustomMinutes)"
               >
                 Set
-              </mwc-button>
+              </ha-button>
             </div>
           </div>
         </ha-expansion-panel>
@@ -832,9 +830,9 @@ function handleAddButtonClick(): void {
             <div v-if="filteredAlarms.length === 0" class="no-alarms">
               <ha-icon icon="mdi:alarm-plus" />
               <p>No alarms scheduled</p>
-              <mwc-button outlined @click="handleAddButtonClick">
+              <ha-button outlined @click="handleAddButtonClick">
                 Add Alarm
-              </mwc-button>
+              </ha-button>
             </div>
 
             <div
@@ -968,25 +966,25 @@ function handleAddButtonClick(): void {
               :value="dialogData.repeat"
               @selected="handleRepeatChange"
             >
-              <mwc-list-item value="none">Never</mwc-list-item>
-              <mwc-list-item value="daily">Daily</mwc-list-item>
-              <mwc-list-item value="weekdays">Weekdays</mwc-list-item>
-              <mwc-list-item value="weekends">Weekends</mwc-list-item>
-              <mwc-list-item value="weekly">Weekly</mwc-list-item>
+              <ha-list-item value="none">Never</ha-list-item>
+              <ha-list-item value="daily">Daily</ha-list-item>
+              <ha-list-item value="weekdays">Weekdays</ha-list-item>
+              <ha-list-item value="weekends">Weekends</ha-list-item>
+              <ha-list-item value="weekly">Weekly</ha-list-item>
             </ha-select>
 
             <div class="add-alarm-actions">
-              <mwc-button
+              <ha-button
                 v-if="addSectionMode === 'auto'"
                 outlined
                 @click="showAddSection = false"
               >
                 Cancel
-              </mwc-button>
-              <mwc-button raised @click="saveAlarm">
+              </ha-button>
+              <ha-button raised @click="saveAlarm">
                 <ha-icon icon="mdi:check" slot="icon" />
                 Create Alarm
-              </mwc-button>
+              </ha-button>
             </div>
           </div>
         </ha-expansion-panel>
@@ -1046,11 +1044,11 @@ function handleAddButtonClick(): void {
           :value="dialogData.repeat"
           @selected="handleRepeatChange"
         >
-          <mwc-list-item value="none">Never</mwc-list-item>
-          <mwc-list-item value="daily">Daily</mwc-list-item>
-          <mwc-list-item value="weekdays">Weekdays</mwc-list-item>
-          <mwc-list-item value="weekends">Weekends</mwc-list-item>
-          <mwc-list-item value="weekly">Weekly</mwc-list-item>
+          <ha-list-item value="none">Never</ha-list-item>
+          <ha-list-item value="daily">Daily</ha-list-item>
+          <ha-list-item value="weekdays">Weekdays</ha-list-item>
+          <ha-list-item value="weekends">Weekends</ha-list-item>
+          <ha-list-item value="weekly">Weekly</ha-list-item>
         </ha-select>
 
         <ha-formfield label="Enabled">
@@ -1061,12 +1059,12 @@ function handleAddButtonClick(): void {
         </ha-formfield>
       </div>
 
-      <mwc-button slot="secondaryAction" dialogAction="cancel">
+      <ha-button slot="secondaryAction" dialogAction="cancel">
         Cancel
-      </mwc-button>
-      <mwc-button slot="primaryAction" @click="saveAlarm">
+      </ha-button>
+      <ha-button slot="primaryAction" @click="saveAlarm">
         Save
-      </mwc-button>
+      </ha-button>
     </ha-dialog>
   </ha-card>
 </template>
@@ -1358,7 +1356,7 @@ function handleAddButtonClick(): void {
   margin-bottom: 16px;
 }
 
-.quick-alarm-presets mwc-button {
+.quick-alarm-presets ha-button {
   flex: 1;
   min-width: 80px;
 }

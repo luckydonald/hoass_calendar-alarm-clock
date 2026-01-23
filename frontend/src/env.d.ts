@@ -54,16 +54,12 @@ declare global {
       label: string;
       includeDomains: string[];
     };
-    'mwc-button': HTMLElement & {
+    'ha-button': HTMLElement & {
       raised: boolean;
       outlined: boolean;
       dense: boolean;
       slot: string;
       dialogAction: string;
-    };
-    'mwc-list-item': HTMLElement & {
-      value: string;
-      selected: boolean;
     };
   }
 
@@ -93,8 +89,7 @@ declare module 'vue' {
     'ha-expansion-panel': HTMLElement;
     'ha-formfield': HTMLElement;
     'ha-entity-picker': HTMLElement;
-    'mwc-button': HTMLElement;
-    'mwc-list-item': HTMLElement;
+    'ha-button': HTMLElement;
   }
 }
 
