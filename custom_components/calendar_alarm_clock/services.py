@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
