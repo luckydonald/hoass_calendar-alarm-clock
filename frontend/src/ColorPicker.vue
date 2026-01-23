@@ -113,7 +113,9 @@ function onColorInput(e: Event) {
       <ha-textfield label="Search Colors" :value="search" @input="onSearchInput" />
       <ha-select label="Colors" style="width:100%" @selected="onSelect">
         <ha-list-item v-for="opt in filteredOptions" :key="opt" :value="opt">
-          <span :style="{ display: 'inline-block', width: '12px', height: '12px', marginRight: '8px', border: '1px solid rgba(0,0,0,0.15)', background: opt }"></span>
+          <svg width="12" height="12" style="margin-right:8px; vertical-align:middle;" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+            <rect width="12" height="12" :fill="opt" :stroke="'rgba(0,0,0,0.15)'" />
+          </svg>
           {{ opt }}
         </ha-list-item>
       </ha-select>
