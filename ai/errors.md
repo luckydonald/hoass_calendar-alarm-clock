@@ -216,3 +216,7 @@ The flow is:
 
 mwc-list-item is wrong, that's no home assistant component.
 also all other `mwc-*` elements. Use ha's own components.
+
+———
+
+src/main.ts:183:20 - error TS2339: Property 'clock_show_seconds' does not exist on type 'AlarmClockCardConfig'.
