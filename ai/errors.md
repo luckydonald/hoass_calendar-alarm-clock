@@ -211,3 +211,8 @@ The flow is:
 5. Secondary flows/autodiscovery suggestions:
   - Now that the `auto_discovery` one exists, have ` [+ Integration] -> Calendar Alram Clock`  give you the gui with entity_id selector for calendars.
   - If discovery is on, now scan all calendars and generate suggestions for those elements.
+
+———
+
+mwc-list-item is wrong, that's no home assistant component.
+also all other `mwc-*` elements. Use ha's own components.
