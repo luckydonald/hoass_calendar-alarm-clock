@@ -256,6 +256,15 @@ const formattedTime12h = computed(() => {
   });
 });
 
+// Add formattedDate computed (was missing)
+const formattedDate = computed(() => {
+  return currentTime.value.toLocaleDateString([], {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+});
+
 // Digital parts so we can color the separator independently
 const digitalParts = computed(() => {
   const d = currentTime.value;
