@@ -256,7 +256,7 @@ const formattedTime12h = computed(() => {
   });
 });
 
-// Add formattedDate computed (was missing)
+// Add formattedDate computed
 const formattedDate = computed(() => {
   return currentTime.value.toLocaleDateString([], {
     weekday: 'long',
