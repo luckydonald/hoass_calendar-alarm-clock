@@ -240,3 +240,33 @@ src/AlarmClockCard.vue:787:45 - error TS2339: Property 'formattedDate' does not 
 
 
 Found 3 errors.
+
+—————————
+
+  Running frontend type-check...
+yarn run v1.22.22
+$ vue-tsc -b
+src/AlarmClockCardEditor.vue:64:26 - error TS7006: Parameter 'e' implicitly has an 'any' type.
+
+64         @value-changed="(e)=> localConfig.entity = e.detail.value || ''"
+                            ~
+
+src/AlarmClockCardEditor.vue:71:108 - error TS7006: Parameter 'e' implicitly has an 'any' type.
+
+71         <ha-select label="Clock Display" style="width:100%" :value="localConfig.clock_display" @selected="(e)=> localConfig.clock_display = e.target.value">
+                                                                                                              ~
+
+src/AlarmClockCardEditor.vue:108:82 - error TS7006: Parameter 'e' implicitly has an 'any' type.
+
+108         <ha-switch :checked="localConfig.clock_show_seconds !== false" @change="(e)=> localConfig.clock_show_seconds = e.target.checked" />
+                                                                                     ~
+
+src/ColorPicker.vue:95:84 - error TS7006: Parameter 'e' implicitly has an 'any' type.
+
+95     <ha-textfield :label="props.label || ''" style="flex:1" :value="text" @input="(e)=> text = (e.target as HTMLInputElement).value" />
+                                                                                      ~
+
+src/ColorPicker.vue:98:68 - error TS7006: Parameter 'e' implicitly has an 'any' type.
+
+98       <ha-textfield label="Search Colors" :value="search" @input="(e)=> search = (e.target as HTMLInputElement).value" />
+                                            
