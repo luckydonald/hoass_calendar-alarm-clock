@@ -209,3 +209,10 @@ There'll be:
 - seconds
 - middle (either the dot in the analogue clock, or the : in the digital one)
 Also add a checkbox for seconds yes/no on the clock setting.
+———
+The text input in _createTextInput for the color, can you make a specific color input?
+I want `[text field|v][  ]` so, in words, the text field, followed by a dropdown with a) common `var(--…)`, and then the normal color names provided by the `color-name` lib.
+Then after that is a real color input, which is synced to the text field-
+So you can shove in text, search in the dropdown, or have your browser display a chooser.
+The dropdown shall be a ha component, too.
+Preferable searchable, and with the color rendered as square icon or whatever in front of the text.
