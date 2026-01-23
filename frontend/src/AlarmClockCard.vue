@@ -80,6 +80,14 @@ watch(() => props.config, (newConfig) => {
 // Computed
 const cardTitle = computed(() => props.config.title || 'Calendar Alarm Clock');
 
+// Clock color and seconds settings (new)
+const clockBgColor = computed(() => (props.config.clock_bg_color as string) || 'var(--clock-day-bg)');
+const clockHourColor = computed(() => (props.config.clock_hour_color as string) || 'var(--primary-text-color)');
+const clockMinuteColor = computed(() => (props.config.clock_minute_color as string) || 'var(--primary-text-color)');
+const clockSecondColor = computed(() => (props.config.clock_second_color as string) || 'var(--primary-color)');
+const clockMiddleColor = computed(() => (props.config.clock_middle_color as string) || 'var(--primary-color)');
+const showSeconds = computed(() => (props.config.clock_show_seconds === undefined ? true : !!props.config.clock_show_seconds));
+
 const clockDisplay = computed(() => props.config.clock_display ?? 'analog');
 const showClock = computed(() => props.config.show_clock !== false);
 const showQuickAlarm = computed(() => props.config.show_quick_alarm !== false);
@@ -234,6 +242,7 @@ const formattedTime24h = computed(() => {
   return currentTime.value.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
+    second: showSeconds.value ? '2-digit' : undefined,
     hour12: false,
   });
 });
@@ -242,16 +251,26 @@ const formattedTime12h = computed(() => {
   return currentTime.value.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
+    second: showSeconds.value ? '2-digit' : undefined,
     hour12: true,
   });
 });
 
-const formattedDate = computed(() => {
-  return currentTime.value.toLocaleDateString([], {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+// Digital parts so we can color the separator independently
+const digitalParts = computed(() => {
+  const d = currentTime.value;
+  const hh = d.getHours();
+  const mm = d.getMinutes();
+  const ss = d.getSeconds();
+  const pad = (v: number) => String(v).padStart(2, '0');
+  // For 12h mode adjust hours
+  const hours12 = ((hh + 11) % 12) + 1;
+  return {
+    hh24: pad(hh),
+    hh12: pad(hours12),
+    mm: pad(mm),
+    ss: pad(ss),
+  };
 });
 
 // Next alarm urgency (for indicator color)
@@ -521,7 +540,13 @@ function handleAddButtonClick(): void {
 </script>
 
 <template>
-  <ha-card>
+  <ha-card :style="{
+    '--clock-bg-color': clockBgColor,
+    '--clock-hour-color': clockHourColor,
+    '--clock-minute-color': clockMinuteColor,
+    '--clock-second-color': clockSecondColor,
+    '--clock-middle-color': clockMiddleColor,
+  }">
     <h1 class="card-header">
       <ha-icon icon="mdi:calendar-clock" class="header-icon" />
       {{ cardTitle }}
@@ -714,8 +739,9 @@ function handleAddButtonClick(): void {
                   :transform="`rotate(${minuteHandRotation}, 100, 100)`"
                 />
 
-                <!-- Second hand -->
+                <!-- Second hand (optional based on config) -->
                 <line
+                  v-if="showSeconds"
                   class="second-hand"
                   x1="100"
                   y1="100"
@@ -733,31 +759,41 @@ function handleAddButtonClick(): void {
 
             <!-- Digital Clock 24h -->
             <div v-else-if="clockDisplay === '24h'" class="digital-clock-container">
-              <div class="digital-time">{{ formattedTime24h }}</div>
-              <div class="digital-date">{{ formattedDate }}</div>
-              <div
-                v-if="nextAlarm"
-                class="digital-next-alarm"
-                :class="nextAlarmUrgency"
-              >
-                <ha-icon icon="mdi:alarm" />
-                <span>{{ formatTime(nextAlarm.time) }}</span>
+              <div class="digital-time">
+                <span class="digital-hours">{{ digitalParts.hh24 }}</span>
+                <span class="digital-sep">:</span>
+                <span class="digital-minutes">{{ digitalParts.mm }}</span>
+                <span v-if="showSeconds" class="digital-sep-sec">:{{ digitalParts.ss }}</span>
               </div>
-            </div>
+               <div class="digital-date">{{ formattedDate }}</div>
+               <div
+                 v-if="nextAlarm"
+                 class="digital-next-alarm"
+                 :class="nextAlarmUrgency"
+               >
+                 <ha-icon icon="mdi:alarm" />
+                 <span>{{ formatTime(nextAlarm.time) }}</span>
+               </div>
+             </div>
 
-            <!-- Digital Clock 12h -->
-            <div v-else-if="clockDisplay === '12h'" class="digital-clock-container">
-              <div class="digital-time">{{ formattedTime12h }}</div>
-              <div class="digital-date">{{ formattedDate }}</div>
-              <div
-                v-if="nextAlarm"
-                class="digital-next-alarm"
-                :class="nextAlarmUrgency"
-              >
-                <ha-icon icon="mdi:alarm" />
-                <span>{{ formatTime(nextAlarm.time) }}</span>
+             <!-- Digital Clock 12h -->
+             <div v-else-if="clockDisplay === '12h'" class="digital-clock-container">
+              <div class="digital-time">
+                <span class="digital-hours">{{ digitalParts.hh12 }}</span>
+                <span class="digital-sep">:</span>
+                <span class="digital-minutes">{{ digitalParts.mm }}</span>
+                <span v-if="showSeconds" class="digital-sep-sec">:{{ digitalParts.ss }}</span>
               </div>
-            </div>
+               <div class="digital-date">{{ formattedDate }}</div>
+               <div
+                 v-if="nextAlarm"
+                 class="digital-next-alarm"
+                 :class="nextAlarmUrgency"
+               >
+                 <ha-icon icon="mdi:alarm" />
+                 <span>{{ formatTime(nextAlarm.time) }}</span>
+               </div>
+             </div>
 
             <!-- Add alarm button in clock section -->
             <ha-icon-button
@@ -1069,6 +1105,11 @@ function handleAddButtonClick(): void {
 
 <style scoped>
 :host {
+  --clock-bg-color: var(--clock-day-bg);
+  --clock-hour-color: var(--primary-text-color);
+  --clock-minute-color: var(--primary-text-color);
+  --clock-second-color: var(--primary-color);
+  --clock-middle-color: var(--primary-color);
   --alarm-ringing-color: var(--error-color, #db4437);
   --alarm-snooze-color: var(--warning-color, #ff9800);
   --alarm-urgent-color: var(--error-color, #db4437);
@@ -1216,7 +1257,7 @@ function handleAddButtonClick(): void {
 }
 
 .clock-face {
-  fill: var(--card-background-color, white);
+  fill: var(--clock-bg-color, var(--card-background-color, white));
   stroke: var(--divider-color);
   stroke-width: 2;
 }
@@ -1238,19 +1279,19 @@ function handleAddButtonClick(): void {
 }
 
 .hour-hand {
-  stroke: var(--primary-text-color);
+  stroke: var(--clock-hour-color, var(--primary-text-color));
   stroke-width: 4;
   stroke-linecap: round;
 }
 
 .minute-hand {
-  stroke: var(--primary-text-color);
+  stroke: var(--clock-minute-color, var(--primary-text-color));
   stroke-width: 3;
   stroke-linecap: round;
 }
 
 .second-hand {
-  stroke: var(--primary-color);
+  stroke: var(--clock-second-color, var(--primary-color));
   stroke-width: 1.5;
   stroke-linecap: round;
 }
@@ -1271,7 +1312,7 @@ function handleAddButtonClick(): void {
 }
 
 .center-dot {
-  fill: var(--primary-color);
+  fill: var(--clock-middle-color, var(--primary-color));
 }
 
 .clock-date {
@@ -1302,6 +1343,12 @@ function handleAddButtonClick(): void {
   font-variant-numeric: tabular-nums;
   color: var(--primary-text-color);
   line-height: 1;
+}
+
+.digital-sep,
+.digital-sep-sec {
+  color: var(--clock-middle-color, var(--primary-color));
+  margin: 0 6px;
 }
 
 .clock-section.night .digital-time {

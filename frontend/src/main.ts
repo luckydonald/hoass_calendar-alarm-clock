@@ -87,6 +87,12 @@ class AlarmClockCardElement extends HTMLElement {
       show_quick_alarm: true,
       show_alarm_list: true,
       show_add_section: 'auto',
+      clock_bg_color: 'var(--clock-day-bg)',
+      clock_hour_color: 'var(--primary-text-color)',
+      clock_minute_color: 'var(--primary-text-color)',
+      clock_second_color: 'var(--primary-color)',
+      clock_middle_color: 'var(--primary-color)',
+      clock_show_seconds: true,
     };
   }
 }
@@ -140,6 +146,40 @@ class AlarmClockCardEditor extends HTMLElement {
         { value: '12h', label: 'Digital (12h)' },
         { value: 'none', label: 'None' },
       ],
+    ));
+
+    // Clock color settings
+    wrapper.appendChild(this._createTextInput(
+      'clock_bg_color',
+      'Clock Background Color (CSS color)',
+      this._config.clock_bg_color ?? 'var(--clock-day-bg)'
+    ));
+    wrapper.appendChild(this._createTextInput(
+      'clock_hour_color',
+      'Clock Hour Color (CSS color)',
+      this._config.clock_hour_color ?? 'var(--primary-text-color)'
+    ));
+    wrapper.appendChild(this._createTextInput(
+      'clock_minute_color',
+      'Clock Minute Color (CSS color)',
+      this._config.clock_minute_color ?? 'var(--primary-text-color)'
+    ));
+    wrapper.appendChild(this._createTextInput(
+      'clock_second_color',
+      'Clock Second Color (CSS color)',
+      this._config.clock_second_color ?? 'var(--primary-color)'
+    ));
+    wrapper.appendChild(this._createTextInput(
+      'clock_middle_color',
+      'Clock Middle (dot/separator) Color (CSS color)',
+      this._config.clock_middle_color ?? 'var(--primary-color)'
+    ));
+
+    // Seconds toggle
+    wrapper.appendChild(this._createToggle(
+      'clock_show_seconds',
+      'Show Seconds on Clock',
+      this._config.clock_show_seconds !== false,
     ));
 
     // Alarm list mode select
