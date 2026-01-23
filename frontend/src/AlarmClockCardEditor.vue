@@ -42,6 +42,23 @@ const alarmListModeOptions = [
   { value: 'count', label: 'Show X alarms' },
 ];
 
+// Typed event handlers used by the template
+function onEntityValueChanged(e: Event) {
+  // Home Assistant entity-picker dispatches a CustomEvent with detail.value
+  const ev = e as CustomEvent;
+  localConfig.entity = ev.detail?.value || '';
+}
+
+function onClockDisplaySelected(e: Event) {
+  const targ = e.target as HTMLSelectElement;
+  localConfig.clock_display = targ.value as any;
+}
+
+function onShowSecondsChange(e: Event) {
+  const targ = e.target as HTMLInputElement;
+  localConfig.clock_show_seconds = !!targ.checked;
+}
+
 </script>
 
 <template>
@@ -61,14 +78,14 @@ const alarmListModeOptions = [
         :value="localConfig.entity"
         :hass="props.hass"
         :includeDomains="['sensor']"
-        @value-changed="(e)=> localConfig.entity = e.detail.value || ''"
+        @value-changed="onEntityValueChanged"
       />
     </div>
 
     <div style="display:flex; gap:12px; align-items:flex-start;">
       <div style="flex:1">
         <label style="display:block; margin-bottom:6px; font-weight:500">Clock Display</label>
-        <ha-select label="Clock Display" style="width:100%" :value="localConfig.clock_display" @selected="(e)=> localConfig.clock_display = e.target.value">
+        <ha-select label="Clock Display" style="width:100%" :value="localConfig.clock_display" @selected="onClockDisplaySelected">
           <ha-list-item value="analog">Analog</ha-list-item>
           <ha-list-item value="24h">Digital (24h)</ha-list-item>
           <ha-list-item value="12h">Digital (12h)</ha-list-item>
@@ -105,7 +122,7 @@ const alarmListModeOptions = [
 
     <div style="display:flex; gap:12px; align-items:center">
       <ha-formfield label="Show Seconds on Clock">
-        <ha-switch :checked="localConfig.clock_show_seconds !== false" @change="(e)=> localConfig.clock_show_seconds = e.target.checked" />
+        <ha-switch :checked="localConfig.clock_show_seconds !== false" @change="onShowSecondsChange" />
       </ha-formfield>
     </div>
 

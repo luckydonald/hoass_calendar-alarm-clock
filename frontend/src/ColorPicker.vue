@@ -79,8 +79,9 @@ const filteredOptions = computed(() => {
 });
 
 function onSelect(e: Event) {
-  const target = e.target as HTMLSelectElement;
-  const val = (target.value as string) || '';
+  const target = e.target as HTMLSelectElement | HTMLElement;
+  // ha-select may put value on target.value; try to read it safely
+  const val = (target as any).value as string || '';
   if (val) {
     text.value = val;
     const h = colorToHex(val);
@@ -88,14 +89,29 @@ function onSelect(e: Event) {
   }
 }
 
+function onTextInput(e: Event) {
+  const targ = e.target as HTMLInputElement;
+  text.value = targ.value;
+}
+
+function onSearchInput(e: Event) {
+  const targ = e.target as HTMLInputElement;
+  search.value = targ.value;
+}
+
+function onColorInput(e: Event) {
+  const targ = e.target as HTMLInputElement;
+  hex.value = targ.value;
+}
+
 </script>
 
 <template>
   <div style="display:flex; gap:8px; align-items:center;">
-    <ha-textfield :label="props.label || ''" style="flex:1" :value="text" @input="(e)=> text = (e.target as HTMLInputElement).value" />
+    <ha-textfield :label="props.label || ''" style="flex:1" :value="text" @input="onTextInput" />
 
     <div style="display:flex; flex-direction:column; gap:6px; width:260px">
-      <ha-textfield label="Search Colors" :value="search" @input="(e)=> search = (e.target as HTMLInputElement).value" />
+      <ha-textfield label="Search Colors" :value="search" @input="onSearchInput" />
       <ha-select label="Colors" style="width:100%" @selected="onSelect">
         <ha-list-item v-for="opt in filteredOptions" :key="opt" :value="opt">
           <span :style="{ display: 'inline-block', width: '12px', height: '12px', marginRight: '8px', border: '1px solid rgba(0,0,0,0.15)', background: opt }"></span>
@@ -104,7 +120,7 @@ function onSelect(e: Event) {
       </ha-select>
     </div>
 
-    <input type="color" style="width:48px;height:32px;border:none;background:transparent" :value="hex" @input="(e)=> hex = (e.target as HTMLInputElement).value" />
+    <input type="color" style="width:48px;height:32px;border:none;background:transparent" :value="hex" @input="onColorInput" />
   </div>
 </template>
 
