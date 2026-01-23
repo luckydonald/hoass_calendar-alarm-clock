@@ -241,7 +241,7 @@ src/AlarmClockCard.vue:787:45 - error TS2339: Property 'formattedDate' does not 
 
 Found 3 errors.
 
-—————————
+———
 
   Running frontend type-check...
 yarn run v1.22.22
@@ -269,4 +269,6 @@ src/ColorPicker.vue:95:84 - error TS7006: Parameter 'e' implicitly has an 'any' 
 src/ColorPicker.vue:98:68 - error TS7006: Parameter 'e' implicitly has an 'any' type.
 
 98       <ha-textfield label="Search Colors" :value="search" @input="(e)=> search = (e.target as HTMLInputElement).value" />
-                                            
+———
+The SVG is still all back. Do you need to set fill/stroke?
+———                                      
