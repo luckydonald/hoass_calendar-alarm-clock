@@ -218,3 +218,5 @@ The dropdown shall be a ha component, too.
 Preferable searchable, and with the color rendered as square icon or whatever in front of the text.
 ———
 Write the config editor part as Vue component, too. That way it's more consistent, and also that should remove the issue that it now each time unfocus the field you're editing every second.
+———
+Please extract the 3 related color picker inputs as single component with `v-model` support.
