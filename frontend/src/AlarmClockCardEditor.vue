@@ -2,6 +2,7 @@
 import colorName from 'color-name';
 import { computed, reactive, ref, toRefs, watch } from 'vue';
 import ColorPicker from './ColorPicker.vue';
+import pkg from '../package.json';
 
 interface Props {
   hass: any;
@@ -10,6 +11,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const buildVersion = pkg.version || 'dev';
 
 const emitConfig = (cfg: Record<string, any>) => {
   if (props.onConfigChanged) props.onConfigChanged(cfg);
@@ -146,6 +149,8 @@ function onSmoothChange(e: Event) {
     </div>
   </div>
 </template>
+
+<div style="padding: 8px 16px; text-align:right; font-size:12px; color:var(--secondary-text-color);">Version: {{ buildVersion }}</div>
 
 <style scoped>
 </style>
