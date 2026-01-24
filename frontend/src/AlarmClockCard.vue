@@ -238,22 +238,35 @@ const isNightTime = computed(() => {
   return hour < 6 || hour >= 20;
 });
 
-const formattedTime24h = computed(() => {
-  return currentTime.value.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: showSeconds.value ? '2-digit' : undefined,
-    hour12: false,
-  });
+// Smooth vs tick animation toggle (config key: clock_smooth_animation)
+const clockSmoothAnimation = computed(() => (props.config.clock_smooth_animation === undefined ? true : !!props.config.clock_smooth_animation));
+
+// Inline styles for hands (use transform + transition + background colors)
+const hourHandStyle = computed(() => {
+  const rot = typeof hourHandRotation.value === 'number' ? `${hourHandRotation.value}deg` : `${hourHandRotation.value}`;
+  return {
+    transform: `rotate(${rot})`,
+    transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
+    background: clockHourColor.value,
+  } as Record<string, string>;
 });
 
-const formattedTime12h = computed(() => {
-  return currentTime.value.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: showSeconds.value ? '2-digit' : undefined,
-    hour12: true,
-  });
+const minuteHandStyle = computed(() => {
+  const rot = typeof minuteHandRotation.value === 'number' ? `${minuteHandRotation.value}deg` : `${minuteHandRotation.value}`;
+  return {
+    transform: `rotate(${rot})`,
+    transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
+    background: clockMinuteColor.value,
+  } as Record<string, string>;
+});
+
+const secondHandStyle = computed(() => {
+  const rot = typeof secondHandRotation.value === 'number' ? `${secondHandRotation.value}deg` : `${secondHandRotation.value}`;
+  return {
+    transform: `rotate(${rot})`,
+    transition: clockSmoothAnimation.value ? 'transform 0.25s linear' : 'none',
+    background: clockSecondColor.value,
+  } as Record<string, string>;
 });
 
 // Add formattedDate computed
@@ -1814,10 +1827,11 @@ ha-expansion-panel {
   position: absolute;
   width: 2px;
   height: 10px;
-  background: var(--primary-color);
-  top: 4px;
+  background: var(--clock-hour-color, var(--primary-color));
+  top: 0;
   left: 50%;
-  transform-origin: bottom center;
+  transform-origin: 50% 60px; /* rotate around center */
+  transform: rotate(var(--tick-rotation)) translate(-50%, 0);
 }
 
 .tick.hour {
@@ -1829,7 +1843,7 @@ ha-expansion-panel {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: var(--primary-color);
+  background: var(--clock-middle-color, var(--primary-color));
   border-radius: 50%;
   top: 50%;
   left: 50%;
@@ -1872,6 +1886,6 @@ ha-expansion-panel {
 
 .second {
   height: 4px;
-  background: var(--accent-color);
+  background: var(--clock-second-color, var(--accent-color));
 }
 </style>
