@@ -125,6 +125,12 @@ function onShowSecondsChange(e: Event) {
       </ha-formfield>
     </div>
 
+    <div style="display:flex; gap:12px; align-items:center">
+      <ha-formfield label="Smooth Clock Animation (continuous)">
+        <ha-switch :checked="localConfig.clock_smooth_animation !== false" @change="(e) => localConfig.clock_smooth_animation = (e.target as HTMLInputElement).checked" />
+      </ha-formfield>
+    </div>
+
     <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
       <div style="color:var(--secondary-text-color); font-size:12px">
         <p style="margin:0 0 8px 0"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
