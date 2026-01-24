@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import colorName from 'color-name';
-import { computed, reactive, ref, toRefs, watch } from 'vue';
+import { reactive, watch } from 'vue';
 import pkg from '../package.json';
 import ColorPicker from './ColorPicker.vue';
 
@@ -45,6 +44,13 @@ const alarmListModeOptions = [
   { value: 'count', label: 'Show X alarms' },
 ];
 
+// Add section mode options
+const addSectionOptions = [
+  { value: 'auto', label: 'Auto (show when Add clicked)' },
+  { value: 'on', label: 'Always show' },
+  { value: 'off', label: 'Never show (dialog only)' },
+];
+
 // Typed event handlers used by the template
 function onEntityValueChanged(e: Event) {
   // Home Assistant entity-picker dispatches a CustomEvent with detail.value
@@ -65,6 +71,31 @@ function onShowSecondsChange(e: Event) {
 function onSmoothChange(e: Event) {
   const targ = e.target as HTMLInputElement;
   localConfig.clock_smooth_animation = targ.checked;
+}
+
+function onAlarmListModeSelected(e: Event) {
+  const targ = e.target as HTMLSelectElement;
+  localConfig.alarm_list_mode = targ.value as any;
+}
+
+function onShowAddSectionSelected(e: Event) {
+  const targ = e.target as HTMLSelectElement;
+  localConfig.show_add_section = targ.value as any;
+}
+
+function onToggleShowClock(e: Event) {
+  const targ = e.target as HTMLInputElement;
+  localConfig.show_clock = targ.checked;
+}
+
+function onToggleShowQuickAlarm(e: Event) {
+  const targ = e.target as HTMLInputElement;
+  localConfig.show_quick_alarm = targ.checked;
+}
+
+function onToggleShowAlarmList(e: Event) {
+  const targ = e.target as HTMLInputElement;
+  localConfig.show_alarm_list = targ.checked;
 }
 </script>
 
@@ -139,6 +170,46 @@ function onSmoothChange(e: Event) {
       <ha-formfield label="Smooth Clock Animation (continuous)">
         <ha-switch :checked="localConfig.clock_smooth_animation !== false" @change="onSmoothChange" />
       </ha-formfield>
+    </div>
+
+    <!-- Alarm list mode (days/count) -->
+    <div>
+      <label style="display:block; margin-bottom:6px; font-weight:500">Alarm List Mode</label>
+      <ha-select label="Alarm List Mode" style="width:100%" :value="localConfig.alarm_list_mode" @selected="onAlarmListModeSelected">
+        <ha-list-item v-for="opt in alarmListModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
+      </ha-select>
+    </div>
+
+    <!-- Number inputs conditional on mode -->
+    <div v-if="localConfig.alarm_list_mode === 'count'">
+      <label style="display:block; margin-bottom:6px; font-weight:500">Number of Alarms to Show</label>
+      <input type="number" min="1" max="100" style="width:100%; padding:8px;" v-model.number="localConfig.alarm_list_count" />
+    </div>
+    <div v-else>
+      <label style="display:block; margin-bottom:6px; font-weight:500">Days to Show</label>
+      <input type="number" min="1" max="365" style="width:100%; padding:8px;" v-model.number="localConfig.alarm_list_days" />
+    </div>
+
+    <!-- Section visibility toggles -->
+    <div style="font-weight:500; margin-top:8px">Section Visibility</div>
+    <div style="display:flex; gap:12px; flex-direction:column">
+      <ha-formfield label="Show Clock Section">
+        <ha-switch :checked="localConfig.show_clock !== false" @change="onToggleShowClock" />
+      </ha-formfield>
+      <ha-formfield label="Show Quick Alarm Section">
+        <ha-switch :checked="localConfig.show_quick_alarm !== false" @change="onToggleShowQuickAlarm" />
+      </ha-formfield>
+      <ha-formfield label="Show Alarm List Section">
+        <ha-switch :checked="localConfig.show_alarm_list !== false" @change="onToggleShowAlarmList" />
+      </ha-formfield>
+    </div>
+
+    <!-- Add section mode -->
+    <div>
+      <label style="display:block; margin-bottom:6px; font-weight:500">Add Alarm Section</label>
+      <ha-select label="Add Alarm Section" style="width:100%" :value="localConfig.show_add_section" @selected="onShowAddSectionSelected">
+        <ha-list-item v-for="opt in addSectionOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
+      </ha-select>
     </div>
 
     <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
