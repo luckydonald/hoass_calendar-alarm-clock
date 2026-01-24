@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import colorName from 'color-name';
-import { computed, reactive, ref, toRefs, watch } from 'vue';
+import { reactive, watch } from 'vue';
 import ColorPicker from './ColorPicker.vue';
 import pkg from '../package.json';
 
@@ -32,17 +31,12 @@ watch(localConfig, (v) => {
   emitConfig({ ...(v as Record<string, any>) });
 }, { deep: true });
 
-// Values for the selects
+// Values for the clock display select
 const clockDisplayOptions = [
   { value: 'analog', label: 'Analog' },
   { value: '24h', label: 'Digital (24h)' },
   { value: '12h', label: 'Digital (12h)' },
   { value: 'none', label: 'None' },
-];
-
-const alarmListModeOptions = [
-  { value: 'days', label: 'Show alarms for X days' },
-  { value: 'count', label: 'Show X alarms' },
 ];
 
 // Typed event handlers used by the template
