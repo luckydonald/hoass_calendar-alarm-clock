@@ -3,6 +3,7 @@ import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
 import AlarmClockCard from './AlarmClockCard.vue';
 import AlarmClockCardEditorVue from './AlarmClockCardEditor.vue';
 import type { CardConfig, HomeAssistant } from './types';
+import pkg from '../package.json';
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;
@@ -171,10 +172,11 @@ window.customCards.push({
   name: 'Calendar based Alarm Clock Card',
   description: 'A card for managing calendar-based alarms with clock display, quick alarms, snooze and dismiss',
   preview: true,
+  version: pkg.version || 'dev',
 });
 
 console.info(
-  '%c CALENDAR-ALARM-CLOCK-CARD %c 0.0.0-dev0 ',
+  '%c CALENDAR-ALARM-CLOCK-CARD %c ' + (pkg.version || 'dev'),
   'color: white; background: #3498db; font-weight: bold;',
   'color: #3498db; background: white; font-weight: bold;',
 );
