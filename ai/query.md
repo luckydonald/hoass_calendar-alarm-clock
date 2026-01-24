@@ -225,4 +225,5 @@ Be mindful of the shadow-dom inside `ha-*` components.
 ———
 The analog clock should have an additional setting for "tick marks" yes/no, and "numbers" yes/no.
 Also, there should be a setting for "show next alarm time" yes/no, which displays the next alarm time in the bottom center of the clock.
-Lastly there'd be a "smooth" mode, which uses pure css animations to move the hands smoothly, instead of ticking each second. Use `animation-delay: +/- Xs` to sync it properly, make sure to sync that every minute, and on all events indicating the window was inactive.
+Lastly there'd be a "smooth" mode, which uses pure css animations to move the hands smoothly, instead of ticking each second. Use `animation-delay: +/- Xs` to sync it properly, make sure to sync that every minute, and on all events indicating the window was inactive. The third mode is "DB" where the seconds are a little sped up so that it will be stopping on 59 seconds for 1.5 seconds, before moving on…
+
