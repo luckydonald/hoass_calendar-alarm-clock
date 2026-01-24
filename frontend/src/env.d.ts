@@ -69,6 +69,8 @@ declare global {
       name: string;
       description: string;
       preview?: boolean;
+      // Optional version field embedded from frontend/package.json
+      version?: string;
     }>;
   }
 }
