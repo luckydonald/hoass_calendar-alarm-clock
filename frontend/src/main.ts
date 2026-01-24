@@ -74,8 +74,54 @@ class AlarmClockCardElement extends HTMLElement {
     return 4;
   }
 
-  public static getConfigElement(): AlarmClockCardEditor {
-    return document.createElement('calendar-alarm-clock-card-editor') as AlarmClockCardEditor;
+  public static getConfigElement(): HTMLElement {
+    // Create a wrapper element and mount the Vue editor into it.
+    // Define 'hass' and 'setConfig' on the element so Home Assistant can safely set properties.
+    const wrapper = document.createElement('div');
+
+    // Mount the Vue editor into the wrapper. Keep a reference to the VM proxy so we can update props.
+    const app = createApp(AlarmClockCardEditorVue, {
+      hass: null,
+      config: {},
+      onConfigChanged: (cfg: AlarmClockCardConfig) => {
+        // When the editor notifies of config changes, dispatch an event from the wrapper so HA picks it up
+        const event = new CustomEvent('config-changed', {
+          detail: { config: cfg },
+          bubbles: true,
+          composed: true,
+        });
+        wrapper.dispatchEvent(event);
+      },
+    });
+
+    const vm = app.mount(wrapper) as any;
+
+    // Define a 'hass' property so HA can set it (and we forward it to the Vue component proxy)
+    Object.defineProperty(wrapper, 'hass', {
+      configurable: true,
+      enumerable: true,
+      set(hass: HomeAssistant) {
+        try {
+          if (vm) vm.hass = hass;
+        } catch {
+          // ignore errors setting on vm
+        }
+      },
+      get() {
+        return vm?.hass ?? null;
+      },
+    });
+
+    // Provide a setConfig method which HA uses to initialize the editor
+    (wrapper as any).setConfig = (config: AlarmClockCardConfig) => {
+      try {
+        if (vm) vm.config = config;
+      } catch {
+        // ignore
+      }
+    };
+
+    return wrapper;
   }
 
   public static getStubConfig(): AlarmClockCardConfig {
