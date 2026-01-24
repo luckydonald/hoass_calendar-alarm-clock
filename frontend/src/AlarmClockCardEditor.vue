@@ -29,7 +29,7 @@ watch(localConfig, (v) => {
   emitConfig({ ...(v as Record<string, any>) });
 }, { deep: true });
 
-// Helpers for selects
+// Values for the selects
 const clockDisplayOptions = [
   { value: 'analog', label: 'Analog' },
   { value: '24h', label: 'Digital (24h)' },
@@ -90,10 +90,12 @@ function onSmoothChange(e: Event) {
       <div style="flex:1">
         <label style="display:block; margin-bottom:6px; font-weight:500">Clock Display</label>
         <ha-select label="Clock Display" style="width:100%" :value="localConfig.clock_display" @selected="onClockDisplaySelected">
-          <ha-list-item value="analog">Analog</ha-list-item>
-          <ha-list-item value="24h">Digital (24h)</ha-list-item>
-          <ha-list-item value="12h">Digital (12h)</ha-list-item>
-          <ha-list-item value="none">None</ha-list-item>
+          <ha-list-item
+            v-for="option in clockDisplayOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}</ha-list-item>
         </ha-select>
       </div>
     </div>
