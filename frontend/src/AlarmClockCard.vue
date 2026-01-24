@@ -739,7 +739,7 @@ function handleAddButtonClick(): void {
                 <!-- Hands: wrap shafts inside containers so we can animate the container rotation reliably -->
                 <div
                   class="hand hour"
-                  :class="{ smooth: clockSmoothAnimation }"
+                  :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="hourHandStyle"
                 >
                   <div class="shaft"></div>
@@ -747,7 +747,7 @@ function handleAddButtonClick(): void {
 
                 <div
                   class="hand minute"
-                  :class="{ smooth: clockSmoothAnimation }"
+                  :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="minuteHandStyle"
                 >
                   <div class="shaft"></div>
@@ -756,7 +756,7 @@ function handleAddButtonClick(): void {
                 <div
                   v-if="showSeconds"
                   class="hand second"
-                  :class="{ smooth: clockSmoothAnimation }"
+                  :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="secondHandStyle"
                 >
                   <div class="shaft"></div>
