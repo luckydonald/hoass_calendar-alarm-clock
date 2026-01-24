@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import colorName from 'color-name';
-import { computed, reactive, ref, toRefs, watch } from 'vue';
+import { reactive, watch } from 'vue';
 import ColorPicker from './ColorPicker.vue';
 
 interface Props {
@@ -29,22 +28,8 @@ watch(localConfig, (v) => {
   emitConfig({ ...(v as Record<string, any>) });
 }, { deep: true });
 
-// Helpers for selects
-const clockDisplayOptions = [
-  { value: 'analog', label: 'Analog' },
-  { value: '24h', label: 'Digital (24h)' },
-  { value: '12h', label: 'Digital (12h)' },
-  { value: 'none', label: 'None' },
-];
-
-const alarmListModeOptions = [
-  { value: 'days', label: 'Show alarms for X days' },
-  { value: 'count', label: 'Show X alarms' },
-];
-
 // Typed event handlers used by the template
 function onEntityValueChanged(e: Event) {
-  // Home Assistant entity-picker dispatches a CustomEvent with detail.value
   const ev = e as CustomEvent;
   localConfig.entity = ev.detail?.value || '';
 }
@@ -56,7 +41,12 @@ function onClockDisplaySelected(e: Event) {
 
 function onShowSecondsChange(e: Event) {
   const targ = e.target as HTMLInputElement;
-  localConfig.clock_show_seconds = !!targ.checked;
+  localConfig.clock_show_seconds = targ.checked;
+}
+
+function onSmoothChange(e: Event) {
+  const targ = e.target as HTMLInputElement;
+  localConfig.clock_smooth_animation = targ.checked;
 }
 </script>
 
@@ -127,7 +117,7 @@ function onShowSecondsChange(e: Event) {
 
     <div style="display:flex; gap:12px; align-items:center">
       <ha-formfield label="Smooth Clock Animation (continuous)">
-        <ha-switch :checked="localConfig.clock_smooth_animation !== false" @change="(e) => localConfig.clock_smooth_animation = (e.target as HTMLInputElement).checked" />
+        <ha-switch :checked="localConfig.clock_smooth_animation !== false" @change="onSmoothChange" />
       </ha-formfield>
     </div>
 
