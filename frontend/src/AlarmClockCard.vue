@@ -238,22 +238,35 @@ const isNightTime = computed(() => {
   return hour < 6 || hour >= 20;
 });
 
-const formattedTime24h = computed(() => {
-  return currentTime.value.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: showSeconds.value ? '2-digit' : undefined,
-    hour12: false,
-  });
+// Smooth vs tick animation toggle (config key: clock_smooth_animation)
+const clockSmoothAnimation = computed(() => (props.config.clock_smooth_animation === undefined ? true : !!props.config.clock_smooth_animation));
+
+// Inline styles for hands (use transform + transition + background colors)
+const hourHandStyle = computed(() => {
+  const rot = typeof hourHandRotation.value === 'number' ? `${hourHandRotation.value}deg` : `${hourHandRotation.value}`;
+  return {
+    transform: `rotate(${rot})`,
+    transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
+    background: clockHourColor.value,
+  } as Record<string, string>;
 });
 
-const formattedTime12h = computed(() => {
-  return currentTime.value.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: showSeconds.value ? '2-digit' : undefined,
-    hour12: true,
-  });
+const minuteHandStyle = computed(() => {
+  const rot = typeof minuteHandRotation.value === 'number' ? `${minuteHandRotation.value}deg` : `${minuteHandRotation.value}`;
+  return {
+    transform: `rotate(${rot})`,
+    transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
+    background: clockMinuteColor.value,
+  } as Record<string, string>;
+});
+
+const secondHandStyle = computed(() => {
+  const rot = typeof secondHandRotation.value === 'number' ? `${secondHandRotation.value}deg` : `${secondHandRotation.value}`;
+  return {
+    transform: `rotate(${rot})`,
+    transition: clockSmoothAnimation.value ? 'transform 0.25s linear' : 'none',
+    background: clockSecondColor.value,
+  } as Record<string, string>;
 });
 
 // Add formattedDate computed
@@ -683,89 +696,48 @@ function handleAddButtonClick(): void {
           >
             <!-- Analog Clock -->
             <div v-if="clockDisplay === 'analog'" class="analog-clock-container">
-              <svg class="analog-clock" viewBox="0 0 200 200">
-                <!-- Clock face -->
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="95"
-                  class="clock-face"
-                  :class="{ night: isNightTime }"
-                />
-
-                <!-- Hour markers -->
-                <g class="hour-markers">
-                  <line
-                    v-for="i in 12"
-                    :key="i"
-                    x1="100"
-                    y1="15"
-                    x2="100"
-                    y2="25"
-                    :transform="`rotate(${i * 30}, 100, 100)`"
-                  />
-                </g>
-
-                <!-- Minute markers -->
-                <g class="minute-markers">
-                  <line
-                    v-for="i in 60"
-                    :key="i"
-                    x1="100"
-                    y1="18"
-                    x2="100"
-                    y2="22"
-                    :transform="`rotate(${i * 6}, 100, 100)`"
-                  />
-                </g>
-
-                <!-- Next alarm indicator -->
-                <g v-if="nextAlarm?.time" class="alarm-hand-group">
-                  <line
-                    class="alarm-hand"
-                    :class="nextAlarmUrgency"
-                    x1="100"
-                    y1="100"
-                    x2="100"
-                    y2="35"
-                    :transform="`rotate(${getAlarmClockHands(nextAlarm.time).hour}, 100, 100)`"
-                  />
-                </g>
-
-                <!-- Hour hand -->
-                <line
-                  class="hour-hand"
-                  x1="100"
-                  y1="100"
-                  x2="100"
-                  y2="50"
-                  :transform="`rotate(${hourHandRotation}, 100, 100)`"
-                />
-
-                <!-- Minute hand -->
-                <line
-                  class="minute-hand"
-                  x1="100"
-                  y1="100"
-                  x2="100"
-                  y2="25"
-                  :transform="`rotate(${minuteHandRotation}, 100, 100)`"
-                />
-
-                <!-- Second hand (optional based on config) -->
-                <line
-                  v-if="showSeconds"
-                  class="second-hand"
-                  x1="100"
-                  y1="100"
-                  x2="100"
-                  y2="20"
-                  :transform="`rotate(${secondHandRotation}, 100, 100)`"
-                />
+              <!-- Pure-CSS clock. Uses ticks and absolutely-positioned hands. -->
+              <div class="dial dial-border" role="img" aria-label="Analog clock">
+                <!-- Hour ticks (12) -->
+                <div
+                  v-for="i in 12"
+                  :key="i"
+                  aria-hidden="true"
+                  class="tick hour"
+                  :style="{ '--tick-rotation': `${(i - 1) * 30}deg` }"
+                >
+                  <div class="line"></div>
+                </div>
 
                 <!-- Center dot -->
-                <circle cx="100" cy="100" r="5" class="center-dot" />
-              </svg>
+                <div class="center-dot"></div>
+
+                <!-- Hands: wrap shafts inside containers so we can animate the container rotation reliably -->
+                <div
+                  class="hand hour"
+                  :class="{ smooth: clockSmoothAnimation }"
+                  :style="hourHandStyle"
+                >
+                  <div class="shaft"></div>
+                </div>
+
+                <div
+                  class="hand minute"
+                  :class="{ smooth: clockSmoothAnimation }"
+                  :style="minuteHandStyle"
+                >
+                  <div class="shaft"></div>
+                </div>
+
+                <div
+                  v-if="showSeconds"
+                  class="hand second"
+                  :class="{ smooth: clockSmoothAnimation }"
+                  :style="secondHandStyle"
+                >
+                  <div class="shaft"></div>
+                </div>
+              </div>
 
               <div class="clock-date">{{ formattedDate }}</div>
             </div>
@@ -1833,5 +1805,87 @@ ha-formfield {
 ha-expansion-panel {
   --expansion-panel-summary-padding: 0 16px;
   --expansion-panel-content-padding: 0;
+}
+
+/* Clock Ticks */
+.dial {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.dial-border {
+  border: 8px solid var(--primary-color);
+  position: relative;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2),
+              0 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.tick {
+  position: absolute;
+  width: 2px;
+  height: 10px;
+  background: var(--clock-hour-color, var(--primary-color));
+  top: 0;
+  left: 50%;
+  transform-origin: 50% 60px; /* rotate around center */
+  transform: rotate(var(--tick-rotation)) translate(-50%, 0);
+}
+
+.tick.hour {
+  height: 14px;
+  top: 0;
+}
+
+.center-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--clock-middle-color, var(--primary-color));
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Clock Hands */
+.hand {
+  position: absolute;
+  width: 50%;
+  height: 6px;
+  background: var(--primary-color);
+  top: 50%;
+  left: 50%;
+  transform-origin: right center;
+  transition: transform 0.5s ease-in-out;
+}
+
+.hand.smooth {
+  transition: transform 0.3s ease-in-out;
+}
+
+.shaft {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  top: 0;
+  left: 0;
+  border-radius: 4px;
+}
+
+.hour {
+  height: 8px;
+}
+
+.minute {
+  height: 6px;
+}
+
+.second {
+  height: 4px;
+  background: var(--clock-second-color, var(--accent-color));
 }
 </style>
