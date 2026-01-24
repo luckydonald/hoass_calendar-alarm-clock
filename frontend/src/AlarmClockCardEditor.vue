@@ -39,6 +39,12 @@ const clockDisplayOptions = [
   { value: 'none', label: 'None' },
 ];
 
+const animationModeOptions = [
+  { value: 'ticks', label: 'Ticks (discrete)' },
+  { value: 'smooth', label: 'Smooth (continuous)' },
+  { value: 'db', label: 'DB (delayed stop on 59s)' },
+];
+
 const alarmListModeOptions = [
   { value: 'days', label: 'Show alarms for X days' },
   { value: 'count', label: 'Show X alarms' },
@@ -70,7 +76,8 @@ function onShowSecondsChange(e: Event) {
 
 function onSmoothChange(e: Event) {
   const targ = e.target as HTMLInputElement;
-  localConfig.clock_smooth_animation = targ.checked;
+  // map boolean switch to animation mode quick toggle
+  localConfig.clock_animation_mode = targ.checked ? 'smooth' : 'ticks';
 }
 
 function onAlarmListModeSelected(e: Event) {
@@ -96,6 +103,11 @@ function onToggleShowQuickAlarm(e: Event) {
 function onToggleShowAlarmList(e: Event) {
   const targ = e.target as HTMLInputElement;
   localConfig.show_alarm_list = targ.checked;
+}
+
+function onAnimationModeSelected(e: Event) {
+  const targ = e.target as HTMLSelectElement;
+  localConfig.clock_animation_mode = targ.value as any;
 }
 </script>
 
@@ -209,6 +221,14 @@ function onToggleShowAlarmList(e: Event) {
       <label style="display:block; margin-bottom:6px; font-weight:500">Add Alarm Section</label>
       <ha-select label="Add Alarm Section" style="width:100%" :value="localConfig.show_add_section" @selected="onShowAddSectionSelected">
         <ha-list-item v-for="opt in addSectionOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
+      </ha-select>
+    </div>
+
+    <!-- Animation mode selector -->
+    <div>
+      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Animation Mode</label>
+      <ha-select label="Animation Mode" style="width:100%" :value="localConfig.clock_animation_mode" @selected="onAnimationModeSelected">
+        <ha-list-item v-for="opt in animationModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
       </ha-select>
     </div>
 

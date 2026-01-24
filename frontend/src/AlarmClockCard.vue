@@ -5,6 +5,7 @@ import {
   onUnmounted,
   ref,
   watch,
+  nextTick,
 } from 'vue';
 import type {
   Alarm,
@@ -38,6 +39,8 @@ const dialogData = ref<AlarmDialogData>({
 // Current time state
 const currentTime = ref(new Date());
 let timeInterval: ReturnType<typeof setInterval> | null = null;
+// DB mode pause flag (set briefly when seconds === 59 to create the pause)
+const dbPause = ref(false);
 
 // Section collapse state
 const clockCollapsed = ref(props.config.collapse_clock ?? false);
@@ -61,6 +64,8 @@ onMounted(() => {
   timeInterval = setInterval(() => {
     currentTime.value = new Date();
   }, 1000);
+  // keep DB pause in sync: clear on mount
+  dbPause.value = false;
 });
 
 onUnmounted(() => {
@@ -219,56 +224,74 @@ const currentHours = computed(() => currentTime.value.getHours());
 const currentMinutes = computed(() => currentTime.value.getMinutes());
 const currentSeconds = computed(() => currentTime.value.getSeconds());
 
-const hourHandRotation = computed(() => {
-  const hours = currentHours.value % 12;
-  const minutes = currentMinutes.value;
-  return (hours * 30) + (minutes * 0.5);
+// Watch seconds to trigger DB pause when needed
+watch(currentSeconds, (s) => {
+  if ((props.config as any).clock_animation_mode === 'db' && s === 59) {
+    dbPause.value = true;
+    // Clear pause after ~1500ms so it resumes slightly after the 59th second
+    setTimeout(() => {
+      dbPause.value = false;
+    }, 1500);
+  }
 });
 
-const minuteHandRotation = computed(() => {
-  return currentMinutes.value * 6;
-});
+// Animation timing sync: compute negative delays so CSS animation is aligned to current time
+const secondAnimationDelay = computed(() => `-${currentSeconds.value}s`);
+const minuteAnimationDelay = computed(() => `-${(currentMinutes.value * 60 + currentSeconds.value)}s`);
+const hourAnimationDelay = computed(() => `-${(((currentHours.value % 12) * 3600) + (currentMinutes.value * 60) + currentSeconds.value)}s`);
 
-const secondHandRotation = computed(() => {
-  return currentSeconds.value * 6;
-});
+// Fixed animation durations
+const secondAnimationDuration = '60s';
+const minuteAnimationDuration = '3600s';
+const hourAnimationDuration = '43200s';
 
+// Helper to get animation timing function depending on mode and hand
+function animationTiming(mode: string, hand: 'hour' | 'minute' | 'second') {
+  if (mode === 'smooth') return 'linear';
+  if (mode === 'ticks') {
+    if (hand === 'second') return 'steps(60,end)';
+    if (hand === 'minute') return 'steps(60,end)';
+    return 'steps(720,end)';
+  }
+  // db mode: mostly linear, second hand handled by dbPause
+  return 'linear';
+}
+
+const clockAnimationMode = computed(() => (props.config as any).clock_animation_mode ?? 'smooth');
+
+// Compute inline styles for each hand to set animation timing & sync
+const hourHandAnimStyle = computed(() => ({
+  animationName: 'ha-clock-rotate',
+  animationDuration: hourAnimationDuration,
+  animationTimingFunction: animationTiming(clockAnimationMode.value as string, 'hour'),
+  animationDelay: hourAnimationDelay.value,
+  animationIterationCount: 'infinite',
+  background: clockHourColor.value,
+} as Record<string, string>));
+
+const minuteHandAnimStyle = computed(() => ({
+  animationName: 'ha-clock-rotate',
+  animationDuration: minuteAnimationDuration,
+  animationTimingFunction: animationTiming(clockAnimationMode.value as string, 'minute'),
+  animationDelay: minuteAnimationDelay.value,
+  animationIterationCount: 'infinite',
+  background: clockMinuteColor.value,
+} as Record<string, string>));
+
+const secondHandAnimStyle = computed(() => ({
+  animationName: 'ha-clock-rotate',
+  animationDuration: secondAnimationDuration,
+  animationTimingFunction: animationTiming(clockAnimationMode.value as string, 'second'),
+  animationDelay: secondAnimationDelay.value,
+  animationIterationCount: 'infinite',
+  animationPlayState: (clockAnimationMode.value === 'db' && dbPause.value) ? 'paused' : 'running',
+  background: clockSecondColor.value,
+} as Record<string, string>));
+
+// Night time detection
 const isNightTime = computed(() => {
   const hour = currentHours.value;
   return hour < 6 || hour >= 20;
-});
-
-// Smooth vs tick animation toggle (config key: clock_smooth_animation)
-// Use a safe cast to any to avoid type errors if types aren't refreshed; default to true
-const clockSmoothAnimation = computed(() => !!((props.config as any).clock_smooth_animation ?? true));
-
-// Inline styles for hands (use transform + transition + background colors)
-// Note: CSS hand layout points to the right at 0deg, so subtract 90deg to align 0 => 12 o'clock.
-const hourHandStyle = computed(() => {
-  const rot = `${hourHandRotation.value - 90}deg`;
-  return {
-    transform: `rotate(${rot})`,
-    transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
-    background: clockHourColor.value,
-  } as Record<string, string>;
-});
-
-const minuteHandStyle = computed(() => {
-  const rot = `${minuteHandRotation.value - 90}deg`;
-  return {
-    transform: `rotate(${rot})`,
-    transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
-    background: clockMinuteColor.value,
-  } as Record<string, string>;
-});
-
-const secondHandStyle = computed(() => {
-  const rot = `${secondHandRotation.value - 90}deg`;
-  return {
-    transform: `rotate(${rot})`,
-    transition: clockSmoothAnimation.value ? 'transform 0.25s linear' : 'none',
-    background: clockSecondColor.value,
-  } as Record<string, string>;
 });
 
 // Add formattedDate computed
@@ -728,16 +751,16 @@ function handleAddButtonClick(): void {
                 <!-- Hands: wrap shafts inside containers so we can animate the container rotation reliably -->
                 <div
                   class="hand hour"
-                  :class="{ smooth: clockSmoothAnimation }"
-                  :style="hourHandStyle"
+                  :class="{ smooth: clockAnimationMode === 'smooth' }"
+                  :style="hourHandAnimStyle"
                 >
                   <div class="shaft"></div>
                 </div>
 
                 <div
                   class="hand minute"
-                  :class="{ smooth: clockSmoothAnimation }"
-                  :style="minuteHandStyle"
+                  :class="{ smooth: clockAnimationMode === 'smooth' }"
+                  :style="minuteHandAnimStyle"
                 >
                   <div class="shaft"></div>
                 </div>
@@ -745,8 +768,8 @@ function handleAddButtonClick(): void {
                 <div
                   v-if="showSeconds"
                   class="hand second"
-                  :class="{ smooth: clockSmoothAnimation }"
-                  :style="secondHandStyle"
+                  :class="{ smooth: clockAnimationMode === 'smooth' }"
+                  :style="secondHandAnimStyle"
                 >
                   <div class="shaft"></div>
                 </div>
@@ -1906,5 +1929,15 @@ ha-expansion-panel {
 .second {
   height: 4px;
   background: var(--clock-second-color, var(--accent-color));
+}
+
+/* Keyframe-based animations for clock hands rotation */
+@keyframes ha-clock-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

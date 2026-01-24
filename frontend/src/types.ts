@@ -44,8 +44,8 @@ export interface CardConfig {
   clock_second_color?: string;
   clock_middle_color?: string;
   clock_show_seconds?: boolean;
-  // Toggle between smooth animation (continuous) and tick animation (discrete)
-  clock_smooth_animation?: boolean;
+  // Animation mode for the clock: 'ticks' (discrete), 'smooth' (continuous), or 'db' (special DB behavior)
+  clock_animation_mode?: 'ticks' | 'smooth' | 'db';
   // Alarm list options
   alarm_list_mode?: 'days' | 'count';
   alarm_list_days?: number;
