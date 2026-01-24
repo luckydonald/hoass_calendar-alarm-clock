@@ -203,7 +203,13 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
   return null;
 });
 
-// ringingAlarms is now computed directly where needed
+const isNextAlarmRinging = computed(() => {
+  return (
+    nextAlarm.value
+    && (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
+  );
+});
+
 const ringingAlarms = computed<Alarm[]>(() => {
   return alarms.value.filter((alarm) => isAlarmRinging(alarm));
 });
