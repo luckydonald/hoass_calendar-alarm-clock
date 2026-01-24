@@ -275,3 +275,181 @@ The SVG is still all back. Do you need to set fill/stroke?
 Visual editor not supported
 Proxy object's 'set' trap returned falsy value for property 'hass'
 You can still edit your config using YAML
+———
+You are missing previous fields in the vue version:
+```ts
+  private _renderManual(): void {
+    this.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.style.padding = '16px';
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.gap = '16px';
+
+    // Title input
+    wrapper.appendChild(this._createTextInput(
+      'title',
+      'Card Title',
+      this._config.title ?? 'Calendar backed Alarm Clock',
+    ));
+
+    // Entity picker (for single alarm view)
+    wrapper.appendChild(this._createEntityPicker());
+
+    // Clock display select
+    wrapper.appendChild(this._createSelect(
+      'clock_display',
+      'Clock Display',
+      this._config.clock_display ?? 'analog',
+      [
+        { value: 'analog', label: 'Analog' },
+        { value: '24h', label: 'Digital (24h)' },
+        { value: '12h', label: 'Digital (12h)' },
+        { value: 'none', label: 'None' },
+      ],
+    ));
+
+    // Clock color settings (use color picker helper)
+    wrapper.appendChild(this._createColorInput(
+      'clock_bg_color',
+      'Clock Background Color',
+      this._config.clock_bg_color ?? 'var(--clock-day-bg)',
+    ));
+    wrapper.appendChild(this._createColorInput(
+      'clock_hour_color',
+      'Clock Hour Color',
+      this._config.clock_hour_color ?? 'var(--primary-text-color)',
+    ));
+    wrapper.appendChild(this._createColorInput(
+      'clock_minute_color',
+      'Clock Minute Color',
+      this._config.clock_minute_color ?? 'var(--primary-text-color)',
+    ));
+    wrapper.appendChild(this._createColorInput(
+      'clock_second_color',
+      'Clock Second Color',
+      this._config.clock_second_color ?? 'var(--primary-color)',
+    ));
+    wrapper.appendChild(this._createColorInput(
+      'clock_middle_color',
+      'Clock Middle (dot/separator) Color',
+      this._config.clock_middle_color ?? 'var(--primary-color)',
+    ));
+
+    // Seconds toggle
+    wrapper.appendChild(this._createToggle(
+      'clock_show_seconds',
+      'Show Seconds on Clock',
+      this._config.clock_show_seconds !== false,
+    ));
+
+    // Alarm list mode select
+    wrapper.appendChild(this._createSelect(
+      'alarm_list_mode',
+      'Alarm List Mode',
+      this._config.alarm_list_mode ?? 'days',
+      [
+        { value: 'days', label: 'Show alarms for X days' },
+        { value: 'count', label: 'Show X alarms' },
+      ],
+    ));
+
+    // Alarm list days/count input
+    if (this._config.alarm_list_mode === 'count') {
+      wrapper.appendChild(this._createNumberInput(
+        'alarm_list_count',
+        'Number of Alarms to Show',
+        this._config.alarm_list_count ?? 10,
+        1,
+        100,
+      ));
+    } else {
+      wrapper.appendChild(this._createNumberInput(
+        'alarm_list_days',
+        'Days to Show',
+        this._config.alarm_list_days ?? 7,
+        1,
+        365,
+      ));
+    }
+
+    // Section visibility toggles
+    const sectionHeader = document.createElement('div');
+    sectionHeader.style.fontWeight = '500';
+    sectionHeader.style.marginTop = '8px';
+    sectionHeader.textContent = 'Section Visibility';
+    wrapper.appendChild(sectionHeader);
+
+    wrapper.appendChild(this._createToggle(
+      'show_clock',
+      'Show Clock Section',
+      this._config.show_clock !== false,
+    ));
+
+    wrapper.appendChild(this._createToggle(
+      'show_quick_alarm',
+      'Show Quick Alarm Section',
+      this._config.show_quick_alarm !== false,
+    ));
+
+    wrapper.appendChild(this._createToggle(
+      'show_alarm_list',
+      'Show Alarm List Section',
+      this._config.show_alarm_list !== false,
+    ));
+
+    // Add section mode
+    wrapper.appendChild(this._createSelect(
+      'show_add_section',
+      'Add Alarm Section',
+      this._config.show_add_section ?? 'auto',
+      [
+        { value: 'auto', label: 'Auto (show when Add clicked)' },
+        { value: 'on', label: 'Always show' },
+        { value: 'off', label: 'Never show (dialog only)' },
+      ],
+    ));
+
+    // Help text
+    const helpText = document.createElement('div');
+    helpText.style.color = 'var(--secondary-text-color)';
+    helpText.style.fontSize = '12px';
+    helpText.style.marginTop = '8px';
+    helpText.innerHTML = `
+      <p style="margin: 0 0 8px 0;"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
+      <p style="margin: 0;"><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
+    `;
+    wrapper.appendChild(helpText);
+
+    this.appendChild(wrapper);
+  }
+
+  private _createTextInput(
+    name: string,
+    label: string,
+    value: string,
+  ): HTMLDivElement {
+    const row = document.createElement('div');
+
+    const labelEl = document.createElement('label');
+    labelEl.textContent = label;
+    labelEl.style.display = 'block';
+    labelEl.style.marginBottom = '4px';
+    labelEl.style.fontWeight = '500';
+    labelEl.style.color = 'var(--primary-text-color)';
+
+    const input = document.createElement('ha-textfield') as HTMLInputElement;
+    input.setAttribute('label', label);
+    input.setAttribute('value', value);
+    input.style.width = '100%';
+    input.addEventListener('input', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      this._updateConfig({ [name]: target.value });
+    });
+
+    row.appendChild(labelEl);
+    row.appendChild(input);
+    return row;
+  }
+```
