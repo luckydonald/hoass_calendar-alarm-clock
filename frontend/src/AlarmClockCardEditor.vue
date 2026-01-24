@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import colorName from 'color-name';
-import { computed, reactive, ref, toRefs, watch } from 'vue';
+import { reactive, watch } from 'vue';
 import ColorPicker from './ColorPicker.vue';
 import pkg from '../package.json';
 
@@ -32,17 +31,12 @@ watch(localConfig, (v) => {
   emitConfig({ ...(v as Record<string, any>) });
 }, { deep: true });
 
-// Values for the selects
+// Values for the clock display select
 const clockDisplayOptions = [
   { value: 'analog', label: 'Analog' },
   { value: '24h', label: 'Digital (24h)' },
   { value: '12h', label: 'Digital (12h)' },
   { value: 'none', label: 'None' },
-];
-
-const alarmListModeOptions = [
-  { value: 'days', label: 'Show alarms for X days' },
-  { value: 'count', label: 'Show X alarms' },
 ];
 
 // Typed event handlers used by the template
@@ -142,15 +136,15 @@ function onSmoothChange(e: Event) {
     </div>
 
     <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
-      <div style="color:var(--secondary-text-color); font-size:12px">
+      <div style="color:inherit; font-size:12px">
         <p style="margin:0 0 8px 0"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
         <p style="margin:0"><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
       </div>
     </div>
+
+    <div style="padding: 8px 16px; text-align:right; font-size:12px; color:inherit;">Version: {{ buildVersion }}</div>
   </div>
 </template>
-
-<div style="padding: 8px 16px; text-align:right; font-size:12px; color:var(--secondary-text-color);">Version: {{ buildVersion }}</div>
 
 <style scoped>
 </style>

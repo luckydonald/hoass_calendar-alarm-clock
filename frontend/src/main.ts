@@ -1,4 +1,3 @@
-import colorName from 'color-name';
 import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
 import AlarmClockCard from './AlarmClockCard.vue';
 import AlarmClockCardEditorVue from './AlarmClockCardEditor.vue';
