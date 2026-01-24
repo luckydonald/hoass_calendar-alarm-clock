@@ -238,35 +238,46 @@ const isNightTime = computed(() => {
   return hour < 6 || hour >= 20;
 });
 
-// Smooth vs tick animation toggle (config key: clock_smooth_animation)
-// Use a safe cast to any to avoid type errors if types aren't refreshed; default to true
-const clockSmoothAnimation = computed(() => !!((props.config as any).clock_smooth_animation ?? true));
+// Animation mode (config key: clock_animation_mode) - 'ticks' | 'smooth' | 'db'
+const clockAnimationMode = computed(() => (props.config as any).clock_animation_mode ?? 'smooth');
 
 // Inline styles for hands (use transform + transition + background colors)
 // Note: CSS hand layout points to the right at 0deg, so subtract 90deg to align 0 => 12 o'clock.
 const hourHandStyle = computed(() => {
   const rot = `${hourHandRotation.value - 90}deg`;
+  const mode = clockAnimationMode.value;
+  const transition = mode === 'smooth' ? 'transform 0.5s linear' : (mode === 'db' ? 'transform 0.5s linear' : 'none');
   return {
     transform: `rotate(${rot})`,
-    transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
+    transition,
     background: clockHourColor.value,
   } as Record<string, string>;
 });
 
 const minuteHandStyle = computed(() => {
   const rot = `${minuteHandRotation.value - 90}deg`;
+  const mode = clockAnimationMode.value;
+  const transition = mode === 'smooth' ? 'transform 0.5s linear' : (mode === 'db' ? 'transform 0.5s linear' : 'none');
   return {
     transform: `rotate(${rot})`,
-    transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
+    transition,
     background: clockMinuteColor.value,
   } as Record<string, string>;
 });
 
 const secondHandStyle = computed(() => {
   const rot = `${secondHandRotation.value - 90}deg`;
+  const mode = clockAnimationMode.value;
+  // For DB mode, when second === 59, pause slightly longer by increasing transition duration
+  let transitionVal = 'none';
+  if (mode === 'smooth') transitionVal = 'transform 0.25s linear';
+  else if (mode === 'db') {
+    transitionVal = currentSeconds.value === 59 ? 'transform 1.5s linear' : 'transform 0.25s linear';
+  }
+
   return {
     transform: `rotate(${rot})`,
-    transition: clockSmoothAnimation.value ? 'transform 0.25s linear' : 'none',
+    transition: transitionVal,
     background: clockSecondColor.value,
   } as Record<string, string>;
 });
