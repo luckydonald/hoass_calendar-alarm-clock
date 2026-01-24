@@ -86,7 +86,7 @@ const clockHourColor = computed(() => (props.config.clock_hour_color as string) 
 const clockMinuteColor = computed(() => (props.config.clock_minute_color as string) || 'var(--primary-text-color)');
 const clockSecondColor = computed(() => (props.config.clock_second_color as string) || 'var(--primary-color)');
 const clockMiddleColor = computed(() => (props.config.clock_middle_color as string) || 'var(--primary-color)');
-const showSeconds = computed(() => (props.config.clock_show_seconds === undefined ? true : !!props.config.clock_show_seconds));
+const showSeconds = computed(() => props.config.clock_show_seconds ?? true);
 
 const clockDisplay = computed(() => props.config.clock_display ?? 'analog');
 const showClock = computed(() => props.config.show_clock !== false);
@@ -203,13 +203,7 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
   return null;
 });
 
-const isNextAlarmRinging = computed(() => {
-  return (
-    nextAlarm.value
-    && (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
-  );
-});
-
+// ringingAlarms is now computed directly where needed
 const ringingAlarms = computed<Alarm[]>(() => {
   return alarms.value.filter((alarm) => isAlarmRinging(alarm));
 });
@@ -239,7 +233,8 @@ const isNightTime = computed(() => {
 });
 
 // Smooth vs tick animation toggle (config key: clock_smooth_animation)
-const clockSmoothAnimation = computed(() => (props.config.clock_smooth_animation === undefined ? true : !!props.config.clock_smooth_animation));
+// Use a safe cast to any to avoid type errors if types aren't refreshed; default to true
+const clockSmoothAnimation = computed(() => !!((props.config as any).clock_smooth_animation ?? true));
 
 // Inline styles for hands (use transform + transition + background colors)
 // Note: CSS hand layout points to the right at 0deg, so subtract 90deg to align 0 => 12 o'clock.
