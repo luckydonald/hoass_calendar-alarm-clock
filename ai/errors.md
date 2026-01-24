@@ -272,3 +272,4 @@ src/ColorPicker.vue:98:68 - error TS7006: Parameter 'e' implicitly has an 'any' 
 ———
 The SVG is still all back. Do you need to set fill/stroke?
 ———                                      
+<div class="time-wrapper size-small"> <!--?lit$406600672$--> <!--?lit$406600672$--> <hui-clock-card-analog></hui-clock-card-analog>  </div>
