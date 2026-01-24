@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue';
-import ColorPicker from './ColorPicker.vue';
 import pkg from '../package.json';
+import ColorPicker from './ColorPicker.vue';
 
 interface Props {
   hass: any;

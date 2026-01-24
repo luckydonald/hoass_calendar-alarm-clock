@@ -1,8 +1,8 @@
 import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
+import pkg from '../package.json';
 import AlarmClockCard from './AlarmClockCard.vue';
 import AlarmClockCardEditorVue from './AlarmClockCardEditor.vue';
 import type { CardConfig, HomeAssistant } from './types';
-import pkg from '../package.json';
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;

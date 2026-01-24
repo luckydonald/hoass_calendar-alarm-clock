@@ -714,7 +714,7 @@ function handleAddButtonClick(): void {
                 <!-- Minute ticks (60) -->
                 <div
                   v-for="i in 60"
-                  :key="'m-'+i"
+                  :key="'m-' + i"
                   aria-hidden="true"
                   class="tick minute"
                   :style="{ '--tick-rotation': `${(i - 1) * 6}deg` }"
