@@ -12,7 +12,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const buildVersion = pkg.version || 'dev';
+const buildVersion = pkg.version || 'unknown';
 
 const emitConfig = (cfg: Record<string, any>) => {
   if (props.onConfigChanged) props.onConfigChanged(cfg);
