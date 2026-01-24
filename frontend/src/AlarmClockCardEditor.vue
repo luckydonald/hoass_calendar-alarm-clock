@@ -136,15 +136,15 @@ function onSmoothChange(e: Event) {
     </div>
 
     <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
-      <div style="color:var(--secondary-text-color); font-size:12px">
+      <div style="color:inherit; font-size:12px">
         <p style="margin:0 0 8px 0"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
         <p style="margin:0"><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
       </div>
     </div>
+
+    <div style="padding: 8px 16px; text-align:right; font-size:12px; color:inherit;">Version: {{ buildVersion }}</div>
   </div>
 </template>
-
-<div style="padding: 8px 16px; text-align:right; font-size:12px; color:var(--secondary-text-color);">Version: {{ buildVersion }}</div>
 
 <style scoped>
 </style>
