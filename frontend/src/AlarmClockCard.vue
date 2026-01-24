@@ -86,7 +86,7 @@ const clockHourColor = computed(() => (props.config.clock_hour_color as string) 
 const clockMinuteColor = computed(() => (props.config.clock_minute_color as string) || 'var(--primary-text-color)');
 const clockSecondColor = computed(() => (props.config.clock_second_color as string) || 'var(--primary-color)');
 const clockMiddleColor = computed(() => (props.config.clock_middle_color as string) || 'var(--primary-color)');
-const showSeconds = computed(() => (props.config.clock_show_seconds === undefined ? true : !!props.config.clock_show_seconds));
+const showSeconds = computed(() => props.config.clock_show_seconds ?? true);
 
 const clockDisplay = computed(() => props.config.clock_display ?? 'analog');
 const showClock = computed(() => props.config.show_clock !== false);
@@ -203,13 +203,7 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
   return null;
 });
 
-const isNextAlarmRinging = computed(() => {
-  return (
-    nextAlarm.value
-    && (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
-  );
-});
-
+// ringingAlarms is now computed directly where needed
 const ringingAlarms = computed<Alarm[]>(() => {
   return alarms.value.filter((alarm) => isAlarmRinging(alarm));
 });
@@ -239,11 +233,13 @@ const isNightTime = computed(() => {
 });
 
 // Smooth vs tick animation toggle (config key: clock_smooth_animation)
-const clockSmoothAnimation = computed(() => (props.config.clock_smooth_animation === undefined ? true : !!props.config.clock_smooth_animation));
+// Use a safe cast to any to avoid type errors if types aren't refreshed; default to true
+const clockSmoothAnimation = computed(() => !!((props.config as any).clock_smooth_animation ?? true));
 
 // Inline styles for hands (use transform + transition + background colors)
+// Note: CSS hand layout points to the right at 0deg, so subtract 90deg to align 0 => 12 o'clock.
 const hourHandStyle = computed(() => {
-  const rot = typeof hourHandRotation.value === 'number' ? `${hourHandRotation.value}deg` : `${hourHandRotation.value}`;
+  const rot = `${hourHandRotation.value - 90}deg`;
   return {
     transform: `rotate(${rot})`,
     transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
@@ -252,7 +248,7 @@ const hourHandStyle = computed(() => {
 });
 
 const minuteHandStyle = computed(() => {
-  const rot = typeof minuteHandRotation.value === 'number' ? `${minuteHandRotation.value}deg` : `${minuteHandRotation.value}`;
+  const rot = `${minuteHandRotation.value - 90}deg`;
   return {
     transform: `rotate(${rot})`,
     transition: clockSmoothAnimation.value ? 'transform 0.5s linear' : 'none',
@@ -261,7 +257,7 @@ const minuteHandStyle = computed(() => {
 });
 
 const secondHandStyle = computed(() => {
-  const rot = typeof secondHandRotation.value === 'number' ? `${secondHandRotation.value}deg` : `${secondHandRotation.value}`;
+  const rot = `${secondHandRotation.value - 90}deg`;
   return {
     transform: `rotate(${rot})`,
     transition: clockSmoothAnimation.value ? 'transform 0.25s linear' : 'none',
@@ -705,6 +701,17 @@ function handleAddButtonClick(): void {
                   aria-hidden="true"
                   class="tick hour"
                   :style="{ '--tick-rotation': `${(i - 1) * 30}deg` }"
+                >
+                  <div class="line"></div>
+                </div>
+
+                <!-- Minute ticks (60) -->
+                <div
+                  v-for="i in 60"
+                  :key="'m-'+i"
+                  aria-hidden="true"
+                  class="tick minute"
+                  :style="{ '--tick-rotation': `${(i - 1) * 6}deg` }"
                 >
                   <div class="line"></div>
                 </div>
@@ -1839,15 +1846,21 @@ ha-expansion-panel {
   top: 0;
 }
 
-.center-dot {
+.tick .line {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  background: var(--clock-middle-color, var(--primary-color));
-  border-radius: 50%;
-  top: 50%;
+  top: 0;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
+  width: 2px;
+  height: 100%;
+  background: inherit;
+  border-radius: 1px;
+}
+
+.tick.minute {
+  height: 8px;
+  opacity: 0.5;
+  background: var(--clock-minute-color, rgba(0,0,0,0.2));
 }
 
 /* Clock Hands */

@@ -95,6 +95,7 @@ class AlarmClockCardElement extends HTMLElement {
       clock_second_color: 'var(--primary-color)',
       clock_middle_color: 'var(--primary-color)',
       clock_show_seconds: true,
+      clock_smooth_animation: true,
     };
   }
 }
