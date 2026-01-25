@@ -149,47 +149,61 @@ class AlarmClockCardElement extends HTMLElement {
 class AlarmClockCardEditor extends HTMLElement {
   private _config: AlarmClockCardConfig = {};
   private _hass: HomeAssistant | null = null;
-  private _appRoot: HTMLDivElement | null = null;
-  private _vueApp: App | null = null;
+  private _app: App | null = null;
+  private _root: HTMLDivElement | null = null;
 
   public set hass(hass: HomeAssistant) {
     this._hass = hass;
-    this._render();
+    if (this._app?._instance?.proxy) {
+      const proxy = this._app._instance.proxy as ComponentPublicInstance & AppData;
+      proxy.hass = hass;
+    }
   }
 
   public setConfig(config: AlarmClockCardConfig): void {
     this._config = config;
-    this._render();
+    if (this._app?._instance?.proxy) {
+      const proxy = this._app._instance.proxy as ComponentPublicInstance & AppData;
+      proxy.config = config;
+    }
   }
 
-  private _render(): void {
-    if (!this._hass) return;
-
-    // Use Vue component mounting for the editor to avoid DOM re-creation problems
-    if (!this._appRoot) {
-      this._appRoot = document.createElement('div');
-      this.appendChild(this._appRoot);
+  public connectedCallback(): void {
+    if (!this._root) {
+      this._root = document.createElement('div');
+      this.appendChild(this._root);
     }
 
-    if (this._vueApp) {
-      // update props via component instance
-      const root = this._vueApp._instance?.proxy as any;
-      if (root) {
-        root.hass = this._hass;
-        root.config = this._config;
-      }
-      return;
-    }
+    const initialHass = this._hass;
+    const initialConfig = this._config;
 
-    this._vueApp = createApp(AlarmClockCardEditorVue, {
-      hass: this._hass,
-      config: this._config,
-      onConfigChanged: (cfg: AlarmClockCardConfig) => {
-        this._updateConfig(cfg);
+    this._app = createApp({
+      data(): AppData {
+        return {
+          hass: initialHass,
+          config: initialConfig,
+        };
+      },
+      render() {
+        const data = this as unknown as AppData;
+        return h(AlarmClockCardEditorVue, {
+          hass: data.hass,
+          config: data.config,
+          onConfigChanged: (cfg: AlarmClockCardConfig) => {
+            this._updateConfig(cfg);
+          },
+        });
       },
     });
 
-    this._vueApp.mount(this._appRoot);
+    this._app.mount(this._root);
+  }
+
+  public disconnectedCallback(): void {
+    if (this._app) {
+      this._app.unmount();
+      this._app = null;
+    }
   }
 
   private _updateConfig(update: Partial<AlarmClockCardConfig>): void {
