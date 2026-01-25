@@ -5,7 +5,6 @@ import {
   onUnmounted,
   ref,
   watch,
-  nextTick,
 } from 'vue';
 import type {
   Alarm,
@@ -40,8 +39,6 @@ const dialogData = ref<AlarmDialogData>({
 // Current time state
 const currentTime = ref(new Date());
 let timeInterval: ReturnType<typeof setInterval> | null = null;
-// DB mode pause flag (set briefly when seconds === 59 to create the pause)
-const dbPause = ref(false);
 
 // Section collapse state
 const clockCollapsed = ref(props.config.collapse_clock ?? false);
@@ -66,7 +63,6 @@ onMounted(() => {
     currentTime.value = new Date();
   }, 1000);
   // keep DB pause in sync: clear on mount
-  dbPause.value = false;
 });
 
 onUnmounted(() => {
@@ -225,17 +221,6 @@ const currentHours = computed(() => currentTime.value.getHours());
 const currentMinutes = computed(() => currentTime.value.getMinutes());
 const currentSeconds = computed(() => currentTime.value.getSeconds());
 
-// Watch seconds to trigger DB pause when needed
-watch(currentSeconds, (s) => {
-  if (props.config.clock_animation_mode === 'db' && s === 59) {
-    dbPause.value = true;
-    // Clear pause after ~1500ms so it resumes slightly after the 59th second
-    setTimeout(() => {
-      dbPause.value = false;
-    }, 1500);
-  }
-});
-
 // Animation timing sync: compute negative delays so CSS animation is aligned to current time
 const secondAnimationDelay = computed(() => `-${currentSeconds.value}s`);
 const minuteAnimationDelay = computed(() => `-${(currentMinutes.value * 60 + currentSeconds.value)}s`);
@@ -249,12 +234,13 @@ const hourAnimationDuration = '43200s';
 // Helper to get animation timing function depending on mode and hand
 function animationTiming(mode: AnalogClockAnimationMode, hand: 'hour' | 'minute' | 'second') {
   if (mode === 'smooth') return 'linear';
+  if (mode === 'db') return 'linear';
   if (mode === 'ticks') {
     if (hand === 'second') return 'steps(60,end)';
     if (hand === 'minute') return 'steps(60,end)';
     return 'steps(720,end)';
   }
-  // db mode: mostly linear, second hand handled by dbPause
+  // fallback for no unknown mode
   return 'linear';
 }
 
@@ -280,12 +266,11 @@ const minuteHandAnimStyle = computed(() => ({
 } as Record<string, string>));
 
 const secondHandAnimStyle = computed(() => ({
-  animationName: 'ha-clock-rotate',
+  animationName: clockAnimationMode.value === 'db' ? 'ha-clock-rotate-db-sec' : 'ha-clock-rotate',
   animationDuration: secondAnimationDuration,
   animationTimingFunction: animationTiming(clockAnimationMode.value, 'second'),
   animationDelay: secondAnimationDelay.value,
   animationIterationCount: 'infinite',
-  animationPlayState: (clockAnimationMode.value === 'db' && dbPause.value) ? 'paused' : 'running',
   background: clockSecondColor.value,
 } as Record<string, string>));
 
@@ -1940,5 +1925,11 @@ ha-expansion-panel {
   to {
     transform: rotate(360deg);
   }
+}
+@keyframes ha-clock-rotate-db-sec {
+  0%        { transform: rotate(0turn); }               /* 0°   */
+  95.833%   { transform: rotate(0.98333turn); }         /* 354° */
+  98.333%   { transform: rotate(0.98333turn); }         /* pause – hold at 354° */
+  100%      { transform: rotate(1turn); }               /* 360° – finish minute */
 }
 </style>
