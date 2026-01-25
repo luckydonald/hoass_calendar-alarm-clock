@@ -118,6 +118,10 @@ function onAnimationModeSelected(e: Event) {
       :value="localConfig.title"
       @input="localConfig.title = $event.target.value"
     />
+    <!--
+    // Entity picker (for single alarm view)
+    wrapper.appendChild(this._createEntityPicker());
+    -->
 
     <div>
       <label style="display:block; margin-bottom:6px; font-weight:500">Entity (optional - for single alarm view)</label>
@@ -131,7 +135,10 @@ function onAnimationModeSelected(e: Event) {
         @value-changed="onEntityValueChanged"
       />
     </div>
-
+    <!--
+    // Clock display select
+    wrapper.appendChild(this._createSelect(
+    -->
     <div style="display:flex; gap:12px; align-items:flex-start;">
       <div style="flex:1">
         <label style="display:block; margin-bottom:6px; font-weight:500">Clock Display</label>
@@ -184,6 +191,30 @@ function onAnimationModeSelected(e: Event) {
       </ha-formfield>
     </div>
 
+    <!--
+    // Animation mode selector
+    -->
+    <!-- Animation mode selector -->
+    <div>
+      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Animation Mode</label>
+      <ha-select label="Animation Mode" style="width:100%" :value="localConfig.clock_animation_mode" @selected="onAnimationModeSelected">
+        <ha-list-item v-for="opt in animationModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
+      </ha-select>
+    </div>
+
+
+    <!--
+    // Alarm list mode select
+    wrapper.appendChild(this._createSelect(
+      'alarm_list_mode',
+      'Alarm List Mode',
+      this._config.alarm_list_mode ?? 'days',
+      [
+        { value: 'days', label: 'Show alarms for X days' },
+        { value: 'count', label: 'Show X alarms' },
+      ],
+    ));
+    -->
     <!-- Alarm list mode (days/count) -->
     <div>
       <label style="display:block; margin-bottom:6px; font-weight:500">Alarm List Mode</label>
@@ -191,7 +222,9 @@ function onAnimationModeSelected(e: Event) {
         <ha-list-item v-for="opt in alarmListModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
       </ha-select>
     </div>
-
+    <!--
+    // Alarm list days/count input
+    -->
     <!-- Number inputs conditional on mode -->
     <div v-if="localConfig.alarm_list_mode === 'count'">
       <label style="display:block; margin-bottom:6px; font-weight:500">Number of Alarms to Show</label>
@@ -202,6 +235,9 @@ function onAnimationModeSelected(e: Event) {
       <input type="number" min="1" max="365" style="width:100%; padding:8px;" v-model.number="localConfig.alarm_list_days" />
     </div>
 
+    <!--
+    // Section visibility toggles
+    -->
     <!-- Section visibility toggles -->
     <div style="font-weight:500; margin-top:8px">Section Visibility</div>
     <div style="display:flex; gap:12px; flex-direction:column">
@@ -216,6 +252,9 @@ function onAnimationModeSelected(e: Event) {
       </ha-formfield>
     </div>
 
+    <!--
+    // Add section mode
+    -->
     <!-- Add section mode -->
     <div>
       <label style="display:block; margin-bottom:6px; font-weight:500">Add Alarm Section</label>
@@ -224,14 +263,9 @@ function onAnimationModeSelected(e: Event) {
       </ha-select>
     </div>
 
-    <!-- Animation mode selector -->
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Animation Mode</label>
-      <ha-select label="Animation Mode" style="width:100%" :value="localConfig.clock_animation_mode" @selected="onAnimationModeSelected">
-        <ha-list-item v-for="opt in animationModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
-      </ha-select>
-    </div>
-
+    <!--
+    // Help text
+    -->
     <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
       <div style="color:inherit; font-size:12px">
         <p style="margin:0 0 8px 0"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
