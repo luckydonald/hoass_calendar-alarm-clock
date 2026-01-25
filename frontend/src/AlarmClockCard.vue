@@ -248,7 +248,13 @@ const clockAnimationMode = computed(() => props.config.clock_animation_mode ?? '
 
 // Compute inline styles for each hand to set animation timing & sync
 const hourHandAnimStyle = computed(() => ({
-  animationName: 'ha-clock-rotate',
+  animationName: (
+    clockAnimationMode.value !== 'db'
+      ? 'ha-clock-rotate'
+      : clockDisplay.value === 'analog-24h'
+        ? 'ha-clock-db-24'
+        : 'ha-clock-db-12'
+  ),
   animationDuration: ANIMATION_DURATION_HOURS_HAND,
   animationTimingFunction: animationTiming(clockAnimationMode.value, 'hour'),
   animationDelay: hourAnimationDelay.value,
@@ -257,7 +263,7 @@ const hourHandAnimStyle = computed(() => ({
 } as Record<string, string>));
 
 const minuteHandAnimStyle = computed(() => ({
-  animationName: 'ha-clock-rotate',
+  animationName: clockAnimationMode.value === 'db' ? 'ha-clock-rotate-db-60' : 'ha-clock-rotate',
   animationDuration: ANIMATION_DURATION_MINUTES_HAND,
   animationTimingFunction: animationTiming(clockAnimationMode.value, 'minute'),
   animationDelay: minuteAnimationDelay.value,
@@ -266,7 +272,7 @@ const minuteHandAnimStyle = computed(() => ({
 } as Record<string, string>));
 
 const secondHandAnimStyle = computed(() => ({
-  animationName: clockAnimationMode.value === 'db' ? 'ha-clock-rotate-db-sec' : 'ha-clock-rotate',
+  animationName: clockAnimationMode.value === 'db' ? 'ha-clock-rotate-db-60' : 'ha-clock-rotate',
   animationDuration: ANIMATION_DURATION_SECONDS_HAND,
   animationTimingFunction: animationTiming(clockAnimationMode.value, 'second'),
   animationDelay: secondAnimationDelay.value,
@@ -706,10 +712,11 @@ function handleAddButtonClick(): void {
             }"
           >
             <!-- Analog Clock -->
-            <div v-if="clockDisplay === 'analog'" class="analog-clock-container">
-              <!-- Pure-CSS clock. Uses ticks and absolutely-positioned hands. -->
+            <div v-if="clockDisplay === 'analog' || clockDisplay === 'analog-24h'" class="analog-clock-container">
+              <!-- Pure-CSS clock. Uses ticks and absolutely-positioned hands via css animations. -->
               <div class="dial dial-border" role="img" aria-label="Analog clock">
                 <!-- Hour ticks (12) -->
+                <!-- TODO: 24h ticks if clockDisplay is 'analog-24h' -->
                 <div
                   v-for="i in 12"
                   :key="i"
@@ -1926,10 +1933,22 @@ ha-expansion-panel {
     transform: rotate(360deg);
   }
 }
-@keyframes ha-clock-rotate-db-sec {
-  0%        { transform: rotate(0turn); }               /* 0°   */
-  95.833%   { transform: rotate(0.98333turn); }         /* 354° */
+@keyframes ha-clock-rotate-db-60 {
+  0%        { transform: rotate(0turn); }               /* 0° */
+  95.833%   { transform: rotate(0.98333turn); }         /* 354° - visually the second/minute 59 */
   98.333%   { transform: rotate(0.98333turn); }         /* pause – hold at 354° */
+  100%      { transform: rotate(1turn); }               /* 360° – finish minute */
+}
+@keyframes ha-clock-rotate-db-24 {
+  0%        { transform: rotate(0turn); }               /* 0° */
+  95.833%   { transform: rotate(0.95833turn); }         /* 345° - visually hour 23 */
+  98.333%   { transform: rotate(0.95833turn); }         /* pause – hold at 345° */
+  100%      { transform: rotate(1turn); }               /* 360° – finish minute */
+}
+@keyframes ha-clock-rotate-db-12 {
+  0%        { transform: rotate(0turn); }               /* 0° */
+  95.833%   { transform: rotate(0.91667turn); }         /* 330° - visually hour 11 */
+  98.333%   { transform: rotate(0.91667turn); }         /* pause – hold at 330° */
   100%      { transform: rotate(1turn); }               /* 360° – finish minute */
 }
 </style>

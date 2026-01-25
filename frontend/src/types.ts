@@ -36,7 +36,7 @@ export interface CardConfig {
   // Add your custom config options here
 
   // Clock display options
-  clock_display?: 'analog' | '24h' | '12h' | 'none';
+  clock_display?: 'analog' | 'analog-24h' | '24h' | '12h' | 'none';
   // Clock color and seconds options
   clock_bg_color?: string;
   clock_hour_color?: string;
