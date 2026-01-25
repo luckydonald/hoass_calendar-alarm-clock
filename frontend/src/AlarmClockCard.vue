@@ -227,9 +227,9 @@ const minuteAnimationDelay = computed(() => `-${(currentMinutes.value * 60 + cur
 const hourAnimationDelay = computed(() => `-${(((currentHours.value % 12) * 3600) + (currentMinutes.value * 60) + currentSeconds.value)}s`);
 
 // Fixed animation durations
-const secondAnimationDuration = '60s';
-const minuteAnimationDuration = '3600s';
-const hourAnimationDuration = '43200s';
+const ANIMATION_DURATION_SECONDS_HAND = '60s';
+const ANIMATION_DURATION_MINUTES_HAND = '3600s';
+const ANIMATION_DURATION_HOURS_HAND = '43200s';
 
 // Helper to get animation timing function depending on mode and hand
 function animationTiming(mode: AnalogClockAnimationMode, hand: 'hour' | 'minute' | 'second') {
@@ -249,7 +249,7 @@ const clockAnimationMode = computed(() => props.config.clock_animation_mode ?? '
 // Compute inline styles for each hand to set animation timing & sync
 const hourHandAnimStyle = computed(() => ({
   animationName: 'ha-clock-rotate',
-  animationDuration: hourAnimationDuration,
+  animationDuration: ANIMATION_DURATION_HOURS_HAND,
   animationTimingFunction: animationTiming(clockAnimationMode.value, 'hour'),
   animationDelay: hourAnimationDelay.value,
   animationIterationCount: 'infinite',
@@ -258,7 +258,7 @@ const hourHandAnimStyle = computed(() => ({
 
 const minuteHandAnimStyle = computed(() => ({
   animationName: 'ha-clock-rotate',
-  animationDuration: minuteAnimationDuration,
+  animationDuration: ANIMATION_DURATION_MINUTES_HAND,
   animationTimingFunction: animationTiming(clockAnimationMode.value, 'minute'),
   animationDelay: minuteAnimationDelay.value,
   animationIterationCount: 'infinite',
@@ -267,7 +267,7 @@ const minuteHandAnimStyle = computed(() => ({
 
 const secondHandAnimStyle = computed(() => ({
   animationName: clockAnimationMode.value === 'db' ? 'ha-clock-rotate-db-sec' : 'ha-clock-rotate',
-  animationDuration: secondAnimationDuration,
+  animationDuration: ANIMATION_DURATION_SECONDS_HAND,
   animationTimingFunction: animationTiming(clockAnimationMode.value, 'second'),
   animationDelay: secondAnimationDelay.value,
   animationIterationCount: 'infinite',
