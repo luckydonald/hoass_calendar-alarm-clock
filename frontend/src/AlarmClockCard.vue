@@ -11,6 +11,7 @@ import type {
   Alarm,
   AlarmDialogData,
   AlarmState,
+  AnalogClockAnimationMode,
   CardConfig,
   HomeAssistant,
   NextAlarmInfo,
@@ -226,7 +227,7 @@ const currentSeconds = computed(() => currentTime.value.getSeconds());
 
 // Watch seconds to trigger DB pause when needed
 watch(currentSeconds, (s) => {
-  if ((props.config as any).clock_animation_mode === 'db' && s === 59) {
+  if (props.config.clock_animation_mode === 'db' && s === 59) {
     dbPause.value = true;
     // Clear pause after ~1500ms so it resumes slightly after the 59th second
     setTimeout(() => {
@@ -246,7 +247,7 @@ const minuteAnimationDuration = '3600s';
 const hourAnimationDuration = '43200s';
 
 // Helper to get animation timing function depending on mode and hand
-function animationTiming(mode: string, hand: 'hour' | 'minute' | 'second') {
+function animationTiming(mode: AnalogClockAnimationMode, hand: 'hour' | 'minute' | 'second') {
   if (mode === 'smooth') return 'linear';
   if (mode === 'ticks') {
     if (hand === 'second') return 'steps(60,end)';
@@ -257,13 +258,13 @@ function animationTiming(mode: string, hand: 'hour' | 'minute' | 'second') {
   return 'linear';
 }
 
-const clockAnimationMode = computed(() => (props.config as any).clock_animation_mode ?? 'smooth');
+const clockAnimationMode = computed(() => props.config.clock_animation_mode ?? 'smooth');
 
 // Compute inline styles for each hand to set animation timing & sync
 const hourHandAnimStyle = computed(() => ({
   animationName: 'ha-clock-rotate',
   animationDuration: hourAnimationDuration,
-  animationTimingFunction: animationTiming(clockAnimationMode.value as string, 'hour'),
+  animationTimingFunction: animationTiming(clockAnimationMode.value, 'hour'),
   animationDelay: hourAnimationDelay.value,
   animationIterationCount: 'infinite',
   background: clockHourColor.value,
@@ -272,7 +273,7 @@ const hourHandAnimStyle = computed(() => ({
 const minuteHandAnimStyle = computed(() => ({
   animationName: 'ha-clock-rotate',
   animationDuration: minuteAnimationDuration,
-  animationTimingFunction: animationTiming(clockAnimationMode.value as string, 'minute'),
+  animationTimingFunction: animationTiming(clockAnimationMode.value, 'minute'),
   animationDelay: minuteAnimationDelay.value,
   animationIterationCount: 'infinite',
   background: clockMinuteColor.value,
@@ -281,7 +282,7 @@ const minuteHandAnimStyle = computed(() => ({
 const secondHandAnimStyle = computed(() => ({
   animationName: 'ha-clock-rotate',
   animationDuration: secondAnimationDuration,
-  animationTimingFunction: animationTiming(clockAnimationMode.value as string, 'second'),
+  animationTimingFunction: animationTiming(clockAnimationMode.value, 'second'),
   animationDelay: secondAnimationDelay.value,
   animationIterationCount: 'infinite',
   animationPlayState: (clockAnimationMode.value === 'db' && dbPause.value) ? 'paused' : 'running',
