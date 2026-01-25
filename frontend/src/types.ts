@@ -62,6 +62,8 @@ export interface CardConfig {
   collapse_add_section?: boolean;
 }
 
+export type AnalogClockAnimationMode = CardConfig['clock_animation_mode'];
+
 // Alarm types
 export interface AlarmAttributes {
   alarm_id: string;
