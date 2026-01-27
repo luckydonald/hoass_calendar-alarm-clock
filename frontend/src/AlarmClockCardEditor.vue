@@ -112,7 +112,9 @@ function onAnimationModeSelected(e: Event) {
 </script>
 
 <template>
-  <div style="padding: 16px; display:flex; flex-direction:column; gap:12px;">
+  <div
+    style="padding: 16px; display:flex; flex-direction:column; gap:12px;"
+  >
     <ha-textfield
       label="Card Title"
       :value="localConfig.title"
@@ -124,7 +126,11 @@ function onAnimationModeSelected(e: Event) {
     -->
 
     <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Entity (optional - for single alarm view)</label>
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Entity (optional - for single alarm view)
+      </label>
       <ha-entity-picker
         allow-custom-entity
         label="Entity (optional)"
@@ -139,55 +145,113 @@ function onAnimationModeSelected(e: Event) {
     // Clock display select
     wrapper.appendChild(this._createSelect(
     -->
-    <div style="display:flex; gap:12px; align-items:flex-start;">
-      <div style="flex:1">
-        <label style="display:block; margin-bottom:6px; font-weight:500">Clock Display</label>
-        <ha-select label="Clock Display" style="width:100%" :value="localConfig.clock_display" @selected="onClockDisplaySelected">
+    <div
+      style="display:flex; gap:12px; align-items:flex-start;"
+    >
+      <div
+        style="flex:1"
+      >
+        <label
+          style="display:block; margin-bottom:6px; font-weight:500"
+        >
+          Clock Display
+        </label>
+        <ha-select
+          label="Clock Display"
+          style="width:100%"
+          :value="localConfig.clock_display"
+          @selected="onClockDisplaySelected"
+        >
           <ha-list-item
             v-for="option in clockDisplayOptions"
             :key="option.value"
             :value="option.value"
           >
-            {{ option.label }}</ha-list-item>
+            {{ option.label }}
+          </ha-list-item>
         </ha-select>
       </div>
     </div>
 
     <!-- Color inputs: use ColorPicker component -->
     <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Background Color</label>
-      <ColorPicker v-model="localConfig.clock_bg_color" />
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Clock Background Color
+      </label>
+      <ColorPicker
+        v-model="localConfig.clock_bg_color"
+      />
     </div>
 
     <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Hour Color</label>
-      <ColorPicker v-model="localConfig.clock_hour_color" />
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Clock Hour Color
+      </label>
+      <ColorPicker
+        v-model="localConfig.clock_hour_color"
+      />
     </div>
 
     <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Minute Color</label>
-      <ColorPicker v-model="localConfig.clock_minute_color" />
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Clock Minute Color
+      </label>
+      <ColorPicker
+        v-model="localConfig.clock_minute_color"
+      />
     </div>
 
     <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Second Color</label>
-      <ColorPicker v-model="localConfig.clock_second_color" />
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Clock Second Color
+      </label>
+      <ColorPicker
+        v-model="localConfig.clock_second_color"
+      />
     </div>
 
     <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Middle (dot/separator) Color</label>
-      <ColorPicker v-model="localConfig.clock_middle_color" />
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Clock Middle (dot/separator) Color
+      </label>
+      <ColorPicker
+        v-model="localConfig.clock_middle_color"
+      />
     </div>
 
-    <div style="display:flex; gap:12px; align-items:center">
-      <ha-formfield label="Show Seconds on Clock">
-        <ha-switch :checked="localConfig.clock_show_seconds !== false" @change="onShowSecondsChange" />
+    <div
+      style="display:flex; gap:12px; align-items:center"
+    >
+      <ha-formfield
+        label="Show Seconds on Clock"
+      >
+        <ha-switch
+          :checked="localConfig.clock_show_seconds !== false"
+          @change="onShowSecondsChange"
+        />
       </ha-formfield>
     </div>
 
-    <div style="display:flex; gap:12px; align-items:center">
-      <ha-formfield label="Smooth Clock Animation (continuous)">
-        <ha-switch :checked="localConfig.clock_smooth_animation !== false" @change="onSmoothChange" />
+    <div
+      style="display:flex; gap:12px; align-items:center"
+    >
+      <ha-formfield
+        label="Smooth Clock Animation (continuous)"
+      >
+        <ha-switch
+          :checked="localConfig.clock_smooth_animation !== false"
+          @change="onSmoothChange"
+        />
       </ha-formfield>
     </div>
 
@@ -196,9 +260,24 @@ function onAnimationModeSelected(e: Event) {
     -->
     <!-- Animation mode selector -->
     <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Clock Animation Mode</label>
-      <ha-select label="Animation Mode" style="width:100%" :value="localConfig.clock_animation_mode" @selected="onAnimationModeSelected">
-        <ha-list-item v-for="opt in animationModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Clock Animation Mode
+      </label>
+      <ha-select
+        label="Animation Mode"
+        style="width:100%"
+        :value="localConfig.clock_animation_mode"
+        @selected="onAnimationModeSelected"
+      >
+        <ha-list-item
+          v-for="opt in animationModeOptions"
+          :key="opt.value"
+          :value="opt.value"
+        >
+          {{ opt.label }}
+        </ha-list-item>
       </ha-select>
     </div>
 
@@ -218,37 +297,93 @@ function onAnimationModeSelected(e: Event) {
     <!-- Alarm list mode (days/count) -->
     <div>
       <label style="display:block; margin-bottom:6px; font-weight:500">Alarm List Mode</label>
-      <ha-select label="Alarm List Mode" style="width:100%" :value="localConfig.alarm_list_mode" @selected="onAlarmListModeSelected">
-        <ha-list-item v-for="opt in alarmListModeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
+      <ha-select
+        label="Alarm List Mode"
+        style="width:100%"
+        :value="localConfig.alarm_list_mode"
+        @selected="onAlarmListModeSelected"
+      >
+        <ha-list-item
+          v-for="opt in alarmListModeOptions"
+          :key="opt.value"
+          :value="opt.value"
+        >
+          {{ opt.label }}
+        </ha-list-item>
       </ha-select>
     </div>
     <!--
     // Alarm list days/count input
     -->
     <!-- Number inputs conditional on mode -->
-    <div v-if="localConfig.alarm_list_mode === 'count'">
-      <label style="display:block; margin-bottom:6px; font-weight:500">Number of Alarms to Show</label>
-      <input type="number" min="1" max="100" style="width:100%; padding:8px;" v-model.number="localConfig.alarm_list_count" />
+    <div
+      v-if="localConfig.alarm_list_mode === 'count'"
+    >
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Number of Alarms to Show
+      </label>
+      <input
+        type="number"
+        min="1"
+        max="100"
+        style="width:100%; padding:8px;"
+        v-model.number="localConfig.alarm_list_count"
+      />
     </div>
-    <div v-else>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Days to Show</label>
-      <input type="number" min="1" max="365" style="width:100%; padding:8px;" v-model.number="localConfig.alarm_list_days" />
+    <div
+      v-else
+    >
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Days to Show
+      </label>
+      <input
+        type="number"
+        min="1"
+        max="365"
+        style="width:100%; padding:8px;"
+        v-model.number="localConfig.alarm_list_days"
+      />
     </div>
 
     <!--
     // Section visibility toggles
     -->
     <!-- Section visibility toggles -->
-    <div style="font-weight:500; margin-top:8px">Section Visibility</div>
-    <div style="display:flex; gap:12px; flex-direction:column">
-      <ha-formfield label="Show Clock Section">
-        <ha-switch :checked="localConfig.show_clock !== false" @change="onToggleShowClock" />
+    <div
+      style="font-weight:500; margin-top:8px"
+    >
+      Section Visibility
+    </div>
+    <div
+      style="display:flex; gap:12px; flex-direction:column"
+    >
+      <ha-formfield
+        label="Show Clock Section"
+      >
+        <ha-switch
+          :checked="localConfig.show_clock !== false"
+          @change="onToggleShowClock"
+        />
       </ha-formfield>
-      <ha-formfield label="Show Quick Alarm Section">
-        <ha-switch :checked="localConfig.show_quick_alarm !== false" @change="onToggleShowQuickAlarm" />
+      <ha-formfield
+        label="Show Quick Alarm Section"
+      >
+        <ha-switch
+          :checked="localConfig.show_quick_alarm !== false"
+          @change="onToggleShowQuickAlarm"
+        />
       </ha-formfield>
-      <ha-formfield label="Show Alarm List Section">
-        <ha-switch :checked="localConfig.show_alarm_list !== false" @change="onToggleShowAlarmList" />
+      <ha-formfield
+        label="Show Alarm List Section"
+      >
+        <ha-switch
+          :checked="localConfig.show_alarm_list !== false"
+          @change="onToggleShowAlarmList"
+        />
       </ha-formfield>
     </div>
 
@@ -257,23 +392,60 @@ function onAnimationModeSelected(e: Event) {
     -->
     <!-- Add section mode -->
     <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Add Alarm Section</label>
-      <ha-select label="Add Alarm Section" style="width:100%" :value="localConfig.show_add_section" @selected="onShowAddSectionSelected">
-        <ha-list-item v-for="opt in addSectionOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</ha-list-item>
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Add Alarm Section
+      </label>
+      <ha-select
+        label="Add Alarm Section"
+        style="width:100%"
+        :value="localConfig.show_add_section"
+        @selected="onShowAddSectionSelected"
+      >
+        <ha-list-item
+          v-for="opt in addSectionOptions"
+          :key="opt.value"
+          :value="opt.value"
+        >
+          {{ opt.label }}
+        </ha-list-item>
       </ha-select>
     </div>
 
     <!--
     // Help text
     -->
-    <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
-      <div style="color:inherit; font-size:12px">
-        <p style="margin:0 0 8px 0"><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
-        <p style="margin:0"><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
+    <div
+      style="display:flex; gap:8px; justify-content:space-between; align-items:center;"
+    >
+      <div
+        style="color:inherit; font-size:12px"
+      >
+        <p
+          style="margin:0 0 8px 0"
+        >
+          <strong>
+            List View (default):
+          </strong>
+          Leave entity empty to show all alarms.
+        </p>
+        <p
+          style="margin:0"
+        >
+          <strong>
+            Single Alarm View:
+          </strong>
+          Select a specific alarm entity to show details for one alarm.
+        </p>
       </div>
     </div>
 
-    <div style="padding: 8px 16px; text-align:right; font-size:12px; color:inherit;">Version: {{ buildVersion }}</div>
+    <div
+      style="padding: 8px 16px; text-align:right; font-size:12px; color:inherit;"
+    >
+      Version: {{ buildVersion }}
+    </div>
   </div>
 </template>
 
