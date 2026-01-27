@@ -263,13 +263,37 @@ const addSectionOptions = [
     // Alarm list days/count input
     -->
     <!-- Number inputs conditional on mode -->
-    <div v-if="localConfig.alarm_list_mode === 'count'">
-      <label style="display:block; margin-bottom:6px; font-weight:500">Number of Alarms to Show</label>
-      <input type="number" min="1" max="100" style="width:100%; padding:8px;" v-model.number="localConfig.alarm_list_count" />
+    <div
+      v-if="localConfig.alarm_list_mode === 'count'"
+    >
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Number of Alarms to Show
+      </label>
+      <input
+        type="number"
+        min="1"
+        max="100"
+        style="width:100%; padding:8px;"
+        v-model.number="localConfig.alarm_list_count"
+      />
     </div>
-    <div v-else>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Days to Show</label>
-      <input type="number" min="1" max="365" style="width:100%; padding:8px;" v-model.number="localConfig.alarm_list_days" />
+    <div
+      v-else
+    >
+      <label
+        style="display:block; margin-bottom:6px; font-weight:500"
+      >
+        Days to Show
+      </label>
+      <input
+        type="number"
+        min="1"
+        max="365"
+        style="width:100%; padding:8px;"
+        v-model.number="localConfig.alarm_list_days"
+      />
     </div>
 
     <!--
