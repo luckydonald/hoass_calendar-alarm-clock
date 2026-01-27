@@ -68,7 +68,9 @@ const addSectionOptions = [
     />
 
     <div class="field">
-      <label class="label">Entity (optional - for single alarm view)</label>
+      <label class="label">
+        Entity (optional - for single alarm view)
+      </label>
       <ha-entity-picker
         class="full-width"
         allow-custom-entity
@@ -82,7 +84,9 @@ const addSectionOptions = [
 
     <div class="row-flex">
       <div class="col">
-        <label class="label">Clock Display</label>
+        <label class="label">
+          Clock Display
+        </label>
         <ha-select
           class="full-width"
           label="Clock Display"
@@ -102,18 +106,31 @@ const addSectionOptions = [
 
     <!-- Color inputs: use ColorPicker component -->
     <div class="field">
-      <label class="label">Clock Background Color</label>
-      <ColorPicker v-model="localConfig.clock_bg_color" />
+      <label class="label">
+        Clock Background Color
+      </label>
+      <ColorPicker
+        v-model="localConfig.clock_bg_color"
+      />
     </div>
 
     <div class="field">
-      <label class="label">Clock Hour Color</label>
-      <ColorPicker v-model="localConfig.clock_hour_color" />
+      <label class="label">
+        Clock Hour Color
+      </label>
+      <ColorPicker
+        v-model="localConfig.clock_hour_color"
+      />
     </div>
 
     <div class="field">
-      <label class="label">Clock Minute Color</label>
-      <ColorPicker v-model="localConfig.clock_minute_color" />
+      <label
+        class="label"
+      >
+        Clock Minute Color
+      </label>
+      <ColorPicker
+        v-model="localConfig.clock_minute_color" />
     </div>
 
     <div class="field">
