@@ -229,3 +229,5 @@ Additional to the default "tick" mode, there'd be a "smooth" mode, which uses pu
 The "Animation mode" ("ticks", "smooth", "DB") shall be a dropdown.
 ———
 On deploy, the version number should be embedded into the built lovelace card editor (last item in that), so that I can check the actually built card version in the browser.
+———
+Use the `<style scoped lang="scss">` syntax over inline styles where possible.
