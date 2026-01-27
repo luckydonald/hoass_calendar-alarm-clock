@@ -59,43 +59,33 @@ const addSectionOptions = [
 </script>
 
 <template>
-  <div style="padding: 16px; display:flex; flex-direction:column; gap:12px;">
+  <div class="editor-root">
     <ha-textfield
+      class="full-width"
       label="Card Title"
       :value="localConfig.title"
       @input="localConfig.title = $event.target.value"
     />
-    <!--
-    // Entity picker (for single alarm view)
-    wrapper.appendChild(this._createEntityPicker());
-    -->
 
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Entity (optional - for single alarm view)
-      </label>
+    <div class="field">
+      <label class="label">Entity (optional - for single alarm view)</label>
       <ha-entity-picker
+        class="full-width"
         allow-custom-entity
         label="Entity (optional)"
-        style="width:100%"
         :value="localConfig.entity"
         :hass="props.hass"
         :includeDomains="['sensor']"
         @value-changed="(e: Event) => localConfig.entity = (e as CustomEvent).detail?.value || ''"
       />
     </div>
-    <!--
-    // Clock display select
-    wrapper.appendChild(this._createSelect(
-    -->
-    <div style="display:flex; gap:12px; align-items:flex-start;">
-      <div style="flex:1">
-        <label style="display:block; margin-bottom:6px; font-weight:500">
-          Clock Display
-        </label>
+
+    <div class="row-flex">
+      <div class="col">
+        <label class="label">Clock Display</label>
         <ha-select
+          class="full-width"
           label="Clock Display"
-          style="width:100%"
           :value="localConfig.clock_display"
           @selected="(e: Event) => localConfig.clock_display = (e.target as HTMLSelectElement).value as any"
         >
@@ -111,42 +101,32 @@ const addSectionOptions = [
     </div>
 
     <!-- Color inputs: use ColorPicker component -->
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Clock Background Color
-      </label>
+    <div class="field">
+      <label class="label">Clock Background Color</label>
       <ColorPicker v-model="localConfig.clock_bg_color" />
     </div>
 
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Clock Hour Color
-      </label>
+    <div class="field">
+      <label class="label">Clock Hour Color</label>
       <ColorPicker v-model="localConfig.clock_hour_color" />
     </div>
 
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Clock Minute Color
-      </label>
+    <div class="field">
+      <label class="label">Clock Minute Color</label>
       <ColorPicker v-model="localConfig.clock_minute_color" />
     </div>
 
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Clock Second Color
-      </label>
+    <div class="field">
+      <label class="label">Clock Second Color</label>
       <ColorPicker v-model="localConfig.clock_second_color" />
     </div>
 
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Clock Middle (dot/separator) Color
-      </label>
+    <div class="field">
+      <label class="label">Clock Middle (dot/separator) Color</label>
       <ColorPicker v-model="localConfig.clock_middle_color" />
     </div>
 
-    <div style="display:flex; gap:12px; align-items:center">
+    <div class="inline-field">
       <ha-formfield label="Show Seconds on Clock">
         <ha-switch
           :checked="localConfig.clock_show_seconds !== false"
@@ -155,17 +135,12 @@ const addSectionOptions = [
       </ha-formfield>
     </div>
 
-    <!--
-    // Animation mode selector
-    -->
     <!-- Animation mode selector -->
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Clock Animation Mode
-      </label>
+    <div class="field">
+      <label class="label">Clock Animation Mode</label>
       <ha-select
+        class="full-width"
         label="Animation Mode"
-        style="width:100%"
         :value="localConfig.clock_animation_mode"
         @selected="(e: Event) => localConfig.clock_animation_mode = (e.target as HTMLSelectElement).value as any"
       >
@@ -179,24 +154,12 @@ const addSectionOptions = [
       </ha-select>
     </div>
 
-    <!--
-    // Alarm list mode select
-    wrapper.appendChild(this._createSelect(
-      'alarm_list_mode',
-      'Alarm List Mode',
-      this._config.alarm_list_mode ?? 'days',
-      [
-        { value: 'days', label: 'Show alarms for X days' },
-        { value: 'count', label: 'Show X alarms' },
-      ],
-    ));
-    -->
     <!-- Alarm list mode (days/count) -->
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">Alarm List Mode</label>
+    <div class="field">
+      <label class="label">Alarm List Mode</label>
       <ha-select
+        class="full-width"
         label="Alarm List Mode"
-        style="width:100%"
         :value="localConfig.alarm_list_mode"
         @selected="(e: Event) => localConfig.alarm_list_mode = (e.target as HTMLSelectElement).value as any"
       >
@@ -209,43 +172,32 @@ const addSectionOptions = [
         </ha-list-item>
       </ha-select>
     </div>
-    <!--
-    // Alarm list days/count input
-    -->
+
     <!-- Number inputs conditional on mode -->
-    <div v-if="localConfig.alarm_list_mode === 'count'">
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Number of Alarms to Show
-      </label>
+    <div v-if="localConfig.alarm_list_mode === 'count'" class="field">
+      <label class="label">Number of Alarms to Show</label>
       <input
+        class="number-input full-width"
         type="number"
         min="1"
         max="100"
-        style="width:100%; padding:8px;"
         v-model.number="localConfig.alarm_list_count"
       />
     </div>
-    <div v-else>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Days to Show
-      </label>
+    <div v-else class="field">
+      <label class="label">Days to Show</label>
       <input
+        class="number-input full-width"
         type="number"
         min="1"
         max="365"
-        style="width:100%; padding:8px;"
         v-model.number="localConfig.alarm_list_days"
       />
     </div>
 
-    <!--
-    // Section visibility toggles
-    -->
     <!-- Section visibility toggles -->
-    <div style="font-weight:500; margin-top:8px">
-      Section Visibility
-    </div>
-    <div style="display:flex; gap:12px; flex-direction:column">
+    <div class="section-header">Section Visibility</div>
+    <div class="section-toggles">
       <ha-formfield label="Show Clock Section">
         <ha-switch
           :checked="localConfig.show_clock !== false"
@@ -266,17 +218,12 @@ const addSectionOptions = [
       </ha-formfield>
     </div>
 
-    <!--
-    // Add section mode
-    -->
     <!-- Add section mode -->
-    <div>
-      <label style="display:block; margin-bottom:6px; font-weight:500">
-        Add Alarm Section
-      </label>
+    <div class="field">
+      <label class="label">Add Alarm Section</label>
       <ha-select
+        class="full-width"
         label="Add Alarm Section"
-        style="width:100%"
         :value="localConfig.show_add_section"
         @selected="(e: Event) => localConfig.show_add_section = (e.target as HTMLSelectElement).value as any"
       >
@@ -290,31 +237,91 @@ const addSectionOptions = [
       </ha-select>
     </div>
 
-    <!--
-    // Help text
-    -->
-    <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
-      <div style="color:inherit; font-size:12px">
-        <p style="margin:0 0 8px 0">
-          <strong>
-            List View (default):
-          </strong>
-          Leave entity empty to show all alarms.
-        </p>
-        <p style="margin:0">
-          <strong>
-            Single Alarm View:
-          </strong>
-          Select a specific alarm entity to show details for one alarm.
-        </p>
+    <!-- Help text -->
+    <div class="help-row">
+      <div class="help-text">
+        <p><strong>List View (default):</strong> Leave entity empty to show all alarms.</p>
+        <p><strong>Single Alarm View:</strong> Select a specific alarm entity to show details for one alarm.</p>
       </div>
     </div>
 
-    <div style="padding: 8px 16px; text-align:right; font-size:12px; color:inherit;">
-      Version: {{ buildVersion }}
-    </div>
+    <div class="version">Version: {{ buildVersion }}</div>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+.editor-root {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.row-flex {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.col {
+  flex: 1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.inline-field {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.number-input {
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.section-header {
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.section-toggles {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+
+.help-row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.help-text {
+  color: inherit;
+  font-size: 12px;
+  p { margin: 0 0 8px 0; }
+}
+
+.version {
+  padding: 8px 16px;
+  text-align: right;
+  font-size: 12px;
+  color: inherit;
+}
 </style>
