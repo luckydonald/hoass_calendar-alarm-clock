@@ -252,8 +252,8 @@ const hourHandAnimStyle = computed(() => ({
     clockAnimationMode.value !== 'db'
       ? 'ha-clock-rotate'
       : clockDisplay.value === 'analog-24h'
-        ? 'ha-clock-db-24'
-        : 'ha-clock-db-12'
+      ? 'ha-clock-db-24'
+      : 'ha-clock-db-12'
   ),
   animationDuration: ANIMATION_DURATION_HOURS_HAND,
   animationTimingFunction: animationTiming(clockAnimationMode.value, 'hour'),

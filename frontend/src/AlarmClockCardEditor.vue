@@ -59,9 +59,7 @@ const addSectionOptions = [
 </script>
 
 <template>
-  <div
-    style="padding: 16px; display:flex; flex-direction:column; gap:12px;"
-  >
+  <div style="padding: 16px; display:flex; flex-direction:column; gap:12px;">
     <ha-textfield
       label="Card Title"
       :value="localConfig.title"
@@ -73,9 +71,7 @@ const addSectionOptions = [
     -->
 
     <div>
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Entity (optional - for single alarm view)
       </label>
       <ha-entity-picker
@@ -92,15 +88,9 @@ const addSectionOptions = [
     // Clock display select
     wrapper.appendChild(this._createSelect(
     -->
-    <div
-      style="display:flex; gap:12px; align-items:flex-start;"
-    >
-      <div
-        style="flex:1"
-      >
-        <label
-          style="display:block; margin-bottom:6px; font-weight:500"
-        >
+    <div style="display:flex; gap:12px; align-items:flex-start;">
+      <div style="flex:1">
+        <label style="display:block; margin-bottom:6px; font-weight:500">
           Clock Display
         </label>
         <ha-select
@@ -122,66 +112,42 @@ const addSectionOptions = [
 
     <!-- Color inputs: use ColorPicker component -->
     <div>
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Clock Background Color
       </label>
-      <ColorPicker
-        v-model="localConfig.clock_bg_color"
-      />
+      <ColorPicker v-model="localConfig.clock_bg_color" />
     </div>
 
     <div>
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Clock Hour Color
       </label>
-      <ColorPicker
-        v-model="localConfig.clock_hour_color"
-      />
+      <ColorPicker v-model="localConfig.clock_hour_color" />
     </div>
 
     <div>
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Clock Minute Color
       </label>
-      <ColorPicker
-        v-model="localConfig.clock_minute_color"
-      />
+      <ColorPicker v-model="localConfig.clock_minute_color" />
     </div>
 
     <div>
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Clock Second Color
       </label>
-      <ColorPicker
-        v-model="localConfig.clock_second_color"
-      />
+      <ColorPicker v-model="localConfig.clock_second_color" />
     </div>
 
     <div>
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Clock Middle (dot/separator) Color
       </label>
-      <ColorPicker
-        v-model="localConfig.clock_middle_color"
-      />
+      <ColorPicker v-model="localConfig.clock_middle_color" />
     </div>
 
-    <div
-      style="display:flex; gap:12px; align-items:center"
-    >
-      <ha-formfield
-        label="Show Seconds on Clock"
-      >
+    <div style="display:flex; gap:12px; align-items:center">
+      <ha-formfield label="Show Seconds on Clock">
         <ha-switch
           :checked="localConfig.clock_show_seconds !== false"
           @change="(e: Event) => localConfig.clock_show_seconds = (e.target as HTMLInputElement).checked"
@@ -194,9 +160,7 @@ const addSectionOptions = [
     -->
     <!-- Animation mode selector -->
     <div>
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Clock Animation Mode
       </label>
       <ha-select
@@ -214,7 +178,6 @@ const addSectionOptions = [
         </ha-list-item>
       </ha-select>
     </div>
-
 
     <!--
     // Alarm list mode select
@@ -250,12 +213,8 @@ const addSectionOptions = [
     // Alarm list days/count input
     -->
     <!-- Number inputs conditional on mode -->
-    <div
-      v-if="localConfig.alarm_list_mode === 'count'"
-    >
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+    <div v-if="localConfig.alarm_list_mode === 'count'">
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Number of Alarms to Show
       </label>
       <input
@@ -266,12 +225,8 @@ const addSectionOptions = [
         v-model.number="localConfig.alarm_list_count"
       />
     </div>
-    <div
-      v-else
-    >
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+    <div v-else>
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Days to Show
       </label>
       <input
@@ -287,33 +242,23 @@ const addSectionOptions = [
     // Section visibility toggles
     -->
     <!-- Section visibility toggles -->
-    <div
-      style="font-weight:500; margin-top:8px"
-    >
+    <div style="font-weight:500; margin-top:8px">
       Section Visibility
     </div>
-    <div
-      style="display:flex; gap:12px; flex-direction:column"
-    >
-      <ha-formfield
-        label="Show Clock Section"
-      >
+    <div style="display:flex; gap:12px; flex-direction:column">
+      <ha-formfield label="Show Clock Section">
         <ha-switch
           :checked="localConfig.show_clock !== false"
           @change="(e: Event) => localConfig.show_clock = (e.target as HTMLInputElement).checked"
         />
       </ha-formfield>
-      <ha-formfield
-        label="Show Quick Alarm Section"
-      >
+      <ha-formfield label="Show Quick Alarm Section">
         <ha-switch
           :checked="localConfig.show_quick_alarm !== false"
           @change="(e: Event) => localConfig.show_quick_alarm = (e.target as HTMLInputElement).checked"
         />
       </ha-formfield>
-      <ha-formfield
-        label="Show Alarm List Section"
-      >
+      <ha-formfield label="Show Alarm List Section">
         <ha-switch
           :checked="localConfig.show_alarm_list !== false"
           @change="(e: Event) => localConfig.show_alarm_list = (e.target as HTMLInputElement).checked"
@@ -326,9 +271,7 @@ const addSectionOptions = [
     -->
     <!-- Add section mode -->
     <div>
-      <label
-        style="display:block; margin-bottom:6px; font-weight:500"
-      >
+      <label style="display:block; margin-bottom:6px; font-weight:500">
         Add Alarm Section
       </label>
       <ha-select
@@ -350,23 +293,15 @@ const addSectionOptions = [
     <!--
     // Help text
     -->
-    <div
-      style="display:flex; gap:8px; justify-content:space-between; align-items:center;"
-    >
-      <div
-        style="color:inherit; font-size:12px"
-      >
-        <p
-          style="margin:0 0 8px 0"
-        >
+    <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
+      <div style="color:inherit; font-size:12px">
+        <p style="margin:0 0 8px 0">
           <strong>
             List View (default):
           </strong>
           Leave entity empty to show all alarms.
         </p>
-        <p
-          style="margin:0"
-        >
+        <p style="margin:0">
           <strong>
             Single Alarm View:
           </strong>
@@ -375,9 +310,7 @@ const addSectionOptions = [
       </div>
     </div>
 
-    <div
-      style="padding: 8px 16px; text-align:right; font-size:12px; color:inherit;"
-    >
+    <div style="padding: 8px 16px; text-align:right; font-size:12px; color:inherit;">
       Version: {{ buildVersion }}
     </div>
   </div>
