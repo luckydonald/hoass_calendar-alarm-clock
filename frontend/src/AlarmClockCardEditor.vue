@@ -189,19 +189,6 @@ const addSectionOptions = [
       </ha-formfield>
     </div>
 
-    <div
-      style="display:flex; gap:12px; align-items:center"
-    >
-      <ha-formfield
-        label="Smooth Clock Animation (continuous)"
-      >
-        <ha-switch
-          :checked="localConfig.clock_smooth_animation !== false"
-          @change="localConfig.clock_animation_mode = (e.target as HTMLInputElement).checked ? 'smooth' : 'ticks'"
-        />
-      </ha-formfield>
-    </div>
-
     <!--
     // Animation mode selector
     -->
