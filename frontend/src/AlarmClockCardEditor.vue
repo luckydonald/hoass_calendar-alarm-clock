@@ -56,59 +56,6 @@ const addSectionOptions = [
   { value: 'on', label: 'Always show' },
   { value: 'off', label: 'Never show (dialog only)' },
 ];
-
-// Typed event handlers used by the template
-function onEntityValueChanged(e: Event) {
-  // Home Assistant entity-picker dispatches a CustomEvent with detail.value
-  const ev = e as CustomEvent;
-  localConfig.entity = ev.detail?.value || '';
-}
-
-function onClockDisplaySelected(e: Event) {
-  const targ = e.target as HTMLSelectElement;
-  localConfig.clock_display = targ.value as any;
-}
-
-function onShowSecondsChange(e: Event) {
-  const targ = e.target as HTMLInputElement;
-  localConfig.clock_show_seconds = targ.checked;
-}
-
-function onSmoothChange(e: Event) {
-  const targ = e.target as HTMLInputElement;
-  // map boolean switch to animation mode quick toggle
-  localConfig.clock_animation_mode = targ.checked ? 'smooth' : 'ticks';
-}
-
-function onAlarmListModeSelected(e: Event) {
-  const targ = e.target as HTMLSelectElement;
-  localConfig.alarm_list_mode = targ.value as any;
-}
-
-function onShowAddSectionSelected(e: Event) {
-  const targ = e.target as HTMLSelectElement;
-  localConfig.show_add_section = targ.value as any;
-}
-
-function onToggleShowClock(e: Event) {
-  const targ = e.target as HTMLInputElement;
-  localConfig.show_clock = targ.checked;
-}
-
-function onToggleShowQuickAlarm(e: Event) {
-  const targ = e.target as HTMLInputElement;
-  localConfig.show_quick_alarm = targ.checked;
-}
-
-function onToggleShowAlarmList(e: Event) {
-  const targ = e.target as HTMLInputElement;
-  localConfig.show_alarm_list = targ.checked;
-}
-
-function onAnimationModeSelected(e: Event) {
-  const targ = e.target as HTMLSelectElement;
-  localConfig.clock_animation_mode = targ.value as any;
-}
 </script>
 
 <template>
@@ -138,7 +85,7 @@ function onAnimationModeSelected(e: Event) {
         :value="localConfig.entity"
         :hass="props.hass"
         :includeDomains="['sensor']"
-        @value-changed="onEntityValueChanged"
+        @value-changed="(e: Event) => localConfig.entity = (e as CustomEvent).detail?.value || ''"
       />
     </div>
     <!--
@@ -160,7 +107,7 @@ function onAnimationModeSelected(e: Event) {
           label="Clock Display"
           style="width:100%"
           :value="localConfig.clock_display"
-          @selected="onClockDisplaySelected"
+          @selected="(e: Event) => localConfig.clock_display = (e.target as HTMLSelectElement).value as any"
         >
           <ha-list-item
             v-for="option in clockDisplayOptions"
@@ -237,7 +184,7 @@ function onAnimationModeSelected(e: Event) {
       >
         <ha-switch
           :checked="localConfig.clock_show_seconds !== false"
-          @change="onShowSecondsChange"
+          @change="(e: Event) => localConfig.clock_show_seconds = (e.target as HTMLInputElement).checked"
         />
       </ha-formfield>
     </div>
@@ -250,7 +197,7 @@ function onAnimationModeSelected(e: Event) {
       >
         <ha-switch
           :checked="localConfig.clock_smooth_animation !== false"
-          @change="onSmoothChange"
+          @change="localConfig.clock_animation_mode = (e.target as HTMLInputElement).checked ? 'smooth' : 'ticks'"
         />
       </ha-formfield>
     </div>
@@ -269,7 +216,7 @@ function onAnimationModeSelected(e: Event) {
         label="Animation Mode"
         style="width:100%"
         :value="localConfig.clock_animation_mode"
-        @selected="onAnimationModeSelected"
+        @selected="(e: Event) => localConfig.clock_animation_mode = (e.target as HTMLSelectElement).value as any"
       >
         <ha-list-item
           v-for="opt in animationModeOptions"
@@ -301,7 +248,7 @@ function onAnimationModeSelected(e: Event) {
         label="Alarm List Mode"
         style="width:100%"
         :value="localConfig.alarm_list_mode"
-        @selected="onAlarmListModeSelected"
+        @selected="(e: Event) => localConfig.alarm_list_mode = (e.target as HTMLSelectElement).value as any"
       >
         <ha-list-item
           v-for="opt in alarmListModeOptions"
@@ -366,7 +313,7 @@ function onAnimationModeSelected(e: Event) {
       >
         <ha-switch
           :checked="localConfig.show_clock !== false"
-          @change="onToggleShowClock"
+          @change="(e: Event) => localConfig.show_clock = (e.target as HTMLInputElement).checked"
         />
       </ha-formfield>
       <ha-formfield
@@ -374,7 +321,7 @@ function onAnimationModeSelected(e: Event) {
       >
         <ha-switch
           :checked="localConfig.show_quick_alarm !== false"
-          @change="onToggleShowQuickAlarm"
+          @change="(e: Event) => localConfig.show_quick_alarm = (e.target as HTMLInputElement).checked"
         />
       </ha-formfield>
       <ha-formfield
@@ -382,7 +329,7 @@ function onAnimationModeSelected(e: Event) {
       >
         <ha-switch
           :checked="localConfig.show_alarm_list !== false"
-          @change="onToggleShowAlarmList"
+          @change="(e: Event) => localConfig.show_alarm_list = (e.target as HTMLInputElement).checked"
         />
       </ha-formfield>
     </div>
@@ -401,7 +348,7 @@ function onAnimationModeSelected(e: Event) {
         label="Add Alarm Section"
         style="width:100%"
         :value="localConfig.show_add_section"
-        @selected="onShowAddSectionSelected"
+        @selected="(e: Event) => localConfig.show_add_section = (e.target as HTMLSelectElement).value as any"
       >
         <ha-list-item
           v-for="opt in addSectionOptions"
