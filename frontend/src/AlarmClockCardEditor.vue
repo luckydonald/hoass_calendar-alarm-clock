@@ -195,7 +195,7 @@ const addSectionOptions = [
         type="number"
         min="1"
         max="100"
-      >
+      />
     </div>
     <div
       v-else
@@ -208,7 +208,7 @@ const addSectionOptions = [
         type="number"
         min="1"
         max="365"
-      >
+      />
     </div>
 
     <!-- Section visibility toggles -->

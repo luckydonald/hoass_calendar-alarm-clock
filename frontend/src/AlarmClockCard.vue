@@ -754,7 +754,7 @@ function handleAddButtonClick(): void {
                   class="tick hour"
                   :style="{ '--tick-rotation': `${(i - 1) * 30}deg` }"
                 >
-                  <div class="line" />
+                  <div class="line"></div>
                 </div>
 
                 <!-- Minute ticks (60) -->
@@ -765,11 +765,11 @@ function handleAddButtonClick(): void {
                   class="tick minute"
                   :style="{ '--tick-rotation': `${(i - 1) * 6}deg` }"
                 >
-                  <div class="line" />
+                  <div class="line"></div>
                 </div>
 
                 <!-- Center dot -->
-                <div class="center-dot" />
+                <div class="center-dot"></div>
 
                 <!-- Hands: wrap shafts inside containers so we can animate the container rotation reliably -->
                 <div
@@ -777,7 +777,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="hourHandStyleVars"
                 >
-                  <div class="shaft" />
+                  <div class="shaft"></div>
                 </div>
 
                 <div
@@ -785,7 +785,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="minuteHandStyleVars"
                 >
-                  <div class="shaft" />
+                  <div class="shaft"></div>
                 </div>
 
                 <div
@@ -794,7 +794,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="secondHandStyleVars"
                 >
-                  <div class="shaft" />
+                  <div class="shaft"></div>
                 </div>
               </div>
 
@@ -880,7 +880,7 @@ function handleAddButtonClick(): void {
                 min="1"
                 max="1440"
                 class="custom-minutes-input"
-              >
+              />
               <span class="custom-label">min</span>
               <ha-button
                 outlined
@@ -1053,7 +1053,7 @@ function handleAddButtonClick(): void {
                   class="ha-time-input"
                   :value="dialogData.time"
                   @input="dialogData.time = ($event.target as HTMLInputElement).value"
-                >
+                />
               </div>
               <div class="form-field">
                 <label class="form-label">Date</label>
@@ -1062,7 +1062,7 @@ function handleAddButtonClick(): void {
                   class="ha-date-input"
                   :value="dialogData.date"
                   @input="dialogData.date = ($event.target as HTMLInputElement).value"
-                >
+                />
               </div>
             </div>
 
@@ -1140,7 +1140,7 @@ function handleAddButtonClick(): void {
             class="ha-time-input"
             :value="dialogData.time"
             @input="dialogData.time = ($event.target as HTMLInputElement).value"
-          >
+          />
         </div>
 
         <div class="form-row">
@@ -1150,7 +1150,7 @@ function handleAddButtonClick(): void {
             class="ha-date-input"
             :value="dialogData.date"
             @input="dialogData.date = ($event.target as HTMLInputElement).value"
-          >
+          />
         </div>
 
         <ha-select
