@@ -42,8 +42,7 @@ function colorToHex(cssColor: string): string | null {
     const r = parseInt(m[1], 10);
     const g = parseInt(m[2], 10);
     const b = parseInt(m[3], 10);
-    const hx = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-    return hx;
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   } catch {
     return null;
   }
@@ -109,21 +108,59 @@ function onColorInput(e: Event) {
 </script>
 
 <template>
-  <div style="display:flex; gap:8px; align-items:center;">
-    <ha-textfield :label="props.label || ''" style="flex:1" :value="text" @input="onTextInput" />
+  <div
+    style="display:flex; gap:8px; align-items:center;"
+  >
+    <ha-textfield
+      :label="props.label || ''"
+      style="flex:1"
+      :value="text"
+      @input="onTextInput"
+    />
 
-    <div style="display:flex; flex-direction:column; gap:6px; width:260px">
-      <ha-textfield label="Search Colors" :value="search" @input="onSearchInput" />
-      <ha-select label="Colors" style="width:100%" @selected="onSelect">
-        <ha-list-item v-for="opt in filteredOptions" :key="opt" :value="opt">
+    <div
+      style="display:flex; flex-direction:column; gap:6px; width:260px"
+    >
+      <ha-textfield
+        label="Search Colors"
+        :value="search"
+        @input="onSearchInput"
+      />
+
+      <ha-select
+        label="Colors"
+        style="width:100%"
+        @selected="onSelect"
+      >
+        <ha-list-item
+          v-for="opt in filteredOptions"
+          :key="opt"
+          :value="opt"
+        >
           <!-- Use a simple color square instead of SVG to ensure CSS variables and named colors render correctly -->
-          <span :style="{ display: 'inline-block', width: '12px', height: '12px', marginRight: '8px', verticalAlign: 'middle', background: opt, border: '1px solid rgba(0,0,0,0.15)' }"></span>
+          <span
+            :style="{
+              display: 'inline-block',
+              width: '12px',
+              height: '12px',
+              marginRight: '8px',
+              verticalAlign: 'middle',
+              background: opt,
+              border: '1px solid rgba(0,0,0,0.15)'
+            }"
+          ></span>
+
           {{ opt }}
         </ha-list-item>
       </ha-select>
     </div>
 
-    <input type="color" style="width:48px;height:32px;border:none;background:transparent" :value="hex" @input="onColorInput" />
+    <input
+      type="color"
+      style="width:48px;height:32px;border:none;background:transparent"
+      :value="hex"
+      @input="onColorInput"
+    />
   </div>
 </template>
 
