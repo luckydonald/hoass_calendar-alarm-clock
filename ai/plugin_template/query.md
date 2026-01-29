@@ -359,6 +359,8 @@ Okay, we need to work on the `eslint --fix` rules:
     - it should not collapse it to a single-ish line, but keep each element on its own line.
     - can we make that specific to only be off for `ha-*`?
     - Also merge that `check-slots` into the lint, fix and release scripts accordingly.
-6. Object Literal Property name `--hour-background` must match one of the following formats: camelCase, snake_case, PascalCase, UPPER_CASE @typescript-eslint/naming-convention
+6. Object Literal Property name `--hour-background` must match one of the following formats: camelCase, snake_case, PascalCase, UPPER_CASE
+  - `@typescript-eslint/naming-convention`
   - This is for CSS variable names, so we need to allow `kebab-case` with that `--` prefix
-7. Do not enforce a max line length.
+7. Do not enforce a max line length (`max-len`).
+- For running those tests you must navigate to `../hoass_calendar-alarm-clock` first, that's the actual templated plugin where I am facing the issues in.
