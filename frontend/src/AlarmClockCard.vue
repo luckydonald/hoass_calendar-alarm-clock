@@ -1122,21 +1122,28 @@ function handleAddButtonClick(): void {
   </ha-card>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 :host {
-  /* Theme fallbacks (Home Assistant provides these at runtime; these defaults remove static analyzer errors) */
-  --primary-color: #03a9f4;
-  --primary-text-color: #212121;
-  --secondary-text-color: #6b6b6b;
-  --divider-color: rgba(0,0,0,0.12);
-  --card-background-color: #ffffff;
-  --accent-color: #03a9f4;
-  --text-primary-color: #ffffff;
-  --disabled-text-color: rgba(0,0,0,0.38);
-  --error-color: #db4437;
-  --warning-color: #ff9800;
-  --rgb-primary-color: 3,169,244;
-  --rgb-error-color: 219,68,55;
+  .ide-helper {
+    /**
+    Theme fallbacks for the IDE.
+    Home Assistant provides these at runtime,
+    however these defaults remove static analyzer errors
+    */
+    --primary-color: #03a9f4;
+    --primary-text-color: #212121;
+    --secondary-text-color: #6b6b6b;
+    --divider-color: rgba(0, 0, 0, 0.12);
+    --card-background-color: #ffffff;
+    --accent-color: #03a9f4;
+    --text-primary-color: #ffffff;
+    --disabled-text-color: rgba(0, 0, 0, 0.38);
+    --error-color: #db4437;
+    --warning-color: #ff9800;
+    --rgb-primary-color: 3, 169, 244;
+    --rgb-error-color: 219, 68, 55;
+  }
+  /* Real colors */
   --clock-bg-color: var(--clock-day-bg);
   --clock-hour-color: var(--primary-text-color);
   --clock-minute-color: var(--primary-text-color);
