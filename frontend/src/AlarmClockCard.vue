@@ -205,47 +205,6 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
   return null;
 });
 
-const isNextAlarmRinging = computed(() => {
-  return (
-    nextAlarm.value
-    && (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
-  );
-});
-
-const ringingAlarms = computed<Alarm[]>(() => {
-  return alarms.value.filter((alarm) => isAlarmRinging(alarm));
-});
-
-// Clock computations
-const currentHours = computed(() => currentTime.value.getHours());
-const currentMinutes = computed(() => currentTime.value.getMinutes());
-const currentSeconds = computed(() => currentTime.value.getSeconds());
-
-// Animation timing sync: compute negative delays so CSS animation is aligned to current time
-const secondAnimationDelay = computed(() => `-${currentSeconds.value}s`);
-const minuteAnimationDelay = computed(() => `-${(currentMinutes.value * 60 + currentSeconds.value)}s`);
-const hourAnimationDelay = computed(() => `-${(((currentHours.value % 12) * 3600) + (currentMinutes.value * 60) + currentSeconds.value)}s`);
-
-// Fixed animation durations
-const ANIMATION_DURATION_SECONDS_HAND = '60s';
-const ANIMATION_DURATION_MINUTES_HAND = '3600s';
-const ANIMATION_DURATION_HOURS_HAND = '43200s';
-
-// Helper to get animation timing function depending on mode and hand
-function animationTiming(mode: AnalogClockAnimationMode, hand: 'hour' | 'minute' | 'second') {
-  if (mode === 'smooth') return 'linear';
-  if (mode === 'db') return 'linear';
-  if (mode === 'ticks') {
-    if (hand === 'second') return 'steps(60,end)';
-    if (hand === 'minute') return 'steps(60,end)';
-    return 'steps(720,end)';
-  }
-  // fallback for no unknown mode
-  return 'linear';
-}
-
-const clockAnimationMode = computed(() => props.config.clock_animation_mode ?? 'smooth');
-
 // DB pause flag used to momentarily pause second hand in 'db' animation mode
 const dbPause = ref(false);
 
@@ -1126,12 +1085,22 @@ function handleAddButtonClick(): void {
   --clock-minute-color: var(--primary-text-color);
   --clock-second-color: var(--primary-color);
   --clock-middle-color: var(--primary-color);
-  --alarm-ringing-color: var(--error-color, #db4437);
-  --alarm-snooze-color: var(--warning-color, #ff9800);
-  --alarm-urgent-color: var(--error-color, #db4437);
-  --alarm-soon-color: var(--warning-color, #ff9800);
-  --clock-night-bg: #1a237e;
-  --clock-day-bg: #e3f2fd;
+  /* animation variable defaults to satisfy static analysis */
+  --hour-animation-duration: 43200s;
+  --minute-animation-duration: 3600s;
+  --second-animation-duration: 60s;
+  --hour-animation-timing: linear;
+  --minute-animation-timing: linear;
+  --second-animation-timing: linear;
+  --hour-animation-delay: 0s;
+  --minute-animation-delay: 0s;
+  --second-animation-delay: 0s;
+  --hour-animation-play: running;
+  --minute-animation-play: running;
+  --second-animation-play: running;
+  --hour-background: var(--clock-hour-color);
+  --minute-background: var(--clock-minute-color);
+  --second-background: var(--clock-second-color);
 }
 
 .card-header {
