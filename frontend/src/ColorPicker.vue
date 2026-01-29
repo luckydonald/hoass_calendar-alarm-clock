@@ -108,19 +108,15 @@ function onColorInput(e: Event) {
 </script>
 
 <template>
-  <div
-    style="display:flex; gap:8px; align-items:center;"
-  >
+  <div class="colorpicker-root">
     <ha-textfield
       :label="props.label || ''"
-      style="flex:1"
+      class="text-field-flex"
       :value="text"
       @input="onTextInput"
     />
 
-    <div
-      style="display:flex; flex-direction:column; gap:6px; width:260px"
-    >
+    <div class="selector-panel">
       <ha-textfield
         label="Search Colors"
         :value="search"
@@ -129,7 +125,7 @@ function onColorInput(e: Event) {
 
       <ha-select
         label="Colors"
-        style="width:100%"
+        class="full-width"
         @selected="onSelect"
       >
         <ha-list-item
@@ -139,15 +135,8 @@ function onColorInput(e: Event) {
         >
           <!-- Use a simple color square instead of SVG to ensure CSS variables and named colors render correctly -->
           <span
-            :style="{
-              display: 'inline-block',
-              width: '12px',
-              height: '12px',
-              marginRight: '8px',
-              verticalAlign: 'middle',
-              background: opt,
-              border: '1px solid rgba(0,0,0,0.15)'
-            }"
+            class="color-swatch"
+            :style="{ background: opt }"
           ></span>
 
           {{ opt }}
@@ -157,7 +146,7 @@ function onColorInput(e: Event) {
 
     <input
       type="color"
-      style="width:48px;height:32px;border:none;background:transparent"
+      class="color-input"
       :value="hex"
       @input="onColorInput"
     />
@@ -165,5 +154,40 @@ function onColorInput(e: Event) {
 </template>
 
 <style scoped>
-/* small tweaks if needed */
+.colorpicker-root {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.text-field-flex {
+  flex: 1;
+}
+
+.selector-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 260px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+.color-input {
+  width: 48px;
+  height: 32px;
+  border: none;
+  background: transparent;
+}
 </style>
