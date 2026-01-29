@@ -109,28 +109,21 @@ const addSectionOptions = [
       <label class="label">
         Clock Background Color
       </label>
-      <ColorPicker
-        v-model="localConfig.clock_bg_color"
-      />
+      <ColorPicker v-model="localConfig.clock_bg_color" />
     </div>
 
     <div class="field">
       <label class="label">
         Clock Hour Color
       </label>
-      <ColorPicker
-        v-model="localConfig.clock_hour_color"
-      />
+      <ColorPicker v-model="localConfig.clock_hour_color" />
     </div>
 
     <div class="field">
-      <label
-        class="label"
-      >
+      <label class="label">
         Clock Minute Color
       </label>
-      <ColorPicker
-        v-model="localConfig.clock_minute_color" />
+      <ColorPicker v-model="localConfig.clock_minute_color" />
     </div>
 
     <div class="field">
