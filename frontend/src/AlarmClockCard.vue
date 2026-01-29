@@ -246,38 +246,29 @@ function animationTiming(mode: AnalogClockAnimationMode, hand: 'hour' | 'minute'
 
 const clockAnimationMode = computed(() => props.config.clock_animation_mode ?? 'smooth');
 
-// Compute inline styles for each hand to set animation timing & sync
-const hourHandAnimStyle = computed(() => ({
-  animationName: (
-    clockAnimationMode.value !== 'db'
-      ? 'ha-clock-rotate'
-      : clockDisplay.value === 'analog-24h'
-      ? 'ha-clock-db-24'
-      : 'ha-clock-db-12'
-  ),
-  animationDuration: ANIMATION_DURATION_HOURS_HAND,
-  animationTimingFunction: animationTiming(clockAnimationMode.value, 'hour'),
-  animationDelay: hourAnimationDelay.value,
-  animationIterationCount: 'infinite',
-  background: clockHourColor.value,
+// Minimal CSS-variable style bindings for each hand; heavy animation rules live in SCSS
+const hourHandStyleVars = computed(() => ({
+  '--hour-animation-duration': hourAnimationDuration,
+  '--hour-animation-timing': animationTiming(clockAnimationMode.value as string, 'hour'),
+  '--hour-animation-delay': hourAnimationDelay.value,
+  '--hour-animation-play': 'running',
+  '--hour-background': clockHourColor.value,
 } as Record<string, string>));
 
-const minuteHandAnimStyle = computed(() => ({
-  animationName: clockAnimationMode.value === 'db' ? 'ha-clock-rotate-db-60' : 'ha-clock-rotate',
-  animationDuration: ANIMATION_DURATION_MINUTES_HAND,
-  animationTimingFunction: animationTiming(clockAnimationMode.value, 'minute'),
-  animationDelay: minuteAnimationDelay.value,
-  animationIterationCount: 'infinite',
-  background: clockMinuteColor.value,
+const minuteHandStyleVars = computed(() => ({
+  '--minute-animation-duration': minuteAnimationDuration,
+  '--minute-animation-timing': animationTiming(clockAnimationMode.value as string, 'minute'),
+  '--minute-animation-delay': minuteAnimationDelay.value,
+  '--minute-animation-play': 'running',
+  '--minute-background': clockMinuteColor.value,
 } as Record<string, string>));
 
-const secondHandAnimStyle = computed(() => ({
-  animationName: clockAnimationMode.value === 'db' ? 'ha-clock-rotate-db-60' : 'ha-clock-rotate',
-  animationDuration: ANIMATION_DURATION_SECONDS_HAND,
-  animationTimingFunction: animationTiming(clockAnimationMode.value, 'second'),
-  animationDelay: secondAnimationDelay.value,
-  animationIterationCount: 'infinite',
-  background: clockSecondColor.value,
+const secondHandStyleVars = computed(() => ({
+  '--second-animation-duration': secondAnimationDuration,
+  '--second-animation-timing': animationTiming(clockAnimationMode.value as string, 'second'),
+  '--second-animation-delay': secondAnimationDelay.value,
+  '--second-animation-play': (clockAnimationMode.value === 'db' && dbPause.value) ? 'paused' : 'running',
+  '--second-background': clockSecondColor.value,
 } as Record<string, string>));
 
 // Night time detection
@@ -745,7 +736,7 @@ function handleAddButtonClick(): void {
                 <div
                   class="hand hour"
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
-                  :style="hourHandAnimStyle"
+                  :style="hourHandStyleVars"
                 >
                   <div class="shaft"></div>
                 </div>
@@ -753,7 +744,7 @@ function handleAddButtonClick(): void {
                 <div
                   class="hand minute"
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
-                  :style="minuteHandAnimStyle"
+                  :style="minuteHandStyleVars"
                 >
                   <div class="shaft"></div>
                 </div>
@@ -762,7 +753,7 @@ function handleAddButtonClick(): void {
                   v-if="showSeconds"
                   class="hand second"
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
-                  :style="secondHandAnimStyle"
+                  :style="secondHandStyleVars"
                 >
                   <div class="shaft"></div>
                 </div>
