@@ -333,3 +333,31 @@ This should for now (to test) be an extra script, accessible with `make commit-f
 ———
 
 Duplicate and adapt the `make template-rebase` to a `make template-merge` command, which instead of rebasing merges the template's mane branch into the current branch. It should have the same conflict resolution strategies and automatics as the rebase one.
+———
+Okay, we need to work on the `eslint --fix` rules:
+1. `<ha-button slot="secondaryAction">`
+   - this gets replaced with `<ha-button><template #secondaryAction">`
+   - I believe this is incorrect for `ha-*` as they are not vue, but web components.
+2. `ha-entity-picker`: `:includeDomains="['sensor']"`
+   - this gets replaced with
+   - `:includeDomains="['sensor']"`
+   - would that work with `ha-*` web components?
+3. I prefer `<input />` instead of unclosed `<input>`.
+4. similarly for `<img />` and `<br />`, if that's a thing in the rulesets.
+5. the line  
+    ```ts
+    const emit = defineEmits<{
+      (e: 'update:modelValue', v: string): void;
+    }>();
+    ```
+    becomes
+    ```ts
+    const emit = defineEmits<{ (e: 'update:modelValue', v: string): void;
+    }>();
+    ```
+    - it should not collapse it to a single-ish line, but keep each element on its own line.
+    - can we make that specific to only be off for `ha-*`?
+    - Also merge that `check-slots` into the lint, fix and release scripts accordingly.
+6. Object Literal Property name `--hour-background` must match one of the following formats: camelCase, snake_case, PascalCase, UPPER_CASE @typescript-eslint/naming-convention
+  - This is for CSS variable names, so we need to allow `kebab-case` with that `--` prefix
+7. Do not enforce a max line length.

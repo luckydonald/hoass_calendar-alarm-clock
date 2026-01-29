@@ -14,7 +14,7 @@ endif
 FRONTEND ?= $(if $(FRONTEND_DIR),1,0)
 BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
-.PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge
+.PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge check-slots
 
 help:
 	@echo "Calendar backed Alarm Clock - Development Commands"
@@ -200,6 +200,13 @@ merge-template:
 	@./scripts/merge-from-template.sh
 
 template-merge: merge-template
+
+check-slots:
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		node scripts/check_slots.js "$(FRONTEND_DIR)"; \
+	else \
+		echo "No frontend directory detected; skipping slot checks."; \
+	fi
 
 %:
 	@echo "Unknown target '$@'. Showing help:"
