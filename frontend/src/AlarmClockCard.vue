@@ -246,10 +246,21 @@ function animationTiming(mode: AnalogClockAnimationMode, hand: 'hour' | 'minute'
 
 const clockAnimationMode = computed(() => props.config.clock_animation_mode ?? 'smooth');
 
+// DB pause flag used to momentarily pause second hand in 'db' animation mode
+const dbPause = ref(false);
+
+// Watch seconds to trigger DB pause when hitting 59s
+watch(currentSeconds, (s) => {
+  if (clockAnimationMode.value === 'db' && s === 59) {
+    dbPause.value = true;
+    setTimeout(() => { dbPause.value = false; }, 1500);
+  }
+});
+
 // Minimal CSS-variable style bindings for each hand; heavy animation rules live in SCSS
 const hourHandStyleVars = computed(() => ({
   '--hour-animation-duration': ANIMATION_DURATION_HOURS_HAND,
-  '--hour-animation-timing': animationTiming(clockAnimationMode.value as string, 'hour'),
+  '--hour-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'hour'),
   '--hour-animation-delay': hourAnimationDelay.value,
   '--hour-animation-play': 'running',
   '--hour-background': clockHourColor.value,
@@ -257,7 +268,7 @@ const hourHandStyleVars = computed(() => ({
 
 const minuteHandStyleVars = computed(() => ({
   '--minute-animation-duration': ANIMATION_DURATION_MINUTES_HAND,
-  '--minute-animation-timing': animationTiming(clockAnimationMode.value as string, 'minute'),
+  '--minute-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'minute'),
   '--minute-animation-delay': minuteAnimationDelay.value,
   '--minute-animation-play': 'running',
   '--minute-background': clockMinuteColor.value,
@@ -265,7 +276,7 @@ const minuteHandStyleVars = computed(() => ({
 
 const secondHandStyleVars = computed(() => ({
   '--second-animation-duration': ANIMATION_DURATION_SECONDS_HAND,
-  '--second-animation-timing': animationTiming(clockAnimationMode.value as string, 'second'),
+  '--second-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'second'),
   '--second-animation-delay': secondAnimationDelay.value,
   '--second-animation-play': (clockAnimationMode.value === 'db' && dbPause.value) ? 'paused' : 'running',
   '--second-background': clockSecondColor.value,
