@@ -1287,18 +1287,40 @@ function handleAddButtonClick(): void {
   stroke: var(--clock-hour-color, var(--primary-text-color));
   stroke-width: 4;
   stroke-linecap: round;
+  /* animation controlled by CSS variables set on the element via :style */
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--hour-animation-duration, 43200s);
+  animation-timing-function: var(--hour-animation-timing, linear);
+  animation-delay: var(--hour-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--hour-animation-play, running);
+  background: var(--hour-background, var(--clock-hour-color, var(--primary-text-color)));
 }
 
 .minute-hand {
   stroke: var(--clock-minute-color, var(--primary-text-color));
   stroke-width: 3;
   stroke-linecap: round;
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--minute-animation-duration, 3600s);
+  animation-timing-function: var(--minute-animation-timing, linear);
+  animation-delay: var(--minute-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--minute-animation-play, running);
+  background: var(--minute-background, var(--clock-minute-color, var(--primary-text-color)));
 }
 
 .second-hand {
   stroke: var(--clock-second-color, var(--primary-color));
   stroke-width: 1.5;
   stroke-linecap: round;
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--second-animation-duration, 60s);
+  animation-timing-function: var(--second-animation-timing, linear);
+  animation-delay: var(--second-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--second-animation-play, running);
+  background: var(--second-background, var(--clock-second-color, var(--accent-color)));
 }
 
 .alarm-hand {
@@ -1904,15 +1926,36 @@ ha-expansion-panel {
 
 .hour {
   height: 8px;
+  /* animation controlled by CSS variables set on the element via :style */
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--hour-animation-duration, 43200s);
+  animation-timing-function: var(--hour-animation-timing, linear);
+  animation-delay: var(--hour-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--hour-animation-play, running);
+  background: var(--hour-background, var(--clock-hour-color, var(--primary-text-color)));
 }
 
 .minute {
   height: 6px;
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--minute-animation-duration, 3600s);
+  animation-timing-function: var(--minute-animation-timing, linear);
+  animation-delay: var(--minute-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--minute-animation-play, running);
+  background: var(--minute-background, var(--clock-minute-color, var(--primary-text-color)));
 }
 
 .second {
   height: 4px;
-  background: var(--clock-second-color, var(--accent-color));
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--second-animation-duration, 60s);
+  animation-timing-function: var(--second-animation-timing, linear);
+  animation-delay: var(--second-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--second-animation-play, running);
+  background: var(--second-background, var(--clock-second-color, var(--accent-color)));
 }
 
 /* Keyframe-based animations for clock hands rotation */
