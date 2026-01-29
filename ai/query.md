@@ -232,4 +232,14 @@ On deploy, the version number should be embedded into the built lovelace card ed
 ———
 Use the `<style scoped lang="scss">` syntax over inline styles where possible.
 ———
-Remember to keep html attributes and the next child (element or text) on their own line.
+Remember to keep html attributes and the next child (element or text) on their own line. Only one attribute per line, and the closing `>` on its own line, too. So do open and close tags like this:
+```html
+<my-element
+  attr1="value1"
+  attr2="value2"
+>
+  Content
+  <b>
+    Bold
+  </b>
+</my-element>
