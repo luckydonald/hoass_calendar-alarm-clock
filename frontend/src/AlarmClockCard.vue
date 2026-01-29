@@ -205,19 +205,20 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
   return null;
 });
 
-// DB pause flag used to momentarily pause second hand in 'db' animation mode
-const dbPause = ref(false);
-
-// Watch seconds to trigger DB pause when hitting 59s
-watch(currentSeconds, (s) => {
-  if (clockAnimationMode.value === 'db' && s === 59) {
-    dbPause.value = true;
-    setTimeout(() => { dbPause.value = false; }, 1500);
+// Pick the correct keyframe name for DB mode per hand. For non-DB modes return the generic rotate keyframe.
+function animationKeyframe(mode: AnalogClockAnimationMode, hand: 'hour' | 'minute' | 'second') {
+  if (mode !== 'db') return 'ha-clock-rotate';
+  if (hand === 'hour') {
+    // Hour hand has different DB keyframe for 12h vs 24h dial
+    return clockDisplay.value === 'analog-24h' ? 'ha-clock-rotate-db-24' : 'ha-clock-rotate-db-12';
   }
-});
+  // minute/second pause at 59 -> use 60s keyframe
+  return 'ha-clock-rotate-db-60';
+}
 
 // Minimal CSS-variable style bindings for each hand; heavy animation rules live in SCSS
 const hourHandStyleVars = computed(() => ({
+  '--hour-animation-name': animationKeyframe(clockAnimationMode.value as AnalogClockAnimationMode, 'hour'),
   '--hour-animation-duration': ANIMATION_DURATION_HOURS_HAND,
   '--hour-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'hour'),
   '--hour-animation-delay': hourAnimationDelay.value,
@@ -226,6 +227,7 @@ const hourHandStyleVars = computed(() => ({
 } as Record<string, string>));
 
 const minuteHandStyleVars = computed(() => ({
+  '--minute-animation-name': animationKeyframe(clockAnimationMode.value as AnalogClockAnimationMode, 'minute'),
   '--minute-animation-duration': ANIMATION_DURATION_MINUTES_HAND,
   '--minute-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'minute'),
   '--minute-animation-delay': minuteAnimationDelay.value,
@@ -234,10 +236,11 @@ const minuteHandStyleVars = computed(() => ({
 } as Record<string, string>));
 
 const secondHandStyleVars = computed(() => ({
+  '--second-animation-name': animationKeyframe(clockAnimationMode.value as AnalogClockAnimationMode, 'second'),
   '--second-animation-duration': ANIMATION_DURATION_SECONDS_HAND,
   '--second-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'second'),
   '--second-animation-delay': secondAnimationDelay.value,
-  '--second-animation-play': (clockAnimationMode.value === 'db' && dbPause.value) ? 'paused' : 'running',
+  '--second-animation-play': 'running',
   '--second-background': clockSecondColor.value,
 } as Record<string, string>));
 
@@ -1080,6 +1083,19 @@ function handleAddButtonClick(): void {
 
 <style scoped>
 :host {
+  /* Theme fallbacks (Home Assistant provides these at runtime; these defaults remove static analyzer errors) */
+  --primary-color: #03a9f4;
+  --primary-text-color: #212121;
+  --secondary-text-color: #6b6b6b;
+  --divider-color: rgba(0,0,0,0.12);
+  --card-background-color: #ffffff;
+  --accent-color: #03a9f4;
+  --text-primary-color: #ffffff;
+  --disabled-text-color: rgba(0,0,0,0.38);
+  --error-color: #db4437;
+  --warning-color: #ff9800;
+  --rgb-primary-color: 3,169,244;
+  --rgb-error-color: 219,68,55;
   --clock-bg-color: var(--clock-day-bg);
   --clock-hour-color: var(--primary-text-color);
   --clock-minute-color: var(--primary-text-color);
@@ -1268,7 +1284,7 @@ function handleAddButtonClick(): void {
   stroke-width: 4;
   stroke-linecap: round;
   /* animation controlled by CSS variables set on the element via :style */
-  animation-name: ha-clock-rotate;
+  animation-name: var(--hour-animation-name, ha-clock-rotate);
   animation-duration: var(--hour-animation-duration, 43200s);
   animation-timing-function: var(--hour-animation-timing, linear);
   animation-delay: var(--hour-animation-delay, 0s);
@@ -1281,7 +1297,7 @@ function handleAddButtonClick(): void {
   stroke: var(--clock-minute-color, var(--primary-text-color));
   stroke-width: 3;
   stroke-linecap: round;
-  animation-name: ha-clock-rotate;
+  animation-name: var(--minute-animation-name, ha-clock-rotate);
   animation-duration: var(--minute-animation-duration, 3600s);
   animation-timing-function: var(--minute-animation-timing, linear);
   animation-delay: var(--minute-animation-delay, 0s);
@@ -1294,7 +1310,7 @@ function handleAddButtonClick(): void {
   stroke: var(--clock-second-color, var(--primary-color));
   stroke-width: 1.5;
   stroke-linecap: round;
-  animation-name: ha-clock-rotate;
+  animation-name: var(--second-animation-name, ha-clock-rotate);
   animation-duration: var(--second-animation-duration, 60s);
   animation-timing-function: var(--second-animation-timing, linear);
   animation-delay: var(--second-animation-delay, 0s);
@@ -1907,7 +1923,7 @@ ha-expansion-panel {
 .hour {
   height: 8px;
   /* animation controlled by CSS variables set on the element via :style */
-  animation-name: ha-clock-rotate;
+  animation-name: var(--hour-animation-name, ha-clock-rotate);
   animation-duration: var(--hour-animation-duration, 43200s);
   animation-timing-function: var(--hour-animation-timing, linear);
   animation-delay: var(--hour-animation-delay, 0s);
@@ -1918,7 +1934,7 @@ ha-expansion-panel {
 
 .minute {
   height: 6px;
-  animation-name: ha-clock-rotate;
+  animation-name: var(--minute-animation-name, ha-clock-rotate);
   animation-duration: var(--minute-animation-duration, 3600s);
   animation-timing-function: var(--minute-animation-timing, linear);
   animation-delay: var(--minute-animation-delay, 0s);
@@ -1929,7 +1945,7 @@ ha-expansion-panel {
 
 .second {
   height: 4px;
-  animation-name: ha-clock-rotate;
+  animation-name: var(--second-animation-name, ha-clock-rotate);
   animation-duration: var(--second-animation-duration, 60s);
   animation-timing-function: var(--second-animation-timing, linear);
   animation-delay: var(--second-animation-delay, 0s);
