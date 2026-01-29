@@ -140,7 +140,7 @@ function onColorInput(e: Event) {
           <span
             class="color-swatch"
             :style="{ background: opt }"
-          ></span>
+          />
 
           {{ opt }}
         </ha-list-item>

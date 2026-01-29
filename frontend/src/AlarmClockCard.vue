@@ -754,7 +754,7 @@ function handleAddButtonClick(): void {
                   class="tick hour"
                   :style="{ '--tick-rotation': `${(i - 1) * 30}deg` }"
                 >
-                  <div class="line"></div>
+                  <div class="line" />
                 </div>
 
                 <!-- Minute ticks (60) -->
@@ -765,11 +765,11 @@ function handleAddButtonClick(): void {
                   class="tick minute"
                   :style="{ '--tick-rotation': `${(i - 1) * 6}deg` }"
                 >
-                  <div class="line"></div>
+                  <div class="line" />
                 </div>
 
                 <!-- Center dot -->
-                <div class="center-dot"></div>
+                <div class="center-dot" />
 
                 <!-- Hands: wrap shafts inside containers so we can animate the container rotation reliably -->
                 <div
@@ -777,7 +777,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="hourHandStyleVars"
                 >
-                  <div class="shaft"></div>
+                  <div class="shaft" />
                 </div>
 
                 <div
@@ -785,7 +785,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="minuteHandStyleVars"
                 >
-                  <div class="shaft"></div>
+                  <div class="shaft" />
                 </div>
 
                 <div
@@ -794,7 +794,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="secondHandStyleVars"
                 >
-                  <div class="shaft"></div>
+                  <div class="shaft" />
                 </div>
               </div>
 
