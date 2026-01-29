@@ -1,10 +1,20 @@
 # Is this a frontend or backend project, or both?
-# Set explicit (e.g. by `make lint FRONTEND=1 BACKEND=1`), or let the
-# defaults detect the presence of the directories.
-FRONTEND ?= $(if $(wildcard frontend),1,0)
+# Set explicit (e.g. by `make lint FRONTEND=1 BACKEND=1`), or detect the
+# presence of the directories. FRONTEND_DIR picks the concrete frontend folder.
+
+# Prefer frontend/ then frontend_vue/
+FRONTEND_DIR :=
+ifneq ($(wildcard frontend),)
+FRONTEND_DIR := frontend
+else ifneq ($(wildcard frontend_vue),)
+FRONTEND_DIR := frontend_vue
+endif
+
+# FRONTEND is 1 if we found a frontend dir
+FRONTEND ?= $(if $(FRONTEND_DIR),1,0)
 BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
-.PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase
+.PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge
 
 help:
 	@echo "Calendar backed Alarm Clock - Development Commands"
@@ -34,6 +44,8 @@ help:
 	@echo "  release        - Bump version, lint, build, and push release"
 	@echo "  rebase-template- Update plugin from template repository"
 	@echo "  template-rebase- Alias for 'rebase-template' above"
+	@echo "  merge-template    - Merge template's mane branch into current branch"
+	@echo "  template-merge-   Alias for 'merge-template' above"
 	@echo "  help           - Show this help message"
 
 init:
@@ -59,7 +71,15 @@ endif
 setup-frontend:
 ifeq ($(FRONTEND),1)
 	@echo "Setting up frontend development environment..."
-	cd frontend && yarn install
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			if command -v npm >/dev/null 2>&1; then npm install; elif command -v yarn >/dev/null 2>&1; then yarn install; else echo "No npm/yarn found"; fi; \
+		fi; \
+	fi
+else
+	@echo "No frontend sources detected – skipping frontend setup."
+endif
+
 test: test-py test-ts
 
 test-py:
@@ -73,7 +93,11 @@ endif
 test-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Running frontend tests..."
-	cd frontend && yarn test
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			if command -v npm >/dev/null 2>&1; then npm run test; elif command -v yarn >/dev/null 2>&1; then yarn test; else echo "No npm/yarn found"; fi; \
+		fi; \
+	fi
 else
 	@echo "No frontend sources detected – skipping frontend tests."
 endif
@@ -98,10 +122,6 @@ else
 	@echo "No frontend sources detected – skipping frontend coverage."
 endif
 
-else
-	@echo "No frontend sources detected – skipping frontend setup."
-endif
-
 lint: lint-py lint-ts
 
 lint-py:
@@ -115,8 +135,9 @@ endif
 
 lint-ts:
 ifeq ($(FRONTEND),1)
-	@echo "Type checking frontend..."
-	cd frontend && yarn type-check
+	@echo "Type checking / linting frontend..."
+	@chmod +x scripts/frontend_lint.sh
+	@./scripts/frontend_lint.sh "$(FRONTEND_DIR)"
 else
 	@echo "No frontend sources detected – skipping TypeScript lint."
 endif
@@ -136,7 +157,8 @@ endif
 format-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Formatting TypeScript..."
-	cd frontend && yarn format
+	@chmod +x scripts/frontend_format.sh
+	@./scripts/frontend_format.sh "$(FRONTEND_DIR)"
 else
 	@echo "No frontend sources detected – skipping TypeScript format."
 endif
@@ -146,7 +168,11 @@ build: build-frontend
 build-frontend:
 ifeq ($(FRONTEND),1)
 	@echo "Building frontend..."
-	cd frontend && yarn install && yarn build
+	@if [ -n "$(FRONTEND_DIR)" ]; then \
+		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			if command -v npm >/dev/null 2>&1; then npm install --silent && npm run build; elif command -v yarn >/dev/null 2>&1; then yarn install --silent && yarn build; else echo "No npm/yarn found"; fi; \
+		fi; \
+	fi
 else
 	@echo "No frontend sources detected – skipping build."
 endif
@@ -154,6 +180,10 @@ endif
 commit:
 	@chmod +x scripts/commit.sh
 	@./scripts/commit.sh
+
+commit-format:
+	@chmod +x scripts/commit-format.sh
+	@./scripts/commit-format.sh
 
 release:
 	@chmod +x scripts/release.sh
@@ -164,6 +194,12 @@ rebase-template:
 	@./scripts/update-from-template.sh
 
 template-rebase: rebase-template
+
+merge-template:
+	@chmod +x scripts/merge-from-template.sh
+	@./scripts/merge-from-template.sh
+
+template-merge: merge-template
 
 %:
 	@echo "Unknown target '$@'. Showing help:"

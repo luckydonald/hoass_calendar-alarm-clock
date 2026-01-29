@@ -131,4 +131,3 @@ describe('AlarmClockCard', () => {
     expect(wrapper.exists()).toBe(true);
   });
 });
-

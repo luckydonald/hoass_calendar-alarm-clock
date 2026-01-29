@@ -29,7 +29,9 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/main.ts'),
       name: 'AlarmClockCard',
       fileName: () => 'alarm-clock-card.js',
-      formats: ['iife'],
+      formats: [
+        'iife',
+      ],
     },
     outDir: '../custom_components/calendar_alarm_clock/www',
     emptyOutDir: false,
@@ -41,4 +43,3 @@ export default defineConfig({
     },
   },
 });
-
