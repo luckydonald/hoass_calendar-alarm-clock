@@ -108,7 +108,7 @@ const alarms = computed<Alarm[]>(() => {
   if (!props.hass) return [];
 
   const result: Alarm[] = [];
-  const states = props.hass.states;
+  const { states } = props.hass;
 
   for (const entityId in states) {
     const state = states[entityId];
@@ -140,7 +140,9 @@ const alarms = computed<Alarm[]>(() => {
 
 const filteredAlarms = computed<Alarm[]>(() => {
   const mode = props.config.alarm_list_mode ?? 'days';
-  const sorted = [...alarms.value].sort((a, b) => {
+  const sorted = [
+    ...alarms.value,
+  ].sort((a, b) => {
     const timeA = a.time ? new Date(a.time).getTime() : 0;
     const timeB = b.time ? new Date(b.time).getTime() : 0;
     return timeA - timeB;
@@ -205,9 +207,7 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
   return null;
 });
 
-const ringingAlarms = computed<Alarm[]>(() => {
-  return alarms.value.filter((alarm) => isAlarmRinging(alarm));
-});
+const ringingAlarms = computed<Alarm[]>(() => alarms.value.filter((alarm) => isAlarmRinging(alarm)));
 
 // Clock computations
 const currentHours = computed(() => currentTime.value.getHours());
@@ -285,13 +285,11 @@ const isNightTime = computed(() => {
 });
 
 // Add formattedDate computed
-const formattedDate = computed(() => {
-  return currentTime.value.toLocaleDateString([], {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-});
+const formattedDate = computed(() => currentTime.value.toLocaleDateString([], {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+}));
 
 const pad = (v: number) => String(v).padStart(2, '0');
 const current12Hours = computed(() => ((currentHours.value + 11) % 12) + 1);
@@ -330,11 +328,10 @@ function formatAlarmDay(isoTime: string | null): string {
 
     if (date.toDateString() === now.toDateString()) {
       return 'Today';
-    } else if (date.toDateString() === tomorrow.toDateString()) {
+    } if (date.toDateString() === tomorrow.toDateString()) {
       return 'Tomorrow';
-    } else {
-      return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
     }
+    return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
   } catch {
     return '';
   }
@@ -565,7 +562,10 @@ function handleAddButtonClick(): void {
 <template>
   <ha-card>
     <h1 class="card-header">
-      <ha-icon icon="mdi:calendar-clock" class="header-icon" />
+      <ha-icon
+        icon="mdi:calendar-clock"
+        class="header-icon"
+      />
       {{ cardTitle }}
       <span
         v-if="nextAlarm && nextAlarmUrgency !== 'none'"
@@ -597,7 +597,9 @@ function handleAddButtonClick(): void {
             class="snooze-button"
             @click="snoozeAlarm(alarm)"
           >
-            <ha-icon icon="mdi:alarm-snooze" slot="icon" />
+            <template #icon>
+              <ha-icon icon="mdi:alarm-snooze" />
+            </template>
             Snooze
           </ha-button>
           <ha-button
@@ -605,14 +607,19 @@ function handleAddButtonClick(): void {
             class="dismiss-button"
             @click="dismissAlarm(alarm)"
           >
-            <ha-icon icon="mdi:alarm-off" slot="icon" />
+            <template #icon>
+              <ha-icon icon="mdi:alarm-off" />
+            </template>
             Dismiss
           </ha-button>
         </div>
       </div>
 
       <!-- Single Alarm View (when entity is configured) -->
-      <div v-if="isSingleAlarmView && selectedAlarm" class="single-alarm-view">
+      <div
+        v-if="isSingleAlarmView && selectedAlarm"
+        class="single-alarm-view"
+      >
         <div
           class="single-alarm-icon"
           :class="{
@@ -624,22 +631,43 @@ function handleAddButtonClick(): void {
         </div>
         <div class="single-alarm-time">{{ formatTime(selectedAlarm.time) }}</div>
         <div class="single-alarm-name">{{ selectedAlarm.name }}</div>
-        <div class="single-alarm-status" :class="{ ringing: isAlarmRinging(selectedAlarm) }">
+        <div
+          class="single-alarm-status"
+          :class="{ ringing: isAlarmRinging(selectedAlarm) }"
+        >
           {{ getStatusText(selectedAlarm) }}
         </div>
 
-        <div v-if="isAlarmRinging(selectedAlarm)" class="single-alarm-actions">
-          <ha-button raised class="snooze-button" @click="snoozeAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:alarm-snooze" slot="icon" />
+        <div
+          v-if="isAlarmRinging(selectedAlarm)"
+          class="single-alarm-actions"
+        >
+          <ha-button
+            raised
+            class="snooze-button"
+            @click="snoozeAlarm(selectedAlarm)"
+          >
+            <template #icon>
+              <ha-icon icon="mdi:alarm-snooze" />
+            </template>
             Snooze
           </ha-button>
-          <ha-button raised class="dismiss-button" @click="dismissAlarm(selectedAlarm)">
-            <ha-icon icon="mdi:alarm-off" slot="icon" />
+          <ha-button
+            raised
+            class="dismiss-button"
+            @click="dismissAlarm(selectedAlarm)"
+          >
+            <template #icon>
+              <ha-icon icon="mdi:alarm-off" />
+            </template>
             Dismiss
           </ha-button>
         </div>
 
-        <div v-else class="single-alarm-toggle">
+        <div
+          v-else
+          class="single-alarm-toggle"
+        >
           <ha-switch
             :checked="selectedAlarm.enabled"
             @change="handleSwitchChange(selectedAlarm, $event)"
@@ -647,13 +675,19 @@ function handleAddButtonClick(): void {
           <span class="toggle-label">{{ selectedAlarm.enabled ? 'Enabled' : 'Disabled' }}</span>
         </div>
 
-        <ha-expansion-panel outlined header="Details">
+        <ha-expansion-panel
+          outlined
+          header="Details"
+        >
           <div class="details-content">
             <div class="detail-row">
               <span class="detail-label">Repeat</span>
               <span class="detail-value">{{ formatRepeat(selectedAlarm.repeat) }}</span>
             </div>
-            <div v-if="selectedAlarm.snooze_count > 0" class="detail-row">
+            <div
+              v-if="selectedAlarm.snooze_count > 0"
+              class="detail-row"
+            >
               <span class="detail-label">Snooze Count</span>
               <span class="detail-value">{{ selectedAlarm.snooze_count }}</span>
             </div>
@@ -664,7 +698,10 @@ function handleAddButtonClick(): void {
           <ha-icon-button @click="openEditDialog(selectedAlarm)">
             <ha-icon icon="mdi:pencil" />
           </ha-icon-button>
-          <ha-icon-button class="delete-button" @click="deleteAlarm(selectedAlarm)">
+          <ha-icon-button
+            class="delete-button"
+            @click="deleteAlarm(selectedAlarm)"
+          >
             <ha-icon icon="mdi:delete" />
           </ha-icon-button>
         </div>
@@ -679,10 +716,12 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('clock')"
         >
-          <div slot="header" class="section-header">
-            <ha-icon icon="mdi:clock-outline" />
-            <span>Current Time</span>
-          </div>
+          <template #header>
+            <div class="section-header">
+              <ha-icon icon="mdi:clock-outline" />
+              <span>Current Time</span>
+            </div>
+          </template>
 
           <div
             class="clock-section"
@@ -696,9 +735,16 @@ function handleAddButtonClick(): void {
             }"
           >
             <!-- Analog Clock -->
-            <div v-if="clockDisplay === 'analog' || clockDisplay === 'analog-24h'" class="analog-clock-container">
+            <div
+              v-if="clockDisplay === 'analog' || clockDisplay === 'analog-24h'"
+              class="analog-clock-container"
+            >
               <!-- Pure-CSS clock. Uses ticks and absolutely-positioned hands via css animations. -->
-              <div class="dial dial-border" role="img" aria-label="Analog clock">
+              <div
+                class="dial dial-border"
+                role="img"
+                aria-label="Analog clock"
+              >
                 <!-- Hour ticks (12) -->
                 <!-- TODO: 24h ticks if clockDisplay is 'analog-24h' -->
                 <div
@@ -708,7 +754,7 @@ function handleAddButtonClick(): void {
                   class="tick hour"
                   :style="{ '--tick-rotation': `${(i - 1) * 30}deg` }"
                 >
-                  <div class="line"></div>
+                  <div class="line" />
                 </div>
 
                 <!-- Minute ticks (60) -->
@@ -719,11 +765,11 @@ function handleAddButtonClick(): void {
                   class="tick minute"
                   :style="{ '--tick-rotation': `${(i - 1) * 6}deg` }"
                 >
-                  <div class="line"></div>
+                  <div class="line" />
                 </div>
 
                 <!-- Center dot -->
-                <div class="center-dot"></div>
+                <div class="center-dot" />
 
                 <!-- Hands: wrap shafts inside containers so we can animate the container rotation reliably -->
                 <div
@@ -731,7 +777,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="hourHandStyleVars"
                 >
-                  <div class="shaft"></div>
+                  <div class="shaft" />
                 </div>
 
                 <div
@@ -739,7 +785,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="minuteHandStyleVars"
                 >
-                  <div class="shaft"></div>
+                  <div class="shaft" />
                 </div>
 
                 <div
@@ -748,7 +794,7 @@ function handleAddButtonClick(): void {
                   :class="{ smooth: clockAnimationMode === 'smooth' }"
                   :style="secondHandStyleVars"
                 >
-                  <div class="shaft"></div>
+                  <div class="shaft" />
                 </div>
               </div>
 
@@ -761,11 +807,20 @@ function handleAddButtonClick(): void {
               class="digital-clock-container"
             >
               <div class="digital-time">
-                <span class="digital-hours" v-if="clockDisplay === '24h'">{{ pad(currentHours) }}</span>
-                <span class="digital-hours" v-if="clockDisplay === '12h'">{{ pad(current12Hours) }}</span>
+                <span
+                  v-if="clockDisplay === '24h'"
+                  class="digital-hours"
+                >{{ pad(currentHours) }}</span>
+                <span
+                  v-if="clockDisplay === '12h'"
+                  class="digital-hours"
+                >{{ pad(current12Hours) }}</span>
                 <span class="digital-sep">:</span>
                 <span class="digital-minutes">{{ pad(currentMinutes) }}</span>
-                <span v-if="showSeconds" class="digital-sep-sec">:{{ pad(currentSeconds) }}</span>
+                <span
+                  v-if="showSeconds"
+                  class="digital-sep-sec"
+                >:{{ pad(currentSeconds) }}</span>
               </div>
               <div class="digital-date">{{ formattedDate }}</div>
               <div
@@ -795,10 +850,12 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('quickAlarm')"
         >
-          <div slot="header" class="section-header">
-            <ha-icon icon="mdi:timer-outline" />
-            <span>Quick Alarm</span>
-          </div>
+          <template #header>
+            <div class="section-header">
+              <ha-icon icon="mdi:timer-outline" />
+              <span>Quick Alarm</span>
+            </div>
+          </template>
 
           <div class="quick-alarm-section">
             <div class="quick-alarm-presets">
@@ -809,7 +866,9 @@ function handleAddButtonClick(): void {
                 dense
                 @click="createQuickAlarm(option.minutes)"
               >
-                <ha-icon :icon="option.icon" slot="icon" />
+                <template #icon>
+                  <ha-icon :icon="option.icon" />
+                </template>
                 {{ option.label }}
               </ha-button>
             </div>
@@ -821,9 +880,12 @@ function handleAddButtonClick(): void {
                 min="1"
                 max="1440"
                 class="custom-minutes-input"
-              />
+              >
               <span class="custom-label">min</span>
-              <ha-button outlined @click="createQuickAlarm(quickAlarmCustomMinutes)">
+              <ha-button
+                outlined
+                @click="createQuickAlarm(quickAlarmCustomMinutes)"
+              >
                 Set
               </ha-button>
             </div>
@@ -837,17 +899,25 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('alarmList')"
         >
-          <div slot="header" class="section-header">
-            <ha-icon icon="mdi:format-list-bulleted" />
-            <span>Alarms</span>
-            <span class="alarm-count">{{ filteredAlarms.length }}</span>
-          </div>
+          <template #header>
+            <div class="section-header">
+              <ha-icon icon="mdi:format-list-bulleted" />
+              <span>Alarms</span>
+              <span class="alarm-count">{{ filteredAlarms.length }}</span>
+            </div>
+          </template>
 
           <div class="alarm-list-section">
-            <div v-if="filteredAlarms.length === 0" class="no-alarms">
+            <div
+              v-if="filteredAlarms.length === 0"
+              class="no-alarms"
+            >
               <ha-icon icon="mdi:alarm-plus" />
               <p>No alarms scheduled</p>
-              <ha-button outlined @click="handleAddButtonClick">
+              <ha-button
+                outlined
+                @click="handleAddButtonClick"
+              >
                 Add Alarm
               </ha-button>
             </div>
@@ -862,9 +932,17 @@ function handleAddButtonClick(): void {
               }"
             >
               <!-- Mini SVG Clock -->
-              <div class="alarm-mini-clock" :class="{ night: isAlarmNightTime(alarm.time) }">
+              <div
+                class="alarm-mini-clock"
+                :class="{ night: isAlarmNightTime(alarm.time) }"
+              >
                 <svg viewBox="0 0 50 50">
-                  <circle cx="25" cy="25" r="23" class="mini-clock-face" />
+                  <circle
+                    cx="25"
+                    cy="25"
+                    r="23"
+                    class="mini-clock-face"
+                  />
                   <g class="mini-hour-markers">
                     <line
                       v-for="i in 12"
@@ -892,7 +970,12 @@ function handleAddButtonClick(): void {
                     y2="8"
                     :transform="`rotate(${getAlarmClockHands(alarm.time).minute}, 25, 25)`"
                   />
-                  <circle cx="25" cy="25" r="2" class="mini-center-dot" />
+                  <circle
+                    cx="25"
+                    cy="25"
+                    r="2"
+                    class="mini-center-dot"
+                  />
                 </svg>
               </div>
 
@@ -904,7 +987,10 @@ function handleAddButtonClick(): void {
                 </div>
                 <div class="alarm-details-row">
                   <span class="alarm-name">{{ alarm.name }}</span>
-                  <span v-if="alarm.repeat !== 'none'" class="alarm-repeat">
+                  <span
+                    v-if="alarm.repeat !== 'none'"
+                    class="alarm-repeat"
+                  >
                     {{ formatRepeat(alarm.repeat) }}
                   </span>
                 </div>
@@ -945,10 +1031,12 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('addSection')"
         >
-          <div slot="header" class="section-header">
-            <ha-icon icon="mdi:alarm-plus" />
-            <span>Add Alarm</span>
-          </div>
+          <template #header>
+            <div class="section-header">
+              <ha-icon icon="mdi:alarm-plus" />
+              <span>Add Alarm</span>
+            </div>
+          </template>
 
           <div class="add-alarm-section">
             <ha-textfield
@@ -965,7 +1053,7 @@ function handleAddButtonClick(): void {
                   class="ha-time-input"
                   :value="dialogData.time"
                   @input="dialogData.time = ($event.target as HTMLInputElement).value"
-                />
+                >
               </div>
               <div class="form-field">
                 <label class="form-label">Date</label>
@@ -974,7 +1062,7 @@ function handleAddButtonClick(): void {
                   class="ha-date-input"
                   :value="dialogData.date"
                   @input="dialogData.date = ($event.target as HTMLInputElement).value"
-                />
+                >
               </div>
             </div>
 
@@ -998,8 +1086,13 @@ function handleAddButtonClick(): void {
               >
                 Cancel
               </ha-button>
-              <ha-button raised @click="saveAlarm">
-                <ha-icon icon="mdi:check" slot="icon" />
+              <ha-button
+                raised
+                @click="saveAlarm"
+              >
+                <template #icon>
+                  <ha-icon icon="mdi:check" />
+                </template>
                 Create Alarm
               </ha-button>
             </div>
@@ -1013,7 +1106,9 @@ function handleAddButtonClick(): void {
           label="Add Alarm"
           @click="handleAddButtonClick"
         >
-          <ha-icon slot="icon" icon="mdi:plus" />
+          <template #icon>
+            <ha-icon icon="mdi:plus" />
+          </template>
         </ha-fab>
       </template>
     </div>
@@ -1024,10 +1119,12 @@ function handleAddButtonClick(): void {
       heading=""
       @closed="closeDialog"
     >
-      <div slot="heading" class="dialog-heading">
-        <ha-icon :icon="isEditing ? 'mdi:pencil' : 'mdi:alarm-plus'" />
-        <span>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</span>
-      </div>
+      <template #heading>
+        <div class="dialog-heading">
+          <ha-icon :icon="isEditing ? 'mdi:pencil' : 'mdi:alarm-plus'" />
+          <span>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</span>
+        </div>
+      </template>
 
       <div class="dialog-content">
         <ha-textfield
@@ -1043,7 +1140,7 @@ function handleAddButtonClick(): void {
             class="ha-time-input"
             :value="dialogData.time"
             @input="dialogData.time = ($event.target as HTMLInputElement).value"
-          />
+          >
         </div>
 
         <div class="form-row">
@@ -1053,7 +1150,7 @@ function handleAddButtonClick(): void {
             class="ha-date-input"
             :value="dialogData.date"
             @input="dialogData.date = ($event.target as HTMLInputElement).value"
-          />
+          >
         </div>
 
         <ha-select
@@ -1076,12 +1173,16 @@ function handleAddButtonClick(): void {
         </ha-formfield>
       </div>
 
-      <ha-button slot="secondaryAction" dialogAction="cancel">
-        Cancel
-      </ha-button>
-      <ha-button slot="primaryAction" @click="saveAlarm">
-        Save
-      </ha-button>
+      <template #secondaryAction>
+        <ha-button dialog-action="cancel">
+          Cancel
+        </ha-button>
+      </template>
+      <template #primaryAction>
+        <ha-button @click="saveAlarm">
+          Save
+        </ha-button>
+      </template>
     </ha-dialog>
   </ha-card>
 </template>

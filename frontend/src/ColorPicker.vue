@@ -6,8 +6,7 @@ const props = defineProps<{
   modelValue?: string;
   label?: string;
 }>();
-const emit = defineEmits<{
-  (e: 'update:modelValue', v: string): void;
+const emit = defineEmits<{ (e: 'update:modelValue', v: string): void;
 }>();
 
 const VAR_OPTIONS = [
@@ -20,7 +19,10 @@ const VAR_OPTIONS = [
 ];
 
 const COLOR_NAMES = Object.keys(colorName).sort();
-const ALL_OPTIONS = [...VAR_OPTIONS, ...COLOR_NAMES];
+const ALL_OPTIONS = [
+  ...VAR_OPTIONS,
+  ...COLOR_NAMES,
+];
 
 const text = ref(props.modelValue ?? '');
 const search = ref('');
@@ -137,7 +139,7 @@ function onColorInput(e: Event) {
           <span
             class="color-swatch"
             :style="{ background: opt }"
-          ></span>
+          />
 
           {{ opt }}
         </ha-list-item>
@@ -149,7 +151,7 @@ function onColorInput(e: Event) {
       class="color-input"
       :value="hex"
       @input="onColorInput"
-    />
+    >
   </div>
 </template>
 

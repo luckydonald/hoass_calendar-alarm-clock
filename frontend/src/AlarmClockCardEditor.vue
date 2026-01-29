@@ -77,7 +77,7 @@ const addSectionOptions = [
         label="Entity (optional)"
         :value="localConfig.entity"
         :hass="props.hass"
-        :includeDomains="['sensor']"
+        :include-domains="['sensor']"
         @value-changed="(e: Event) => localConfig.entity = (e as CustomEvent).detail?.value || ''"
       />
     </div>
@@ -184,25 +184,31 @@ const addSectionOptions = [
     </div>
 
     <!-- Number inputs conditional on mode -->
-    <div v-if="localConfig.alarm_list_mode === 'count'" class="field">
+    <div
+      v-if="localConfig.alarm_list_mode === 'count'"
+      class="field"
+    >
       <label class="label">Number of Alarms to Show</label>
       <input
+        v-model.number="localConfig.alarm_list_count"
         class="number-input full-width"
         type="number"
         min="1"
         max="100"
-        v-model.number="localConfig.alarm_list_count"
-      />
+      >
     </div>
-    <div v-else class="field">
+    <div
+      v-else
+      class="field"
+    >
       <label class="label">Days to Show</label>
       <input
+        v-model.number="localConfig.alarm_list_days"
         class="number-input full-width"
         type="number"
         min="1"
         max="365"
-        v-model.number="localConfig.alarm_list_days"
-      />
+      >
     </div>
 
     <!-- Section visibility toggles -->

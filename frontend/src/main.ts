@@ -15,8 +15,11 @@ interface AppData {
 
 class AlarmClockCardElement extends HTMLElement {
   private _config: AlarmClockCardConfig = {};
+
   private _hass: HomeAssistant | null = null;
+
   private _app: App | null = null;
+
   private _root: HTMLDivElement | null = null;
 
   public set hass(hass: HomeAssistant) {
@@ -148,8 +151,11 @@ class AlarmClockCardElement extends HTMLElement {
 
 class AlarmClockCardEditor extends HTMLElement {
   private _config: AlarmClockCardConfig = {};
+
   private _hass: HomeAssistant | null = null;
+
   private _app: App | null = null;
+
   private _root: HTMLDivElement | null = null;
 
   public set hass(hass: HomeAssistant) {
@@ -235,7 +241,7 @@ window.customCards.push({
 });
 
 console.info(
-  '%c CALENDAR-ALARM-CLOCK-CARD %c ' + (pkg.version || 'dev'),
+  `%c CALENDAR-ALARM-CLOCK-CARD %c ${pkg.version || 'dev'}`,
   'color: white; background: #3498db; font-weight: bold;',
   'color: #3498db; background: white; font-weight: bold;',
 );
