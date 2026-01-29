@@ -205,13 +205,6 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
   return null;
 });
 
-const isNextAlarmRinging = computed(() => {
-  return (
-    nextAlarm.value
-    && (nextAlarm.value.state === 'ringing' || nextAlarm.value.state === 'ringing_snooze')
-  );
-});
-
 const ringingAlarms = computed<Alarm[]>(() => {
   return alarms.value.filter((alarm) => isAlarmRinging(alarm));
 });
@@ -300,22 +293,8 @@ const formattedDate = computed(() => {
   });
 });
 
-// Digital parts so we can color the separator independently
-const digitalParts = computed(() => {
-  const d = currentTime.value;
-  const hh = d.getHours();
-  const mm = d.getMinutes();
-  const ss = d.getSeconds();
-  const pad = (v: number) => String(v).padStart(2, '0');
-  // For 12h mode adjust hours
-  const hours12 = ((hh + 11) % 12) + 1;
-  return {
-    hh24: pad(hh),
-    hh12: pad(hours12),
-    mm: pad(mm),
-    ss: pad(ss),
-  };
-});
+const pad = (v: number) => String(v).padStart(2, '0');
+const current12Hours = computed(() => ((currentHours.value + 11) % 12) + 1);
 
 // Next alarm urgency (for indicator color)
 const nextAlarmUrgency = computed<'none' | 'urgent' | 'soon'>(() => {
@@ -776,32 +755,17 @@ function handleAddButtonClick(): void {
               <div class="clock-date">{{ formattedDate }}</div>
             </div>
 
-            <!-- Digital Clock 24h -->
-            <div v-else-if="clockDisplay === '24h'" class="digital-clock-container">
+            <!-- Digital Clock 12h/24h -->
+            <div
+              v-else-if="['24h', '12h'].includes(clockDisplay)"
+              class="digital-clock-container"
+            >
               <div class="digital-time">
-                <span class="digital-hours">{{ digitalParts.hh24 }}</span>
+                <span class="digital-hours" v-if="clockDisplay === '24h'">{{ pad(currentHours) }}</span>
+                <span class="digital-hours" v-if="clockDisplay === '12h'">{{ pad(current12Hours) }}</span>
                 <span class="digital-sep">:</span>
-                <span class="digital-minutes">{{ digitalParts.mm }}</span>
-                <span v-if="showSeconds" class="digital-sep-sec">:{{ digitalParts.ss }}</span>
-              </div>
-              <div class="digital-date">{{ formattedDate }}</div>
-              <div
-                v-if="nextAlarm"
-                class="digital-next-alarm"
-                :class="nextAlarmUrgency"
-              >
-                <ha-icon icon="mdi:alarm" />
-                <span>{{ formatTime(nextAlarm.time) }}</span>
-              </div>
-            </div>
-
-            <!-- Digital Clock 12h -->
-            <div v-else-if="clockDisplay === '12h'" class="digital-clock-container">
-              <div class="digital-time">
-                <span class="digital-hours">{{ digitalParts.hh12 }}</span>
-                <span class="digital-sep">:</span>
-                <span class="digital-minutes">{{ digitalParts.mm }}</span>
-                <span v-if="showSeconds" class="digital-sep-sec">:{{ digitalParts.ss }}</span>
+                <span class="digital-minutes">{{ pad(currentMinutes) }}</span>
+                <span v-if="showSeconds" class="digital-sep-sec">:{{ pad(currentSeconds) }}</span>
               </div>
               <div class="digital-date">{{ formattedDate }}</div>
               <div
