@@ -44,6 +44,7 @@ function colorToHex(cssColor: string): string | null {
     const r = parseInt(m[1], 10);
     const g = parseInt(m[2], 10);
     const b = parseInt(m[3], 10);
+    // eslint-disable-next-line no-bitwise
     return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   } catch {
     return null;
