@@ -246,26 +246,37 @@ function animationTiming(mode: AnalogClockAnimationMode, hand: 'hour' | 'minute'
 
 const clockAnimationMode = computed(() => props.config.clock_animation_mode ?? 'smooth');
 
+// DB pause flag used to momentarily pause second hand in 'db' animation mode
+const dbPause = ref(false);
+
+// Watch seconds to trigger DB pause when hitting 59s
+watch(currentSeconds, (s) => {
+  if (clockAnimationMode.value === 'db' && s === 59) {
+    dbPause.value = true;
+    setTimeout(() => { dbPause.value = false; }, 1500);
+  }
+});
+
 // Minimal CSS-variable style bindings for each hand; heavy animation rules live in SCSS
 const hourHandStyleVars = computed(() => ({
-  '--hour-animation-duration': hourAnimationDuration,
-  '--hour-animation-timing': animationTiming(clockAnimationMode.value as string, 'hour'),
+  '--hour-animation-duration': ANIMATION_DURATION_HOURS_HAND,
+  '--hour-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'hour'),
   '--hour-animation-delay': hourAnimationDelay.value,
   '--hour-animation-play': 'running',
   '--hour-background': clockHourColor.value,
 } as Record<string, string>));
 
 const minuteHandStyleVars = computed(() => ({
-  '--minute-animation-duration': minuteAnimationDuration,
-  '--minute-animation-timing': animationTiming(clockAnimationMode.value as string, 'minute'),
+  '--minute-animation-duration': ANIMATION_DURATION_MINUTES_HAND,
+  '--minute-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'minute'),
   '--minute-animation-delay': minuteAnimationDelay.value,
   '--minute-animation-play': 'running',
   '--minute-background': clockMinuteColor.value,
 } as Record<string, string>));
 
 const secondHandStyleVars = computed(() => ({
-  '--second-animation-duration': secondAnimationDuration,
-  '--second-animation-timing': animationTiming(clockAnimationMode.value as string, 'second'),
+  '--second-animation-duration': ANIMATION_DURATION_SECONDS_HAND,
+  '--second-animation-timing': animationTiming(clockAnimationMode.value as AnalogClockAnimationMode, 'second'),
   '--second-animation-delay': secondAnimationDelay.value,
   '--second-animation-play': (clockAnimationMode.value === 'db' && dbPause.value) ? 'paused' : 'running',
   '--second-background': clockSecondColor.value,
@@ -1287,18 +1298,40 @@ function handleAddButtonClick(): void {
   stroke: var(--clock-hour-color, var(--primary-text-color));
   stroke-width: 4;
   stroke-linecap: round;
+  /* animation controlled by CSS variables set on the element via :style */
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--hour-animation-duration, 43200s);
+  animation-timing-function: var(--hour-animation-timing, linear);
+  animation-delay: var(--hour-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--hour-animation-play, running);
+  background: var(--hour-background, var(--clock-hour-color, var(--primary-text-color)));
 }
 
 .minute-hand {
   stroke: var(--clock-minute-color, var(--primary-text-color));
   stroke-width: 3;
   stroke-linecap: round;
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--minute-animation-duration, 3600s);
+  animation-timing-function: var(--minute-animation-timing, linear);
+  animation-delay: var(--minute-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--minute-animation-play, running);
+  background: var(--minute-background, var(--clock-minute-color, var(--primary-text-color)));
 }
 
 .second-hand {
   stroke: var(--clock-second-color, var(--primary-color));
   stroke-width: 1.5;
   stroke-linecap: round;
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--second-animation-duration, 60s);
+  animation-timing-function: var(--second-animation-timing, linear);
+  animation-delay: var(--second-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--second-animation-play, running);
+  background: var(--second-background, var(--clock-second-color, var(--accent-color)));
 }
 
 .alarm-hand {
@@ -1904,15 +1937,36 @@ ha-expansion-panel {
 
 .hour {
   height: 8px;
+  /* animation controlled by CSS variables set on the element via :style */
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--hour-animation-duration, 43200s);
+  animation-timing-function: var(--hour-animation-timing, linear);
+  animation-delay: var(--hour-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--hour-animation-play, running);
+  background: var(--hour-background, var(--clock-hour-color, var(--primary-text-color)));
 }
 
 .minute {
   height: 6px;
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--minute-animation-duration, 3600s);
+  animation-timing-function: var(--minute-animation-timing, linear);
+  animation-delay: var(--minute-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--minute-animation-play, running);
+  background: var(--minute-background, var(--clock-minute-color, var(--primary-text-color)));
 }
 
 .second {
   height: 4px;
-  background: var(--clock-second-color, var(--accent-color));
+  animation-name: ha-clock-rotate;
+  animation-duration: var(--second-animation-duration, 60s);
+  animation-timing-function: var(--second-animation-timing, linear);
+  animation-delay: var(--second-animation-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-play-state: var(--second-animation-play, running);
+  background: var(--second-background, var(--clock-second-color, var(--accent-color)));
 }
 
 /* Keyframe-based animations for clock hands rotation */
