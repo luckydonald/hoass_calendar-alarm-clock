@@ -248,7 +248,7 @@ const clockAnimationMode = computed(() => props.config.clock_animation_mode ?? '
 
 // Minimal CSS-variable style bindings for each hand; heavy animation rules live in SCSS
 const hourHandStyleVars = computed(() => ({
-  '--hour-animation-duration': hourAnimationDuration,
+  '--hour-animation-duration': ANIMATION_DURATION_HOURS_HAND,
   '--hour-animation-timing': animationTiming(clockAnimationMode.value as string, 'hour'),
   '--hour-animation-delay': hourAnimationDelay.value,
   '--hour-animation-play': 'running',
@@ -256,7 +256,7 @@ const hourHandStyleVars = computed(() => ({
 } as Record<string, string>));
 
 const minuteHandStyleVars = computed(() => ({
-  '--minute-animation-duration': minuteAnimationDuration,
+  '--minute-animation-duration': ANIMATION_DURATION_MINUTES_HAND,
   '--minute-animation-timing': animationTiming(clockAnimationMode.value as string, 'minute'),
   '--minute-animation-delay': minuteAnimationDelay.value,
   '--minute-animation-play': 'running',
@@ -264,7 +264,7 @@ const minuteHandStyleVars = computed(() => ({
 } as Record<string, string>));
 
 const secondHandStyleVars = computed(() => ({
-  '--second-animation-duration': secondAnimationDuration,
+  '--second-animation-duration': ANIMATION_DURATION_SECONDS_HAND,
   '--second-animation-timing': animationTiming(clockAnimationMode.value as string, 'second'),
   '--second-animation-delay': secondAnimationDelay.value,
   '--second-animation-play': (clockAnimationMode.value === 'db' && dbPause.value) ? 'paused' : 'running',
