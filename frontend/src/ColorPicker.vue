@@ -6,7 +6,7 @@ const props = defineProps<{
   modelValue?: string;
   label?: string;
 }>();
-const emit = defineEmits<{ (e: 'update:modelValue', v: string): void; }>();
+const emit = defineEmits<(e: 'update:modelValue', v: string) => void>();
 
 const VAR_OPTIONS = [
   'var(--clock-day-bg)',

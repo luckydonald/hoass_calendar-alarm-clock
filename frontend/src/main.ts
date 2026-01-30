@@ -231,7 +231,7 @@ class AlarmClockCardEditor extends HTMLElement {
 customElements.define('calendar-alarm-clock-card', AlarmClockCardElement);
 customElements.define('calendar-alarm-clock-card-editor', AlarmClockCardEditor);
 
-window.customCards = window.customCards || [];
+window.customCards = window.customCards ?? [];
 window.customCards.push({
   type: 'calendar-alarm-clock-card',
   name: 'Calendar based Alarm Clock Card',
