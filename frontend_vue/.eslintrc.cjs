@@ -47,14 +47,14 @@ module.exports = {
     'vue/html-indent': ['error', 2],
     // Prefer self-closing form for void elements like <input />, <img />, <br /> to match HTML XML-style preferences
     'vue/html-self-closing': ['error', {
-      'html': {
-        'void': 'always',
-        // Allow normal HTML elements to be self-closing (preserve `<div class="line" />`)
-        'normal': 'always',
-        'component': 'always'
+      html: {
+        void: 'always',
+        // Allow normal HTML elements to be self-closing
+        normal: 'always',
+        component: 'always',
       },
-      'svg': 'always',
-      'math': 'always'
+      svg: 'always',
+      math: 'always',
     }],
     // Disable rules that auto-convert legacy `slot` attributes to `v-slot` templates
     // for custom web components (Home Assistant `ha-*` elements). These are not
@@ -139,8 +139,8 @@ module.exports = {
         'array-bracket-newline': 'off',
         'array-element-newline': 'off',
         '@typescript-eslint/naming-convention': 'off',
-        'no-multiple-empty-lines': 'off'
-      }
-    }
-  ]
+        'no-multiple-empty-lines': 'off',
+      },
+    },
+  ],
 };
