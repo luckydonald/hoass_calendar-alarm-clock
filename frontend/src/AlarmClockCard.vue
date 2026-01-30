@@ -80,14 +80,14 @@ watch(() => props.config, (newConfig) => {
 }, { deep: true });
 
 // Computed
-const cardTitle = computed(() => props.config.title || 'Calendar Alarm Clock');
+const cardTitle = computed(() => props.config.title ?? 'Calendar Alarm Clock');
 
 // Clock color and seconds settings (new)
-const clockBgColor = computed(() => (props.config.clock_bg_color as string) || 'var(--clock-day-bg)');
-const clockHourColor = computed(() => (props.config.clock_hour_color as string) || 'var(--primary-text-color)');
-const clockMinuteColor = computed(() => (props.config.clock_minute_color as string) || 'var(--primary-text-color)');
-const clockSecondColor = computed(() => (props.config.clock_second_color as string) || 'var(--primary-color)');
-const clockMiddleColor = computed(() => (props.config.clock_middle_color as string) || 'var(--primary-color)');
+const clockBgColor = computed(() => (props.config.clock_bg_color!) || 'var(--clock-day-bg)');
+const clockHourColor = computed(() => (props.config.clock_hour_color!) || 'var(--primary-text-color)');
+const clockMinuteColor = computed(() => (props.config.clock_minute_color!) || 'var(--primary-text-color)');
+const clockSecondColor = computed(() => (props.config.clock_second_color!) || 'var(--primary-color)');
+const clockMiddleColor = computed(() => (props.config.clock_middle_color!) || 'var(--primary-color)');
 const showSeconds = computed(() => props.config.clock_show_seconds ?? true);
 
 const clockDisplay = computed(() => props.config.clock_display ?? 'analog');
@@ -110,8 +110,10 @@ const alarms = computed<Alarm[]>(() => {
   const result: Alarm[] = [];
   const { states } = props.hass;
 
-  for (const entityId in states) {
-    const state = states[entityId];
+  Object.entries(states).forEach(([
+    entityId,
+    state,
+  ]) => {
     if (
       entityId.startsWith('sensor.')
       && state.attributes.alarm_id
@@ -133,7 +135,7 @@ const alarms = computed<Alarm[]>(() => {
         state: state.state as AlarmState,
       });
     }
-  }
+  });
 
   return result;
 });
@@ -191,9 +193,11 @@ const selectedAlarm = computed<Alarm | null>(() => {
 const nextAlarm = computed<NextAlarmInfo | null>(() => {
   if (!props.hass) return null;
 
-  for (const entityId in props.hass.states) {
+  Object.entries(props.hass.states).forEach(([
+    entityId,
+    state,
+  ]) => {
     if (entityId.includes('_next_alarm')) {
-      const state = props.hass.states[entityId];
       if (state.state && state.state !== 'unknown') {
         return {
           time: (state.attributes.time as string) || null,
@@ -202,10 +206,15 @@ const nextAlarm = computed<NextAlarmInfo | null>(() => {
         };
       }
     }
-  }
+    return null;
+  });
 
   return null;
 });
+
+function isAlarmRinging(alarm: Alarm): boolean {
+  return alarm.state === 'ringing' || alarm.state === 'ringing_snooze';
+}
 
 const ringingAlarms = computed<Alarm[]>(() => alarms.value.filter((alarm) => isAlarmRinging(alarm)));
 
@@ -370,10 +379,6 @@ function getStatusText(alarm: Alarm): string {
   return states[alarm.state] || alarm.state;
 }
 
-function isAlarmRinging(alarm: Alarm): boolean {
-  return alarm.state === 'ringing' || alarm.state === 'ringing_snooze';
-}
-
 function isAlarmNightTime(isoTime: string | null): boolean {
   if (!isoTime) return false;
   const date = new Date(isoTime);
@@ -466,14 +471,16 @@ function openEditDialog(alarm: Alarm): void {
   isEditing.value = true;
   editingAlarmId.value = alarm.alarm_id;
 
+  const isoDate = (date: Date) => date.toISOString().split('T')[0];
+
   let time = '07:00';
-  let date = new Date().toISOString().split('T')[0];
+  let date = isoDate(new Date());
 
   if (alarm.time) {
     try {
       const d = new Date(alarm.time);
       time = d.toTimeString().slice(0, 5);
-      date = d.toISOString().split('T')[0];
+      date = isoDate(d);
     } catch {
       // Use defaults
     }
