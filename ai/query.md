@@ -245,3 +245,5 @@ Remember to keep html attributes and the next child (element or text) on their o
 </my-element>
 ———
 Fix `check_slot.js` script to also allow parent element checks.
+Could you read `.eslintrc.cjs` for that, `const [error, config] = eslintrc.rules["vue/no-deprecated-slot-attribute"]` and `const { ignore, ignoreParents } = config;` with value being `string[]` for both.
+Then with that check if it's either in the ignore list, or if the parent is in the ignoreParents list.
