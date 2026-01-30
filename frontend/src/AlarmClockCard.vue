@@ -607,9 +607,10 @@ function handleAddButtonClick(): void {
             class="snooze-button"
             @click="snoozeAlarm(alarm)"
           >
-            <template #icon>
-              <ha-icon icon="mdi:alarm-snooze" />
-            </template>
+            <ha-icon
+              slot="icon"
+              icon="mdi:alarm-snooze"
+            />
             Snooze
           </ha-button>
           <ha-button
@@ -617,9 +618,10 @@ function handleAddButtonClick(): void {
             class="dismiss-button"
             @click="dismissAlarm(alarm)"
           >
-            <template #icon>
-              <ha-icon icon="mdi:alarm-off" />
-            </template>
+            <ha-icon
+              slot="icon"
+              icon="mdi:alarm-off"
+            />
             Dismiss
           </ha-button>
         </div>
@@ -657,9 +659,7 @@ function handleAddButtonClick(): void {
             class="snooze-button"
             @click="snoozeAlarm(selectedAlarm)"
           >
-            <template #icon>
-              <ha-icon icon="mdi:alarm-snooze" />
-            </template>
+              <ha-icon icon="mdi:alarm-snooze" slot="icon" />
             Snooze
           </ha-button>
           <ha-button
@@ -667,9 +667,7 @@ function handleAddButtonClick(): void {
             class="dismiss-button"
             @click="dismissAlarm(selectedAlarm)"
           >
-            <template #icon>
-              <ha-icon icon="mdi:alarm-off" />
-            </template>
+              <ha-icon icon="mdi:alarm-off" slot="icon"/>
             Dismiss
           </ha-button>
         </div>
@@ -726,12 +724,10 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('clock')"
         >
-          <template #header>
-            <div class="section-header">
+            <div class="section-header" slot="header">
               <ha-icon icon="mdi:clock-outline" />
               <span>Current Time</span>
             </div>
-          </template>
 
           <div
             class="clock-section"
@@ -860,12 +856,10 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('quickAlarm')"
         >
-          <template #header>
-            <div class="section-header">
+            <div class="section-header"slot="header">
               <ha-icon icon="mdi:timer-outline" />
               <span>Quick Alarm</span>
             </div>
-          </template>
 
           <div class="quick-alarm-section">
             <div class="quick-alarm-presets">
@@ -876,9 +870,7 @@ function handleAddButtonClick(): void {
                 dense
                 @click="createQuickAlarm(option.minutes)"
               >
-                <template #icon>
-                  <ha-icon :icon="option.icon" />
-                </template>
+                  <ha-icon :icon="option.icon" slot="icon"/>
                 {{ option.label }}
               </ha-button>
             </div>
@@ -909,13 +901,11 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('alarmList')"
         >
-          <template #header>
-            <div class="section-header">
+            <div class="section-header" slot="icon">
               <ha-icon icon="mdi:format-list-bulleted" />
               <span>Alarms</span>
               <span class="alarm-count">{{ filteredAlarms.length }}</span>
             </div>
-          </template>
 
           <div class="alarm-list-section">
             <div
@@ -1041,12 +1031,10 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('addSection')"
         >
-          <template #header>
-            <div class="section-header">
+            <div class="section-header" slot="header">
               <ha-icon icon="mdi:alarm-plus" />
               <span>Add Alarm</span>
             </div>
-          </template>
 
           <div class="add-alarm-section">
             <ha-textfield
@@ -1100,9 +1088,7 @@ function handleAddButtonClick(): void {
                 raised
                 @click="saveAlarm"
               >
-                <template #icon>
-                  <ha-icon icon="mdi:check" />
-                </template>
+                  <ha-icon icon="mdi:check" slot="icon"/>
                 Create Alarm
               </ha-button>
             </div>
@@ -1116,9 +1102,7 @@ function handleAddButtonClick(): void {
           label="Add Alarm"
           @click="handleAddButtonClick"
         >
-          <template #icon>
-            <ha-icon icon="mdi:plus" />
-          </template>
+            <ha-icon icon="mdi:plus" slot="icon"/>
         </ha-fab>
       </template>
     </div>
@@ -1129,8 +1113,7 @@ function handleAddButtonClick(): void {
       heading=""
       @closed="closeDialog"
     >
-      <template #heading>
-        <div class="dialog-heading">
+        <div class="dialog-heading" slot="heading">
           <ha-icon :icon="isEditing ? 'mdi:pencil' : 'mdi:alarm-plus'" />
           <span>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</span>
         </div>
@@ -1183,15 +1166,12 @@ function handleAddButtonClick(): void {
         </ha-formfield>
       </div>
 
-      <template #secondaryAction>
-        <ha-button dialog-action="cancel">
-          Cancel
-        </ha-button>
-      </template>
-      <template #primaryAction>
-        <ha-button @click="saveAlarm">
-          Save
-        </ha-button>
+      <ha-button dialog-action="cancel" slot="secondaryAction">
+        Cancel
+      </ha-button>
+      <ha-button @click="saveAlarm" slot="primaryAction">
+        Save
+      </ha-button>
       </template>
     </ha-dialog>
   </ha-card>
