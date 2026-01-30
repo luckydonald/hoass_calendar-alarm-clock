@@ -1171,7 +1171,6 @@ function handleAddButtonClick(): void {
       <ha-button @click="saveAlarm" slot="primaryAction">
         Save
       </ha-button>
-      </template>
     </ha-dialog>
   </ha-card>
 </template>
