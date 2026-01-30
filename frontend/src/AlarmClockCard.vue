@@ -285,11 +285,13 @@ const isNightTime = computed(() => {
 });
 
 // Add formattedDate computed
-const formattedDate = computed(() => currentTime.value.toLocaleDateString([], {
-  weekday: 'long',
-  month: 'long',
-  day: 'numeric',
-}));
+const formattedDate = computed(() =>
+  currentTime.value.toLocaleDateString([], {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
+);
 
 const pad = (v: number) => String(v).padStart(2, '0');
 const current12Hours = computed(() => ((currentHours.value + 11) % 12) + 1);
@@ -328,7 +330,8 @@ function formatAlarmDay(isoTime: string | null): string {
 
     if (date.toDateString() === now.toDateString()) {
       return 'Today';
-    } if (date.toDateString() === tomorrow.toDateString()) {
+    }
+    if (date.toDateString() === tomorrow.toDateString()) {
       return 'Tomorrow';
     }
     return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
