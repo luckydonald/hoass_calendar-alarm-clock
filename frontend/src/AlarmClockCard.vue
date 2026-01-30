@@ -1117,7 +1117,6 @@ function handleAddButtonClick(): void {
           <ha-icon :icon="isEditing ? 'mdi:pencil' : 'mdi:alarm-plus'" />
           <span>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</span>
         </div>
-      </template>
 
       <div class="dialog-content">
         <ha-textfield
@@ -1172,7 +1171,6 @@ function handleAddButtonClick(): void {
       <ha-button @click="saveAlarm" slot="primaryAction">
         Save
       </ha-button>
-      </template>
     </ha-dialog>
   </ha-card>
 </template>
