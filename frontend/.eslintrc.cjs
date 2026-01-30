@@ -4,9 +4,6 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
-    // Use an eslint-specific tsconfig that includes tests and config files
-    project: './tsconfig.eslint.json',
-    // Quiet the unsupported TypeScript version warning for now
     warnOnUnsupportedTypeScriptVersion: false,
   },
   env: {
@@ -16,7 +13,6 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
-    'airbnb-typescript/base',
     'plugin:vue/vue3-recommended',
   ],
   plugins: ['@typescript-eslint', 'vue'],
