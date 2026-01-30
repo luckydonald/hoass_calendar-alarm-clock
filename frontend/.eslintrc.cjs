@@ -4,6 +4,9 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
+    // Use an eslint-specific tsconfig that includes tests and config files
+    project: './tsconfig.eslint.json',
+    // Quiet the unsupported TypeScript version warning for now
     warnOnUnsupportedTypeScriptVersion: false,
   },
   env: {
@@ -13,6 +16,7 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
+    'airbnb-typescript/base',
     'plugin:vue/vue3-recommended',
   ],
   plugins: ['@typescript-eslint', 'vue'],
@@ -39,7 +43,6 @@ module.exports = {
     'vue/max-attributes-per-line': ['error', { singleline: 1, multiline: { max: 1 } }],
     'vue/html-closing-bracket-newline': ['error', { singleline: 'never', multiline: 'always' }],
     'vue/multiline-html-element-content-newline': ['error', { ignoreWhenEmpty: true, allowEmptyLines: false }],
-    'vue/singleline-html-element-content-newline': 'off',
     'vue/html-indent': ['error', 2],
     // Prefer self-closing form for void elements like <input />, <img />, <br /> to match HTML XML-style preferences
     'vue/html-self-closing': ['error', {
@@ -53,14 +56,11 @@ module.exports = {
       math: 'always',
     }],
     // Disable rules that auto-convert legacy `slot` attributes to `v-slot` templates
+    // for custom web components (Home Assistant `ha-*` elements). These are not
+    // Vue components and should keep their native `slot="..."` attribute.
     'vue/no-deprecated-slot-attribute': [
       'error',
       {
-        ignore: [
-          'ha-card',
-          'ha-button',
-          'ha-icon',
-        ],
         ignoreParents: [
           'ha-expansion-panel',
           'ha-button',
@@ -70,6 +70,16 @@ module.exports = {
       },
     ],
     'vue/v-slot-style': 'off',
+    'vue/array-bracket-newline': [
+      "error",
+      "consistent",
+    ],
+    "vue/v-bind-style": [
+      "error",
+      "shorthand", {
+        "sameNameShorthand": "always",
+      }
+    ],
 
     // Project-specific relaxations to match existing code style
     // Allow underscore usage in properties and members (Home Assistant style)
