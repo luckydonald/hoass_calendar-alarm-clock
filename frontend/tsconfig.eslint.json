@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../frontend_vue/tsconfig.json",
   "compilerOptions": {
     "allowJs": true
   },
@@ -9,7 +9,7 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "./vite.config.ts",
+    "../frontend_vue/vite.config.ts",
     "./vitest.config.ts"
   ]
 }
