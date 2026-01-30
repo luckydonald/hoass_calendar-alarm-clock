@@ -453,3 +453,8 @@ You are missing previous fields in the vue version:
     return row;
   }
 ```
+———
+ESLint:
+Error: Error while loading rule '@typescript-eslint/naming-convention': You have used a rule which requires parserServices to be generated. You must therefore provide a value for the "parserOptions.project" property for @typescript-eslint/parser.
+Note: detected a parser other than @typescript-eslint/parser. Make sure the parser is configured to forward "parserOptions.project" to @typescript-eslint/parser.
+Occurred while linting /Users/user/Documents/programming/Python/HomeAssistant/hoass_calendar-alarm-clock/frontend/vite.config.js
