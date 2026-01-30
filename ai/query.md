@@ -243,3 +243,5 @@ Remember to keep html attributes and the next child (element or text) on their o
     Bold
   </b>
 </my-element>
+———
+Fix `check_slot.js` script to also allow parent element checks.
