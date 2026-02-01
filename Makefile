@@ -49,7 +49,7 @@ VAR_ARGS += --number-override $(NUMBER_OVERRIDE)
 endif
 
 help:
-	@echo "Plugin Template - Development Commands"
+	@echo "Calendar based Alarm Clock - Development Commands"
 	@echo ""
 	@echo "Usage: make <target> [FRONTEND=1] [BACKEND=1]"
 	@echo ""

@@ -1,4 +1,4 @@
-"""Plugin Template integration for Home Assistant."""
+"""Calendar based Alarm Clock integration for Home Assistant."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Plugin Template from a config entry."""
+    """Set up Calendar based Alarm Clock from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
     # Store any data you need for your integration

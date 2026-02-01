@@ -45,7 +45,7 @@ fi
 # -------------------------------------------------
 . "${SCRIPT_DIR}/tmpl.sh"
 
-echo -e "${GREEN}📝 Plugin Template - Commit Script${NC}"
+echo -e "${GREEN}📝 Calendar based Alarm Clock - Commit Script${NC}"
 echo ""
 
 # Check we're in the right directory
@@ -102,34 +102,34 @@ else
     echo -e "${YELLOW}No changes to ai/errors.md${NC}"
 fi
 
-# Commit ai/plugin_template/query.md if it has changes
-if git diff --name-only | grep -q "^ai/plugin_template/query.md$"; then
-    echo -e "${GREEN}Committing ai/plugin_template/query.md...${NC}"
-    git add ai/plugin_template/query.md
+# Commit ai/calendar_alarm_clock/query.md if it has changes
+if git diff --name-only | grep -q "^ai/calendar_alarm_clock/query.md$"; then
+    echo -e "${GREEN}Committing ai/calendar_alarm_clock/query.md...${NC}"
+    git add ai/calendar_alarm_clock/query.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_QUERY}"
     echo "  Done"
-elif [ -f "ai/plugin_template/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/plugin_template/query.md$"; then
-    echo -e "${GREEN}Committing ai/plugin_template/query.md (new file)...${NC}"
-    git add ai/plugin_template/query.md
+elif [ -f "ai/calendar_alarm_clock/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/calendar_alarm_clock/query.md$"; then
+    echo -e "${GREEN}Committing ai/calendar_alarm_clock/query.md (new file)...${NC}"
+    git add ai/calendar_alarm_clock/query.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_QUERY}"
     echo "  Done"
 # else
-#     echo -e "${YELLOW}No changes to ai/plugin_template/query.md${NC}"
+#     echo -e "${YELLOW}No changes to ai/calendar_alarm_clock/query.md${NC}"
 fi
 
-# Commit ai/plugin_template/errors.md if it has changes
-if git diff --name-only | grep -q "^ai/plugin_template/errors.md$"; then
-    echo -e "${GREEN}Committing ai/plugin_template/errors.md...${NC}"
-    git add ai/plugin_template/errors.md
+# Commit ai/calendar_alarm_clock/errors.md if it has changes
+if git diff --name-only | grep -q "^ai/calendar_alarm_clock/errors.md$"; then
+    echo -e "${GREEN}Committing ai/calendar_alarm_clock/errors.md...${NC}"
+    git add ai/calendar_alarm_clock/errors.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_ERRORS}"
     echo "  Done"
-elif [ -f "ai/plugin_template/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/plugin_template/errors.md$"; then
-    echo -e "${GREEN}Committing ai/plugin_template/errors.md (new file)...${NC}"
-    git add ai/plugin_template/errors.md
+elif [ -f "ai/calendar_alarm_clock/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/calendar_alarm_clock/errors.md$"; then
+    echo -e "${GREEN}Committing ai/calendar_alarm_clock/errors.md (new file)...${NC}"
+    git add ai/calendar_alarm_clock/errors.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_ERRORS}"
     echo "  Done"
 # else
-#     echo -e "${YELLOW}No changes to ai/plugin_template/errors.md${NC}"
+#     echo -e "${YELLOW}No changes to ai/calendar_alarm_clock/errors.md${NC}"
 fi
 
 # Restore staged changes before the final commit

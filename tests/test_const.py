@@ -1,16 +1,16 @@
-"""Tests for Plugin Template constants."""
-from custom_components.plugin_template.const import DOMAIN, LOG_NAME
+"""Tests for Calendar based Alarm Clock constants."""
+from custom_components.calendar_alarm_clock.const import DOMAIN, LOG_NAME
 
 
 def test_domain_constant():
     """Test that DOMAIN is set correctly."""
-    assert DOMAIN == "plugin_template"
+    assert DOMAIN == "calendar_alarm_clock"
     assert isinstance(DOMAIN, str)
 
 
 def test_log_name_constant():
     """Test that LOG_NAME is set correctly."""
-    assert LOG_NAME == "custom-components.plugin_template"
+    assert LOG_NAME == "custom-components.calendar_alarm_clock"
     assert isinstance(LOG_NAME, str)
     assert DOMAIN in LOG_NAME
 

@@ -1,5 +1,5 @@
-"""Tests for Plugin Template data models."""
-from custom_components.plugin_template.models import PluginData
+"""Tests for Calendar based Alarm Clock data models."""
+from custom_components.calendar_alarm_clock.models import PluginData
 
 
 def test_plugin_data_creation():

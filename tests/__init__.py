@@ -1,2 +1,2 @@
-"""Tests for Plugin Template integration."""
+"""Tests for Calendar based Alarm Clock integration."""
 
