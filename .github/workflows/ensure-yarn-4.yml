@@ -15,10 +15,36 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Enable Corepack and activate Yarn 4.12.0
+      - name: Enable Corepack and activate Yarn
         run: |
           corepack enable
-          corepack prepare yarn@4.12.0 --activate
+          # prefer frontend/package.json if present
+          if [ -f frontend/package.json ]; then
+            pkgfile=frontend/package.json
+          elif [ -f package.json ]; then
+            pkgfile=package.json
+          else
+            pkgfile=""
+          fi
+
+          if [ -n "$pkgfile" ]; then
+            pm=$(node -e "const path=process.argv[1]; const p=require(path.startsWith('./')?path:'./'+path); console.log(p.packageManager||'')" "$pkgfile")
+          else
+            pm=""
+          fi
+
+          echo "Detected packageManager: $pm"
+
+          if echo "$pm" | grep -q '^yarn@'; then
+            ver=${pm#yarn@}
+            corepack prepare yarn@$ver --activate
+          elif [ -z "$pm" ]; then
+            echo "No packageManager field found; activating yarn@stable"
+            corepack prepare yarn@stable --activate
+          else
+            echo "packageManager is not yarn (found: $pm); only enabling corepack"
+          fi
+
           yarn -v
 
       - name: Install dependencies (immutable)
