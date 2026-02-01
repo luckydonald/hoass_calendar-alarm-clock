@@ -11,6 +11,8 @@
   "replacements": {
     "CalendarBackedAlarmClockCardEditor": "AlarmClockCardEditor.vue",
     "CalendarBasedAlarmClockCard": "AlarmClockCard",
+    "calendar-alarm-clock-card.js":  "alarm-clock-card.js",
+    "CalendarBackedAlarmClockSensor":  "AlarmSensor",
     "": ""
   },
   "": ""
