@@ -1,4 +1,4 @@
-"""Pytest configuration and fixtures for Plugin Template tests."""
+"""Pytest configuration and fixtures for Calendar backed Alarm Clock tests."""
 import sys
 from pathlib import Path
 

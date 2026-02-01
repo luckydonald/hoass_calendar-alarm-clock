@@ -3,13 +3,13 @@ import {
   h,
 } from 'vue';
 
-import PluginTemplateCard from './PluginTemplateCard.vue';
+import CalendarBackedAlarmClockCard from './CalendarBackedAlarmClockCard.vue';
 
 import type { App, ComponentPublicInstance } from 'vue';
 
 import {CardConfig, HomeAssistant, MountedWrapperExtras, Wrapper} from './types';
 
-interface PluginTemplateCardConfig extends CardConfig {
+interface CalendarBackedAlarmClockCardConfig extends CardConfig {
   type?: string;
   // UI/editor related optional properties
   title?: string;
@@ -26,11 +26,11 @@ interface PluginTemplateCardConfig extends CardConfig {
 
 interface AppData {
   hass: HomeAssistant | null;
-  config: PluginTemplateCardConfig;
+  config: CalendarBackedAlarmClockCardConfig;
 }
 
-class PluginTemplateCardElement extends HTMLElement {
-  private _config: PluginTemplateCardConfig = {};
+class CalendarBackedAlarmClockCardElement extends HTMLElement {
+  private _config: CalendarBackedAlarmClockCardConfig = {};
 
   private _hass: HomeAssistant | null = null;
 
@@ -46,7 +46,7 @@ class PluginTemplateCardElement extends HTMLElement {
     }
   }
 
-  public setConfig(config: PluginTemplateCardConfig): void {
+  public setConfig(config: CalendarBackedAlarmClockCardConfig): void {
     this._config = config;
     if (this._app?._instance?.proxy) {
       const proxy = this._app._instance.proxy as ComponentPublicInstance & AppData;
@@ -72,7 +72,7 @@ class PluginTemplateCardElement extends HTMLElement {
       },
       render() {
         const data = this as unknown as AppData;
-        return h(PluginTemplateCard, {
+        return h(CalendarBackedAlarmClockCard, {
           hass: data.hass,
           config: data.config,
         });
@@ -96,14 +96,14 @@ class PluginTemplateCardElement extends HTMLElement {
   public static getConfigElement(): HTMLElement {
     // Create a wrapper element and mount the Vue editor into it.
     // Define 'hass' and 'setConfig' on the element so Home Assistant can safely set properties.
-    const wrapper: Wrapper<PluginTemplateCardConfig> = document.createElement('div');
+    const wrapper: Wrapper<CalendarBackedAlarmClockCardConfig> = document.createElement('div');
 
     // Mount the Vue editor into the wrapper. Keep a reference to the VM proxy so we can update props.
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const app = createApp(PluginTemplateCardEditor, {
+    const app = createApp(CalendarBackedAlarmClockCardEditor, {
       hass: null,
       config: {},
-      onConfigChanged: (cfg: PluginTemplateCardConfig) => {
+      onConfigChanged: (cfg: CalendarBackedAlarmClockCardConfig) => {
         // When the editor notifies of config changes, dispatch an event from the wrapper so HA picks it up
         const event = new CustomEvent('config-changed', {
           detail: { config: cfg },
@@ -116,7 +116,7 @@ class PluginTemplateCardElement extends HTMLElement {
 
     // noinspection UnnecessaryLocalVariableJS
     const vmOrigForTyping = app.mount(wrapper);
-    const vm = vmOrigForTyping as typeof vmOrigForTyping & MountedWrapperExtras<PluginTemplateCardConfig>;
+    const vm = vmOrigForTyping as typeof vmOrigForTyping & MountedWrapperExtras<CalendarBackedAlarmClockCardConfig>;
 
     // Define a 'hass' property so HA can set it (and we forward it to the Vue component proxy)
     Object.defineProperty(wrapper, 'hass', {
@@ -135,7 +135,7 @@ class PluginTemplateCardElement extends HTMLElement {
     });
 
     // Provide a setConfig method which HA uses to initialize the editor
-    wrapper.setConfig = (config: PluginTemplateCardConfig) => {
+    wrapper.setConfig = (config: CalendarBackedAlarmClockCardConfig) => {
       try {
         if (vm) vm.config = config;
       } catch {
@@ -146,16 +146,16 @@ class PluginTemplateCardElement extends HTMLElement {
     return wrapper;
   }
 
-  public static getStubConfig(): PluginTemplateCardConfig {
+  public static getStubConfig(): CalendarBackedAlarmClockCardConfig {
     return {
-      type: 'custom:plugin-template-card',
-      title: 'Plugin Template',
+      type: 'custom:calendar-alarm-clock-card',
+      title: 'Calendar backed Alarm Clock',
     };
   }
 }
 
-class PluginTemplateCardEditor extends HTMLElement {
-  private _config: PluginTemplateCardConfig = {};
+class CalendarBackedAlarmClockCardEditor extends HTMLElement {
+  private _config: CalendarBackedAlarmClockCardConfig = {};
 
   private _hass: HomeAssistant | null = null;
 
@@ -164,7 +164,7 @@ class PluginTemplateCardEditor extends HTMLElement {
     this._render();
   }
 
-  public setConfig(config: PluginTemplateCardConfig): void {
+  public setConfig(config: CalendarBackedAlarmClockCardConfig): void {
     this._config = config;
     this._render();
   }
@@ -187,7 +187,7 @@ class PluginTemplateCardEditor extends HTMLElement {
     wrapper.appendChild(this._createTextInput(
       'title',
       'Card Title',
-      this._config.title ?? 'Plugin Template',
+      this._config.title ?? 'Calendar backed Alarm Clock',
     ));
 
     // Entity picker (for single alarm view)
@@ -478,7 +478,7 @@ class PluginTemplateCardEditor extends HTMLElement {
     return row;
   }
 
-  private _updateConfig(update: Partial<PluginTemplateCardConfig>): void {
+  private _updateConfig(update: Partial<CalendarBackedAlarmClockCardConfig>): void {
     this._config = {
       ...this._config,
       ...update,
@@ -497,21 +497,21 @@ class PluginTemplateCardEditor extends HTMLElement {
 }
 
 // Register custom elements
-customElements.define('plugin-template-card', PluginTemplateCardElement);
-customElements.define('plugin-template-card-editor', PluginTemplateCardEditor);
+customElements.define('calendar-alarm-clock-card', CalendarBackedAlarmClockCardElement);
+customElements.define('calendar-alarm-clock-card-editor', CalendarBackedAlarmClockCardEditor);
 
 // Register with Home Assistant's custom card registry
 window.customCards = window.customCards ?? [];
 window.customCards.push({
-  type: 'custom:plugin-template-card',
-  name: 'Plugin Template Card',
+  type: 'custom:calendar-alarm-clock-card',
+  name: 'Calendar backed Alarm Clock Card',
   description: 'A plugin template card for Home Assistant',
   preview: true,
 });
 
 // eslint-disable-next-line no-console
 console.info(
-  '%c PLUGIN-TEMPLATE-CARD %c dev',
+  '%c CALENDAR-ALARM-CLOCK-CARD %c dev',
   'color: white; background: #3498db; font-weight: bold;',
   'color: #3498db; background: white; font-weight: bold;',
 );

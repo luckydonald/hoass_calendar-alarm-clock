@@ -48,7 +48,7 @@ describe('Type Definitions', () => {
       expect(config).toBeDefined();
 
       const configWithProps: CardConfig = {
-        type: 'custom:plugin-template-card',
+        type: 'custom:calendar-alarm-clock-card',
         entity: 'sensor.test',
         title: 'Test',
       };
