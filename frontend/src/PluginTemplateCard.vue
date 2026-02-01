@@ -34,19 +34,15 @@ onUnmounted(() => {
 });
 
 // Computed
-const cardTitle = computed(() => props.config.title || 'Plugin Template');
+const cardTitle = computed(() => props.config.title ?? 'Calendar based Alarm Clock');
 
 // Helper to get entity state
 const getEntityState = (entityId: string) => {
-  if (!props.hass || !props.hass.states) return null;
+  if (!props.hass?.states) {
+    return null;
+  }
   return props.hass.states[entityId];
 };
-
-// Helper to call service (prefixed with underscore so unused is ignored by eslint)
-async function _callService(domain: string, service: string, data: any = {}) {
-  if (!props.hass) return;
-  await props.hass.callService(domain, service, data);
-}
 
 // Format time for display
 const formatTime = (date: Date): string => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -55,13 +51,17 @@ const formatTime = (date: Date): string => date.toLocaleTimeString([], { hour: '
 <template>
   <ha-card>
     <div class="card-header">
-      <div class="name">{{ cardTitle }}</div>
+      <div class="name">
+        {{ cardTitle }}
+      </div>
     </div>
     <div class="card-content">
       <!-- Example section: Display current time -->
       <div class="section">
         <h3>Current Time</h3>
-        <p class="time-display">{{ formatTime(currentTime) }}</p>
+        <p class="time-display">
+          {{ formatTime(currentTime) }}
+        </p>
       </div>
 
       <!-- Example section: Display entity if configured -->

@@ -1,7 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
+import {
+  beforeEach,
+  describe, expect, it,
+} from 'vitest';
+
 import AlarmClockCard from '../src/AlarmClockCard.vue';
 import type { HomeAssistant, CardConfig } from '../src/types';
+
+import type { CardConfig, HassEntity, HomeAssistant } from '../src/types';
 
 describe('AlarmClockCard', () => {
   let mockHass: HomeAssistant;
@@ -9,21 +15,23 @@ describe('AlarmClockCard', () => {
 
   beforeEach(() => {
     // Create mock Home Assistant instance
-    mockHass = {
-      states: {
-        'sensor.test': {
-          entity_id: 'sensor.test',
-          state: 'on',
-          attributes: {},
-          last_changed: '2024-01-01T00:00:00Z',
-          last_updated: '2024-01-01T00:00:00Z',
-          context: {
-            id: 'test-context',
-            parent_id: null,
-            user_id: null,
-          },
-        },
+    // Build states using bracket notation to avoid object-literal property name linting
+    const states: Record<string, HassEntity> = {};
+    states['sensor.test'] = {
+      entity_id: 'sensor.test',
+      state: 'on',
+      attributes: {},
+      last_changed: '2024-01-01T00:00:00Z',
+      last_updated: '2024-01-01T00:00:00Z',
+      context: {
+        id: 'test-context',
+        parent_id: null,
+        user_id: null,
       },
+    };
+
+    mockHass = {
+      states,
       services: {},
       user: {
         id: 'test-user',

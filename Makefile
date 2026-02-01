@@ -16,6 +16,38 @@ BACKEND  ?= $(if $(wildcard custom_components),1,0)
 
 .PHONY: release lint format build setup help commit init fix-commits commit-fix rebase-template template-rebase merge-template template-merge check-slots
 
+# If user runs: make commit-fix --start-commit <hash> ...
+# then MAKECMDGOALS contains: commit-fix --start-commit <hash> ...
+# Capture those extra words and expose them as $(EXTRA_ARGS), and
+# create no-op targets for them so make doesn't try to build them.
+ifeq ($(firstword $(MAKECMDGOALS)),commit-fix)
+EXTRA_ARGS := $(filter-out commit-fix,$(MAKECMDGOALS))
+# define no-op targets for each extra arg to avoid 'No rule to make target' errors
+$(eval $(EXTRA_ARGS): ; @:)
+endif
+
+# Support named variable style invocation, e.g.:
+#   make commit-fix START_COMMIT=abc END_COMMIT=def IGNORE_BLOCKS=1
+# Map these to CLI args passed to the script in addition to EXTRA_ARGS/ARGS.
+VAR_ARGS :=
+ifneq ($(strip $(START_COMMIT)),)
+VAR_ARGS += --start-commit $(START_COMMIT)
+endif
+ifneq ($(strip $(END_COMMIT)),)
+VAR_ARGS += --end-commit $(END_COMMIT)
+endif
+ifneq ($(strip $(IGNORE_BLOCKS)),)
+# any non-empty value enables the flag
+VAR_ARGS += --ignore-blocks
+endif
+ifneq ($(strip $(NUMBER_SEARCH)),)
+# expect comma-separated list: 10,11,23
+VAR_ARGS += --number-search $(NUMBER_SEARCH)
+endif
+ifneq ($(strip $(NUMBER_OVERRIDE)),)
+VAR_ARGS += --number-override $(NUMBER_OVERRIDE)
+endif
+
 help:
 	@echo "Calendar backed Alarm Clock - Development Commands"
 	@echo ""
@@ -47,6 +79,15 @@ help:
 	@echo "  merge-template    - Merge template's mane branch into current branch"
 	@echo "  template-merge-   Alias for 'merge-template' above"
 	@echo "  help           - Show this help message"
+	@echo ""
+	@echo "Examples for 'commit-fix' (three supported styles):"
+	@echo "  1) Portable (recommended) - pass all flags via ARGS string:"
+	@echo "       make commit-fix ARGS=\"--start-commit abc123 --end-commit def456 --ignore-blocks\""
+	@echo "  2) Named variables - convenient and portable:"
+	@echo "       make commit-fix START_COMMIT=abc123 END_COMMIT=def456 IGNORE_BLOCKS=1 NUMBER_SEARCH=10,11,23 NUMBER_OVERRIDE=10"
+	@echo "  3) Less-portable - pass dash-args as goals (may be treated as make options on some systems):"
+	@echo "       make commit-fix --start-commit abc123 --ignore-blocks"
+	@echo ""
 
 init:
 	@chmod +x scripts/init.sh
@@ -54,7 +95,7 @@ init:
 
 fix-commits:
 	@chmod +x scripts/fix-commits.sh
-	@./scripts/fix-commits.sh
+	@./scripts/fix-commits.sh $(EXTRA_ARGS) $(VAR_ARGS) $(ARGS)
 
 commit-fix: fix-commits
 
@@ -136,6 +177,8 @@ endif
 lint-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Type checking / linting frontend..."
+	@chmod +x scripts/ensure_node.sh || true
+	@./scripts/ensure_node.sh || true
 	@chmod +x scripts/frontend_lint.sh
 	@./scripts/frontend_lint.sh "$(FRONTEND_DIR)"
 else
@@ -157,6 +200,8 @@ endif
 format-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Formatting TypeScript..."
+	@chmod +x scripts/ensure_node.sh || true
+	@./scripts/ensure_node.sh || true
 	@chmod +x scripts/frontend_format.sh
 	@./scripts/frontend_format.sh "$(FRONTEND_DIR)"
 else
@@ -186,6 +231,8 @@ commit-format:
 	@./scripts/commit-format.sh
 
 release:
+	@chmod +x scripts/ensure_node.sh || true
+	@./scripts/ensure_node.sh || true
 	@chmod +x scripts/release.sh
 	@./scripts/release.sh
 
@@ -202,6 +249,8 @@ merge-template:
 template-merge: merge-template
 
 check-slots:
+	@chmod +x scripts/ensure_node.sh || true
+	@./scripts/ensure_node.sh || true
 	@if [ -n "$(FRONTEND_DIR)" ]; then \
 		node scripts/check_slots.js "$(FRONTEND_DIR)"; \
 	else \

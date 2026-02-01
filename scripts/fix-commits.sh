@@ -26,6 +26,7 @@ RECOVERY_TAG_TEMPLATE="fix-commits-backup-step-{step}_{date}"
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YIGHLIGHT='\033[1;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 GRAY='\033[0;37m'
@@ -62,6 +63,14 @@ print_success() {
 
 linebreak() {
   echo ""
+}
+
+# Dry-run header printer (used when --dry-run is passed)
+PRINT_DRY_RUN_HEADER() {
+    linebreak
+    print_info "Dry-run mode: the script will not create tags or perform a rebase."
+    print_info "Selected commits (shown in chronological order):"
+    linebreak
 }
 
 print_header "Fix AI Commit Messages"
@@ -130,75 +139,474 @@ fi
 # Find the last batch of AI commits
 print_info "Scanning for AI commit batches..."
 
-# Look for unified format: ✨ ai: [NNN] message… (X/Y)
-# Works with or without TEMPLATE prefix
-LAST_AI=$(git log --format=%s -1 --grep="ai: \[[0-9]\+\]")
+# Parse CLI arguments
+START_COMMIT=""
+END_COMMIT=""
+IGNORE_BLOCKS=false
+NUMBER_SEARCH=()
+NUMBER_OVERRIDE=""
+DRY_RUN=false
+INTERACTIVE=false
 
-if [ -z "$LAST_AI" ]; then
-    print_error "No AI commits found in expected format"
-    print_info "Expected format: ✨ ai: [NNN] message… (X/Y)"
+print_usage() {
+    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive]"
+}
+
+# Helper: check if array contains value (portable)
+array_contains() {
+    local val="$1"; shift
+    local item
+    for item in "$@"; do
+        if [ "$item" = "$val" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Helper: normalize step number (remove leading zeros, empty -> empty)
+normalize_step() {
+    echo "$1" | sed 's/^0*//'
+}
+
+# Helper: parse a number/search string like "10,11,58-60" into NUMBER_SEARCH array
+parse_number_search() {
+    local input="$1"
+    NUMBER_SEARCH=()
+    # Empty input -> empty array
+    if [ -z "${input// /}" ]; then
+        return 0
+    fi
+
+    # Split on commas
+    OLD_IFS="$IFS"
+    IFS=','
+    for raw in $input; do
+        IFS="$OLD_IFS"
+        # Trim whitespace
+        token=$(echo "$raw" | sed 's/^ *//; s/ *$//')
+        if [ -z "$token" ]; then
+            IFS=','
+            continue
+        fi
+        # If token is a range like 58-69
+        if echo "$token" | grep -qE '^[0-9]+[[:space:]]*-[[:space:]]*[0-9]+$'; then
+            start=$(echo "$token" | sed -E 's/^([0-9]+).*/\1/')
+            end=$(echo "$token" | sed -E 's/.*-([0-9]+)$/\1/')
+            # Normalize and ensure numeric ordering
+            start=$(normalize_step "$start")
+            end=$(normalize_step "$end")
+            # If start or end empty after normalization, skip
+            if [ -z "$start" ] || [ -z "$end" ]; then
+                IFS=','
+                continue
+            fi
+            # Convert to integers and handle reversed ranges
+            start=$((10#$start))
+            end=$((10#$end))
+            if [ "$start" -le "$end" ]; then
+                i=$start
+                while [ $i -le $end ]; do
+                    NUMBER_SEARCH+=("$i")
+                    i=$((i+1))
+                done
+            else
+                i=$start
+                while [ $i -ge $end ]; do
+                    NUMBER_SEARCH+=("$i")
+                    i=$((i-1))
+                done
+            fi
+        elif echo "$token" | grep -qE '^[0-9]+$'; then
+            # Single number
+            num=$(normalize_step "$token")
+            if [ -n "$num" ]; then
+                # Strip leading zeros via arithmetic
+                num=$((10#$num))
+                NUMBER_SEARCH+=("$num")
+            fi
+        else
+            # Not a number or range; ignore
+            :
+        fi
+        IFS=','
+    done
+    IFS="$OLD_IFS"
+
+    # Remove duplicates while preserving order
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        local uniq=()
+        for v in "${NUMBER_SEARCH[@]}"; do
+            if [ -z "$v" ]; then
+                continue
+            fi
+            found=false
+            for u in "${uniq[@]}"; do
+                if [ "$u" = "$v" ]; then
+                    found=true
+                    break
+                fi
+            done
+            if [ "$found" = false ]; then
+                uniq+=("$v")
+            fi
+        done
+        NUMBER_SEARCH=("${uniq[@]}")
+    fi
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --start-commit)
+            START_COMMIT="$2"; shift 2 || true;;
+        --end-commit)
+            END_COMMIT="$2"; shift 2 || true;;
+        --ignore-blocks)
+            IGNORE_BLOCKS=true; shift;;
+        --number-search)
+            if [ -n "$2" ]; then
+                parse_number_search "$2"
+                shift 2 || true
+            else
+                print_error "--number-search requires a comma-separated list"
+                exit 1
+            fi
+            ;;
+        --number-override)
+            NUMBER_OVERRIDE="$2"; shift 2 || true;;
+        --dry-run)
+            DRY_RUN=true; shift;;
+        --interactive)
+            INTERACTIVE=true; shift;;
+        -h|--help)
+            print_usage; exit 0;;
+        *)
+            # stop parsing on unknown argument (allow other wrappers)
+            break;;
+    esac
+done
+
+# If interactive mode is enabled, prompt the user for each configurable flag/param
+if [ "$INTERACTIVE" = true ]; then
+    linebreak
+    print_info "Interactive mode: press Enter to keep defaults/omit a setting"
+
+    # Start commit
+    if [ -n "$START_COMMIT" ]; then
+        read -p "Start commit (current: $START_COMMIT) [press Enter to keep/omit]: " __input
+        if [ -n "${__input}" ]; then
+            START_COMMIT="$__input"
+        fi
+    else
+        read -p "Start commit [press Enter to omit]: " __input
+        if [ -n "${__input}" ]; then
+            START_COMMIT="$__input"
+        fi
+    fi
+
+    # End commit
+    if [ -n "$END_COMMIT" ]; then
+        read -p "End commit (current: $END_COMMIT) [press Enter to keep/omit]: " __input
+        if [ -n "${__input}" ]; then
+            END_COMMIT="$__input"
+        fi
+    else
+        read -p "End commit [press Enter to omit]: " __input
+        if [ -n "${__input}" ]; then
+            END_COMMIT="$__input"
+        fi
+    fi
+
+    # Ignore blocks (y/N)
+    read -p "Ignore blocks (treat matching commits even if separated)? [y/N]: " __yn
+    if [[ "${__yn}" =~ ^[Yy] ]]; then
+        IGNORE_BLOCKS=true
+    fi
+
+    # Number search (comma-separated)
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        curns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
+        read -p "Number search (current: $curns) [comma-separated, Enter to keep/omit]: " __input
+        if [ -n "${__input}" ]; then
+            parse_number_search "$__input"
+        fi
+    else
+        read -p "Number search (comma-separated) [press Enter to omit]: " __input
+        if [ -n "${__input}" ]; then
+            parse_number_search "$__input"
+        fi
+    fi
+
+    # Number override
+    if [ -n "$NUMBER_OVERRIDE" ]; then
+        read -p "Number override (current: $NUMBER_OVERRIDE) [press Enter to keep/omit]: " __input
+        if [ -n "${__input}" ]; then
+            NUMBER_OVERRIDE="$__input"
+        fi
+    else
+        read -p "Number override [press Enter to omit]: " __input
+        if [ -n "${__input}" ]; then
+            NUMBER_OVERRIDE="$__input"
+        fi
+    fi
+
+    # Dry-run (y/N)
+    read -p "Dry run (no changes will be made)? [y/N]: " __yn
+    if [[ "${__yn}" =~ ^[Yy] ]]; then
+        DRY_RUN=true
+    fi
+
+    # cleanup temp variable
+    unset __input __yn curns
+    linebreak
+fi
+
+# Validate commits if provided
+if [ -n "$START_COMMIT" ]; then
+    if ! git cat-file -e "${START_COMMIT}^{commit}" 2>/dev/null; then
+        print_error "Start commit '$START_COMMIT' not found"
+        exit 1
+    fi
+fi
+if [ -n "$END_COMMIT" ]; then
+    if ! git cat-file -e "${END_COMMIT}^{commit}" 2>/dev/null; then
+        print_error "End commit '$END_COMMIT' not found"
+        exit 1
+    fi
+fi
+
+# Build candidate commit list (chronological: oldest -> newest)
+if [ -n "$START_COMMIT" ]; then
+    RANGE="${START_COMMIT}^..${END_COMMIT:-HEAD}"
+    CANDIDATE_COMMITS=()
+    while IFS= read -r line; do
+        CANDIDATE_COMMITS+=("$line")
+    done < <(git rev-list --reverse "$RANGE")
+else
+    if [ -n "$END_COMMIT" ]; then
+        CANDIDATE_COMMITS=()
+        while IFS= read -r line; do
+            CANDIDATE_COMMITS+=("$line")
+        done < <(git rev-list --reverse "${END_COMMIT}")
+    else
+        CANDIDATE_COMMITS=()
+        while IFS= read -r line; do
+            CANDIDATE_COMMITS+=("$line")
+        done < <(git rev-list --reverse HEAD)
+    fi
+fi
+
+if [ ${#CANDIDATE_COMMITS[@]} -eq 0 ]; then
+    print_error "No commits found in the specified range"
     exit 1
 fi
 
-# Extract the step number (remove leading zeros)
-STEP=$(echo "$LAST_AI" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
-PADDED_STEP=$(printf "%03d" "$STEP")
+# Helper: extract step number from commit subject (returns empty if none)
+extract_step_from_msg() {
+    echo "$1" | sed -n 's/.*ai: \[\([0-9]*\)\].*/\1/p' | sed 's/^0*//'
+}
 
-print_info "Found AI commits for step [$PADDED_STEP]"
+# Helper: normalize step number (remove leading zeros, empty -> empty)
+# (defined earlier; keep single definition only)
+# normalize_step() { ... }
 
-# Find all consecutive commits with the same step number, stopping at query/error or different steps
-COMMIT_HASHES=()
-COMMIT_COUNT=0
+# Helper: parse a number/search string like "10,11,58-60" into NUMBER_SEARCH array
+# (defined earlier; reuse existing function; no duplicate here)
+# parse_number_search() { ... }
 
-# Start from the last AI commit and walk backwards
-CURRENT_COMMIT=$(git log --format=%H -1 --grep="ai: \[$PADDED_STEP\]")
+# Helper: check if a step is allowed by NUMBER_SEARCH (if specified)
+is_step_allowed() {
+    local s="$1"
+    if [ ${#NUMBER_SEARCH[@]} -eq 0 ]; then
+        # no explicit filter, allow all
+        return 0
+    fi
+    for v in "${NUMBER_SEARCH[@]}"; do
+        # trim leading zeros from v
+        v=$(normalize_step "$v")
+        if [ "$v" = "$s" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
 
-while [ -n "$CURRENT_COMMIT" ]; do
-    # Check if this commit has the correct step number
-    COMMIT_MSG=$(git log --format=%s -1 "$CURRENT_COMMIT")
-    if echo "$COMMIT_MSG" | grep -q "ai: \[$PADDED_STEP\]"; then
-        # This is part of our batch
-        COMMIT_HASHES=("$CURRENT_COMMIT" "${COMMIT_HASHES[@]}")
-        COMMIT_COUNT=$((COMMIT_COUNT + 1))
-
-        # Get the parent commit
-        PARENT_COMMIT=$(git rev-parse "$CURRENT_COMMIT^" 2>/dev/null)
-        if [ -z "$PARENT_COMMIT" ]; then
-            # No more parents, stop
+# Find the last (newest) commit in the candidate range that matches ai: [NNN]
+DETECTED_INDEX=-1
+DETECTED_STEP=""
+for (( idx=${#CANDIDATE_COMMITS[@]}-1; idx>=0; idx-- )); do
+    chash=${CANDIDATE_COMMITS[$idx]}
+    subject=$(git log --format=%s -1 "$chash")
+    step=$(extract_step_from_msg "$subject")
+    if [ -n "$step" ]; then
+        step_norm=$(normalize_step "$step")
+        # If number search is provided, ensure this step is allowed
+        if is_step_allowed "$step_norm"; then
+            DETECTED_INDEX=$idx
+            DETECTED_STEP=$step_norm
             break
         fi
-
-        # Check the parent's message
-        PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
-
-        # Stop if parent is a query/error update
-        if echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
-            print_info "Stopping at query/error commit: $PARENT_MSG"
-            break
-        fi
-
-        # Stop if parent is a different AI step
-        if echo "$PARENT_MSG" | grep -q "ai: \[[0-9]\+\]" && ! echo "$PARENT_MSG" | grep -q "ai: \[$PADDED_STEP\]"; then
-            print_info "Stopping at different AI step: $PARENT_MSG"
-            break
-        fi
-
-        # Continue with parent
-        CURRENT_COMMIT="$PARENT_COMMIT"
-    else
-        # This commit doesn't match our step, stop
-        break
     fi
 done
 
-if [ "$COMMIT_COUNT" -eq 0 ]; then
-    print_error "No commits found for step [$PADDED_STEP]"
+# If we didn't detect any matching commit but a NUMBER_SEARCH was given, we may still proceed (empty set handled later).
+if [ "$DETECTED_INDEX" -eq -1 ] && [ -z "$NUMBER_OVERRIDE" ] && [ ${#NUMBER_SEARCH[@]} -eq 0 ]; then
+    print_error "No AI commits found in the specified range matching the criteria"
+    print_info "Try --number-search or check the commit range"
     exit 1
 fi
 
-print_success "Found $COMMIT_COUNT commit(s) in this connected batch"
+# Determine the step we will use when editing messages (override only affects editing)
+if [ -n "$NUMBER_OVERRIDE" ]; then
+    EDIT_STEP=$(normalize_step "$NUMBER_OVERRIDE")
+else
+    EDIT_STEP="$DETECTED_STEP"
+fi
 
-# Show the commits
+# If override provided, ensure detected step is also set to the override so selection logic uses it
+if [ -n "$NUMBER_OVERRIDE" ]; then
+    DETECTED_STEP="$EDIT_STEP"
+fi
+
+# PADDED_STEP used later for tags and prompts
+PADDED_STEP=$(printf "%03d" "${EDIT_STEP:-0}")
+
+# Build the list of commits to operate on
+COMMIT_HASHES=()
+if [ "$IGNORE_BLOCKS" = true ]; then
+    # Include all commits in the candidate range that match NUMBER_SEARCH (if provided),
+    # otherwise match DETECTED_STEP (the most recent matching step).
+    for chash in "${CANDIDATE_COMMITS[@]}"; do
+        subject=$(git log --format=%s -1 "$chash")
+        step=$(extract_step_from_msg "$subject")
+        if [ -n "$step" ]; then
+            step_norm=$(normalize_step "$step")
+            if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+                if is_step_allowed "$step_norm"; then
+                    COMMIT_HASHES+=("$chash")
+                fi
+            else
+                # no NUMBER_SEARCH provided, fall back to detected step if available
+                if [ -n "$DETECTED_STEP" ]; then
+                    if [ "$step_norm" = "$DETECTED_STEP" ]; then
+                        COMMIT_HASHES+=("$chash")
+                    fi
+                fi
+            fi
+        fi
+    done
+else
+    # Connected-block mode
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        # For each matching commit in the candidate range, collect its connected block
+        for (( idx=${#CANDIDATE_COMMITS[@]}-1; idx>=0; idx-- )); do
+            chash=${CANDIDATE_COMMITS[$idx]}
+            subject=$(git log --format=%s -1 "$chash")
+            step=$(extract_step_from_msg "$subject")
+            if [ -z "$step" ]; then
+                continue
+            fi
+            step_norm=$(normalize_step "$step")
+            if ! is_step_allowed "$step_norm"; then
+                continue
+            fi
+
+            # Walk backwards from idx to gather the connected block for this step
+            block=()
+            j=$idx
+            while [ $j -ge 0 ]; do
+                ch=${CANDIDATE_COMMITS[$j]}
+                subj=$(git log --format=%s -1 "$ch")
+                st=$(extract_step_from_msg "$subj")
+                st_norm=$(normalize_step "$st")
+
+                # Stop if step differs
+                if [ -z "$st_norm" ] || [ "$st_norm" != "$step_norm" ]; then
+                    break
+                fi
+
+                # Prepend to block (so block will be chronological)
+                block=("$ch" "${block[@]}")
+
+                # Check parent commit message (previous in candidate list)
+                pj=$((j-1))
+                if [ $pj -lt 0 ]; then
+                    break
+                fi
+                pch=${CANDIDATE_COMMITS[$pj]}
+                pmsg=$(git log --format=%s -1 "$pch")
+
+                # Stop if parent is query/error or a different ai step
+                if echo "$pmsg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                    break
+                fi
+                if echo "$pmsg" | grep -q "ai: \[[0-9]\+\]" && ! echo "$pmsg" | grep -q "ai: \[$step_norm\]"; then
+                    break
+                fi
+
+                j=$pj
+            done
+
+            # Append block commits to COMMIT_HASHES if not already present
+            for bh in "${block[@]}"; do
+                if ! array_contains "$bh" "${COMMIT_HASHES[@]}"; then
+                    COMMIT_HASHES+=("$bh")
+                fi
+            done
+        done
+    else
+        # Original single-block behavior: walk backwards from DETECTED_INDEX
+        if [ "$DETECTED_INDEX" -ge 0 ]; then
+            idx=$DETECTED_INDEX
+            while [ $idx -ge 0 ]; do
+                chash=${CANDIDATE_COMMITS[$idx]}
+                subject=$(git log --format=%s -1 "$chash")
+                step=$(extract_step_from_msg "$subject")
+
+                step_norm=$(normalize_step "$step")
+                # If no step or not matching the detected step, stop
+                if [ -z "$step_norm" ] || [ "$step_norm" != "$DETECTED_STEP" ]; then
+                    break
+                fi
+
+                # Prepend to keep chronological order
+                COMMIT_HASHES=("$chash" "${COMMIT_HASHES[@]}")
+
+                # Prepare to check parent (in candidate array)
+                idx=$((idx-1))
+                if [ $idx -lt 0 ]; then
+                    break
+                fi
+
+                parent_chash=${CANDIDATE_COMMITS[$idx]}
+                parent_msg=$(git log --format=%s -1 "$parent_chash")
+
+                # If parent is a query/error update, stop (do not include parent)
+                if echo "$parent_msg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                    print_info "Stopping at query/error commit: $parent_msg"
+                    break
+                fi
+
+                # If parent is a different AI step, stop
+                if echo "$parent_msg" | grep -q "ai: \[[0-9]\+\]" && ! echo "$parent_msg" | grep -q "ai: \[$DETECTED_STEP\]"; then
+                    print_info "Stopping at different AI step: $parent_msg"
+                    break
+                fi
+            done
+        fi
+    fi
+fi
+
+COMMIT_COUNT=${#COMMIT_HASHES[@]}
+
+if [ "$COMMIT_COUNT" -eq 0 ]; then
+    print_error "No commits found matching the specified criteria"
+    exit 1
+fi
+
+print_success "Found $COMMIT_COUNT commit(s) matching criteria"
+
+# Show the commits we will fix
 linebreak
 print_info "Commits to fix:"
 for commit_hash in "${COMMIT_HASHES[@]}"; do
@@ -206,41 +614,156 @@ for commit_hash in "${COMMIT_HASHES[@]}"; do
 done
 linebreak
 
-# Check if this batch was preceded by a query/error update
-FIRST_COMMIT="${COMMIT_HASHES[0]}"
-PARENT_COMMIT=$(git rev-parse "$FIRST_COMMIT^")
-PARENT_MSG=$(git log --format=%s -1 "$PARENT_COMMIT")
-
-QUERY_ERROR_COMMIT=""
-if echo "$PARENT_MSG" | grep -qE "(ai: updated query|ai: updated errors)"; then
-    QUERY_ERROR_COMMIT="$PARENT_COMMIT"
-    print_info "This batch was preceded by: $PARENT_MSG"
-    linebreak
-    print_info "Changes in that commit:"
-    linebreak
-
-    # Disable pager unless USE_PAGER is set
-    if [ -z "$USE_PAGER" ]; then
-        export GIT_PAGER=cat
-    fi
-
-    # Try to use bat for colorized output, fall back to plain git show
-    if command -v bat &> /dev/null; then
-        git show "$PARENT_COMMIT" | bat --style=plain --color=always --language=diff --paging=never
-    else
-        git show "$PARENT_COMMIT"
-    fi
-    linebreak
-fi
-
 # Ask for the message once for all commits in this batch
 linebreak
+# If dry-run requested, print a prominent red headline now (the user wanted the dry-run delayed until after the message input)
+#if [ "$DRY_RUN" = true ]; then
+#    echo -e "${RED}⚠ DRY RUN: No changes will be made. This will only simulate the rebase operations. Press Enter to continue or Ctrl+C to abort.${NC}"
+#fi
 print_info "Enter a message for all commits in this batch"
 print_warning "Leave empty to keep individual 'running…' messages"
 print_warning "Press Ctrl+C to cancel"
 linebreak
+# Show a short red dry-run reminder at the prompt time (so user knows this is a dry-run), but do not run the simulation yet
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${RED}⚠ DRY RUN: No changes will be made. A simulated rebase will be shown after you enter the message.${NC}"
+fi
 read -p "Message for step [$PADDED_STEP]: " BATCH_MESSAGE
 linebreak
+
+# If dry-run requested, now show simulated rebase operations and exit before any destructive actions
+if [ "$DRY_RUN" = true ]; then
+    # Print the dry-run header
+    PRINT_DRY_RUN_HEADER
+    # Determine REBASE_PARENT similar to actual rebase logic
+    if [ -n "$QUERY_ERROR_COMMIT" ]; then
+        REBASE_PARENT=$(git rev-parse "$QUERY_ERROR_COMMIT^" 2>/dev/null || true)
+    else
+        FIRST_COMMIT="${COMMIT_HASHES[0]}"
+        REBASE_PARENT=$(git rev-parse "${FIRST_COMMIT}^" 2>/dev/null || true)
+    fi
+
+    if [ -z "$REBASE_PARENT" ]; then
+        print_warning "Could not determine rebase parent; aborting dry-run simulation"
+        exit 0
+    fi
+
+    # Build squash map (hashes that should be squashed into previous)
+    SQUASH_SET=()
+    for pair in "${SQUASH_COMMITS[@]}"; do
+        idx2=$(echo "$pair" | cut -d: -f2)
+        if [ -n "${COMMIT_HASHES[$idx2]}" ]; then
+            SQUASH_SET+=("${COMMIT_HASHES[$idx2]}")
+        fi
+    done
+
+    # Build modify set from COMMIT_HASHES and optional QUERY_ERROR_COMMIT
+    MODIFY_SET=("${COMMIT_HASHES[@]}")
+    if [ -n "$QUERY_ERROR_COMMIT" ]; then
+        MODIFY_SET+=("$QUERY_ERROR_COMMIT")
+    fi
+
+    # Helper to check membership
+    in_set() {
+        local needle="$1"; shift
+        for x in "$@"; do
+            if [ "$x" = "$needle" ]; then
+                return 0
+            fi
+        done
+        return 1
+    }
+
+    # Build the todo commits (what git rebase -i would show) from REBASE_PARENT..HEAD
+    TODO_COMMITS=()
+    while IFS= read -r line; do
+        TODO_COMMITS+=("$line")
+    done < <(git rev-list --reverse "$REBASE_PARENT..HEAD")
+
+    # Simulate walking the todo and print operations
+    echo "🧾 Simulated rebase todo (from $REBASE_PARENT..HEAD):"
+    echo
+    substep_counter=1
+
+    # Compute simulated TOTAL (account for squashes)
+    if [ "$DO_SQUASH" = true ]; then
+        SIM_TOTAL=$((COMMIT_COUNT - ${#SQUASH_COMMITS[@]}))
+    else
+        SIM_TOTAL=$COMMIT_COUNT
+    fi
+
+    for th in "${TODO_COMMITS[@]}"; do
+        subj=$(git log --format='%s' -1 "$th" 2>/dev/null || true)
+        # Determine if this commit will be squashed
+        should_squash=false
+        if in_set "$th" "${SQUASH_SET[@]}"; then
+            should_squash=true
+        fi
+
+        # Determine if we'll modify this commit
+        will_modify=false
+        if in_set "$th" "${MODIFY_SET[@]}"; then
+            will_modify=true
+        fi
+
+        if [ "$should_squash" = true ]; then
+            # Squash line
+            echo "🔀 squash $th $subj"
+            # If commit is also modified, note that it'll be squashed (message merging)
+            if [ "$will_modify" = true ]; then
+                echo "    🧩 (will be squashed into previous commit; modified message may be combined)"
+            fi
+        else
+            # pick line
+            echo "✅ pick   $th $subj"
+            if [ "$will_modify" = true ]; then
+                # Show what the rebase editor would exec: compute new message
+                # For AI commits, compute STEP and SUBSTEP from the commit message
+                if echo "$subj" | grep -qE "ai: \[[0-9]+\]"; then
+                    orig_step=$(echo "$subj" | sed -n 's/.*ai: \[\([0-9]*\)\].*/\1/p' | sed 's/^0*//')
+                    # Extract current substep if present
+                    orig_substep=$(echo "$subj" | sed -n 's/.*(\([0-9]*\)\/.*)/\1/p' || true)
+                    # Determine the step to write: if NUMBER_OVERRIDE specified, use that, else use orig_step
+                    if [ -n "$NUMBER_OVERRIDE" ]; then
+                        write_step=$(echo "$NUMBER_OVERRIDE" | sed 's/^0*//')
+                    else
+                        write_step="$orig_step"
+                    fi
+                    padded_step=$(printf "%03d" "${write_step:-0}")
+                    # Determine message body: if BATCH_MESSAGE provided, use it; otherwise keep existing unless it's 'running…'
+                    if [ -n "$BATCH_MESSAGE" ]; then
+                        new_body="$BATCH_MESSAGE"
+                    else
+                        # Extract between ] and (  -> message body
+                        new_body=$(echo "$subj" | sed 's/.*\] \(.*\) (.*/\1/' || true)
+                        if echo "$new_body" | grep -qE "^running[.…]+$"; then
+                            new_body="running…"
+                        fi
+                    fi
+                    # Compute SUB and TOTAL for display
+                    SUB_DISPLAY=$substep_counter
+                    TOTAL_DISPLAY=$SIM_TOTAL
+                    # If this commit will be amended (i.e. will_modify true), show the amended message
+                    echo "    ✏️ will amend message -> ✉️ \"✨ ai: [$padded_step] $new_body ($SUB_DISPLAY/$TOTAL_DISPLAY)\""
+                    # Only increment substep if this commit results in a separate amended commit
+                    if [ "$should_squash" = false ]; then
+                        substep_counter=$((substep_counter + 1))
+                    fi
+                else
+                    # Non-AI commit modified (e.g., query/error) will be appended with BATCH_MESSAGE
+                    if [ -n "$BATCH_MESSAGE" ]; then
+                        echo "    ✏️ will amend message -> \"$subj: $BATCH_MESSAGE\""
+                    else
+                        echo "    ✏️ will keep existing message unless BATCH_MESSAGE provided"
+                    fi
+                fi
+            fi
+        fi
+    done
+    echo
+    echo "⚠ This is a dry-run simulation; no tags or rebase operations were performed."
+    exit 0
+fi
 
 # Analyze commits for potential squashing
 print_info "Analyzing commits for potential squashing..."
@@ -375,7 +898,13 @@ trap "rm -f $REBASE_SCRIPT" EXIT
 cat > "$REBASE_SCRIPT" << 'EOFSCRIPT'
 #!/usr/bin/env bash
 # Extract step and substep
-STEP=$(echo "$1" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
+# If an override step is provided via EDIT_STEP_ENV, prefer it
+if [ -n "$EDIT_STEP_ENV" ]; then
+    STEP="$EDIT_STEP_ENV"
+else
+    STEP=$(echo "$1" | sed 's/.*ai: \[\([0-9]*\)\].*/\1/' | sed 's/^0*//')
+fi
+STEP=$(echo "$STEP" | sed 's/^0*//')
 SUBSTEP=$(echo "$1" | sed 's/.*(\([0-9]*\)\/.*/\1/')
 TOTAL="TOTAL_PLACEHOLDER"
 
@@ -500,7 +1029,9 @@ fi
 # Create rebase editor script that modifies only our AI commits
 REBASE_EDITOR=$(mktemp)
 SQUASH_MAP=$(mktemp)
-trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT $REBASE_EDITOR $SQUASH_MAP" EXIT
+# create a temp file that will receive the new commit hashes (one per amended commit)
+NEW_COMMIT_LIST_FILE=$(mktemp)
+trap "rm -f $COMMITS_TO_MODIFY $REBASE_SCRIPT $QUERY_ERROR_SCRIPT $REBASE_EDITOR $SQUASH_MAP $NEW_COMMIT_LIST_FILE" EXIT
 
 # Build squash map if needed
 if [ "$DO_SQUASH" = true ]; then
@@ -552,7 +1083,8 @@ while IFS= read -r line; do
             else
                 # Regular AI commit - use the regular script
                 # Pass the current substep for renumbering
-                echo "exec BATCH_MSG_ENV=\"\$BATCH_MSG_ENV\" SUBSTEP_OVERRIDE=$current_substep $REBASE_SCRIPT_FILE '$commit_msg' > $temp_msg_file" >> "$TEMP_FILE"
+                # Also pass EDIT_STEP_ENV so the called script can use the override
+                echo "exec BATCH_MSG_ENV=\"\$BATCH_MSG_ENV\" SUBSTEP_OVERRIDE=$current_substep EDIT_STEP_ENV=\"\$EDIT_STEP_ENV\" $REBASE_SCRIPT_FILE '$commit_msg' > $temp_msg_file" >> "$TEMP_FILE"
 
                 # Only increment substep if not squashing this commit
                 if [ "$should_squash" = false ]; then
@@ -563,7 +1095,7 @@ while IFS= read -r line; do
             # Pick or squash
             if [ "$should_squash" = true ]; then
                 # Change pick to squash
-                echo "squash $commit_hash $(git log --format=%s -1 "$commit_hash")" >> "$TEMP_FILE"
+                echo "squash $commit_hash $(git log --format=%s -1 \"$commit_hash\")" >> "$TEMP_FILE"
             else
                 # Keep the pick
                 echo "$line" >> "$TEMP_FILE"
@@ -571,7 +1103,8 @@ while IFS= read -r line; do
 
             # Add exec to amend with new message (only for non-squashed commits)
             if [ "$should_squash" = false ]; then
-                echo "exec git commit --amend -m \"\$(cat $temp_msg_file)\" && rm -f $temp_msg_file" >> "$TEMP_FILE"
+                # After amending, append the new commit hash to the NEW_COMMIT_LIST_FILE so we can show exact updated commits later
+                echo "exec git commit --amend -m \"\$(cat $temp_msg_file)\" && echo \"\$(git rev-parse --verify HEAD)\" >> \"$NEW_COMMIT_LIST_FILE\" && rm -f $temp_msg_file" >> "$TEMP_FILE"
             else
                 # For squashed commits, just clean up the temp file
                 echo "exec rm -f $temp_msg_file" >> "$TEMP_FILE"
@@ -597,6 +1130,8 @@ export REBASE_SCRIPT_FILE="$REBASE_SCRIPT"
 export QUERY_ERROR_SCRIPT_FILE="$QUERY_ERROR_SCRIPT"
 export DO_SQUASH_ENV="$DO_SQUASH"
 export SQUASH_MAP_FILE="$SQUASH_MAP"
+# Export the path to the file that will contain the new commit hashes
+export NEW_COMMIT_LIST_FILE="$NEW_COMMIT_LIST_FILE"
 
 print_info "Starting interactive rebase..."
 linebreak
@@ -621,6 +1156,9 @@ linebreak
 
 # Export the batch message as an environment variable (preserves all special characters)
 export BATCH_MSG_ENV="$BATCH_MESSAGE"
+
+# Export edit-step override for the rebase script (if any)
+export EDIT_STEP_ENV="$EDIT_STEP"
 
 # Create a custom git editor for handling squash commit messages
 GIT_EDITOR_WRAPPER="$SCRIPT_DIR/fix-commits-editor-wrapper.sh"
@@ -650,15 +1188,42 @@ if git rebase -i "$REBASE_PARENT"; then
     else
         EXPECTED_COUNT=$COMMIT_COUNT
     fi
-    # shellcheck disable=SC2207
-    commits_after=($(
-      git log --oneline --pretty=format:"%H" --grep="ai: \[$PADDED_STEP\]" --reverse \
-      | head -n "$EXPECTED_COUNT"
-    ))
+    # Prefer using the exact new commit hashes produced during the rebase (if available)
+    commits_after=()
+    if [ -n "$NEW_COMMIT_LIST_FILE" ] && [ -f "$NEW_COMMIT_LIST_FILE" ] && [ -s "$NEW_COMMIT_LIST_FILE" ]; then
+        # Read hashes in order and remove duplicates while preserving order
+        while IFS= read -r h; do
+            [ -z "$h" ] && continue
+            skip=false
+            for ex in "${commits_after[@]}"; do
+                if [ "$ex" = "$h" ]; then
+                    skip=true
+                    break
+                fi
+            done
+            if [ "$skip" = false ]; then
+                commits_after+=("$h")
+            fi
+        done < "$NEW_COMMIT_LIST_FILE"
+        # If EXPECTED_COUNT set, trim to that many
+        if [ "$EXPECTED_COUNT" -ne 0 ]; then
+            if [ ${#commits_after[@]} -gt $EXPECTED_COUNT ]; then
+                # Keep first EXPECTED_COUNT entries
+                commits_after=("${commits_after[@]:0:$EXPECTED_COUNT}")
+            fi
+        fi
+    else
+        # Fallback to the previous grep approach (best-effort)
+        # shellcheck disable=SC2207
+        commits_after=($(
+          git log --oneline --pretty=format:"%H" --grep="ai: \[$PADDED_STEP\]" --reverse \
+          | head -n "$EXPECTED_COUNT"
+        ))
+    fi
 
-    # Loop over each hash
+    # Loop over each hash and print a one-line summary
     for commit_hash in "${commits_after[@]}"; do
-      git log --oneline -1 $commit_hash
+      git log --oneline -1 "$commit_hash"
     done
     linebreak
     print_success "All done! Commits have been fixed."
@@ -762,4 +1327,3 @@ else
     print_info "To recover to the state before rebase: git reset --hard $RECOVERY_TAG"
     exit 1
 fi
-

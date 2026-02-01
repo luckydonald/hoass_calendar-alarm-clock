@@ -2,6 +2,7 @@
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue';
+
   const component: DefineComponent<object, object, unknown>;
   export default component;
 }
@@ -64,14 +65,14 @@ declare global {
   }
 
   interface Window {
-    customCards?: Array<{
+    customCards?: {
       type: string;
       name: string;
       description: string;
       preview?: boolean;
       // Optional version field embedded from frontend/package.json
       version?: string;
-    }>;
+    }[];
   }
 }
 

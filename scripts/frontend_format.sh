@@ -22,6 +22,8 @@ else
   echo "Node.js not found; cannot run slot checker. Proceeding without slot checks."
 fi
 
+# NOTE: Embedded HTML formatting via external script removed. We use html-eslint to lint embedded HTML.
+
 # Helper: check if package.json has a script
 has_script() {
   local name="$1"

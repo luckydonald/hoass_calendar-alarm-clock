@@ -1,11 +1,31 @@
-import { type App, type ComponentPublicInstance, createApp, h } from 'vue';
+import {
+  createApp,
+  h,
+} from 'vue';
+
+import CalendarBasedAlarmClockCard from './CalendarBasedAlarmClockCard.vue';
+
+import type { App, ComponentPublicInstance } from 'vue';
+
+import type { CardConfig, HomeAssistant } from './types';
 import pkg from '../package.json';
 import AlarmClockCard from './AlarmClockCard.vue';
 import AlarmClockCardEditorVue from './AlarmClockCardEditor.vue';
-import type { CardConfig, HomeAssistant } from './types';
+
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;
+  // UI/editor related optional properties
+  title?: string;
+  entity?: string;
+  clock_display?: string;
+  alarm_list_mode?: 'days' | 'count';
+  alarm_list_count?: number;
+  alarm_list_days?: number;
+  show_clock?: boolean;
+  show_quick_alarm?: boolean;
+  show_alarm_list?: boolean;
+  show_add_section?: string;
 }
 
 interface AppData {
@@ -202,6 +222,43 @@ class AlarmClockCardEditor extends HTMLElement {
       },
     });
 
+    row.appendChild(labelEl);
+    row.appendChild(input);
+    return row;
+  }
+
+  private _createSelect(
+    name: string,
+    label: string,
+    value: string,
+    options: {
+      value: string;
+      label: string;
+    }[],
+  ): HTMLDivElement {
+    const row = document.createElement('div');
+
+    const labelEl = document.createElement('label');
+    labelEl.textContent = label;
+    labelEl.style.display = 'block';
+    labelEl.style.marginBottom = '4px';
+    labelEl.style.fontWeight = '500';
+    labelEl.style.color = 'var(--primary-text-color)';
+
+    const select = document.createElement('ha-select') as HTMLSelectElement;
+    select.setAttribute('label', label);
+    select.style.width = '100%';
+
+    options.forEach((opt) => {
+      const optionEl = document.createElement('mwc-list-item');
+      optionEl.setAttribute('value', opt.value);
+      optionEl.textContent = opt.label;
+      if (opt.value === value) {
+        optionEl.setAttribute('selected', '');
+      }
+      select.appendChild(optionEl);
+    });
+
     this._app.mount(this._root);
   }
 
@@ -210,10 +267,26 @@ class AlarmClockCardEditor extends HTMLElement {
       this._app.unmount();
       this._app = null;
     }
+    entityPicker.hass = this._hass;
+    entityPicker.includeDomains = [
+      'sensor',
+    ];
+    entityPicker.style.width = '100%';
+    entityPicker.addEventListener('value-changed', (e: Event) => {
+      const customEvent = e as CustomEvent;
+      this._updateConfig({ entity: customEvent.detail.value ?? '' });
+    });
+
+    row.appendChild(labelEl);
+    row.appendChild(entityPicker);
+    return row;
   }
 
   private _updateConfig(update: Partial<AlarmClockCardConfig>): void {
-    this._config = { ...this._config, ...update };
+    this._config = {
+      ...this._config,
+      ...update,
+    };
     this._fireConfigChanged();
   }
 
@@ -231,6 +304,7 @@ class AlarmClockCardEditor extends HTMLElement {
 customElements.define('calendar-alarm-clock-card', AlarmClockCardElement);
 customElements.define('calendar-alarm-clock-card-editor', AlarmClockCardEditor);
 
+// Register with Home Assistant's custom card registry
 window.customCards = window.customCards ?? [];
 window.customCards.push({
   type: 'calendar-alarm-clock-card',
@@ -240,6 +314,7 @@ window.customCards.push({
   version: pkg.version || 'dev',
 });
 
+// eslint-disable-next-line no-console
 console.info(
   `%c CALENDAR-ALARM-CLOCK-CARD %c ${pkg.version || 'dev'}`,
   'color: white; background: #3498db; font-weight: bold;',

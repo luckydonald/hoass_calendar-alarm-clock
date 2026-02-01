@@ -1,14 +1,27 @@
 # Calendar backed Alarm Clock for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![GitHub Release](https://img.shields.io/github/release/luckydonald/hoass_calendar-alarm-clock.svg)](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
-[![CI](https://github.com/luckydonald/hoass_calendar-alarm-clock/actions/workflows/ci.yml/badge.svg)](https://github.com/luckydonald/hoass_calendar-alarm-clock/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/luckydonald/hoass_calendar-alarm-clock.svg)](LICENSE)
+<!-- this file is the template for the generated project README, so about the final plugin then -->
 
-A Home Assistant custom component that provides phone-like alarm clock functionality, storing alarms in your CalDAV calendar.
+> <!-- repository sort description, complete it -->
+> A Home Assistant custom component that provides phone-like alarm clock functionality, storing alarms in your CalDAV calendar.
+
+[![HACS](https://img.shields.io/badge/-HACS-000?style=flat&logo=homeassistantcommunitystore&logoColor=white&labelColor=555&color=41BDF5)](https://github.com/luckydonald/hoass_calendar-alarm-clock)
+[![License](https://img.shields.io/github/license/luckydonald/hoass_calendar-alarm-clock.svg?label=License&logo=opensourceinitiative&logoColor=white)](https://github.com/luckydonald/hoass_calendar-alarm-clock/blob/mane/LICENSE)
+[![GitHub Release](https://img.shields.io/github/release/luckydonald/hoass_calendar-alarm-clock.svg?logo=git&logoColor=white)](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/luckydonald/hoass_calendar-alarm-clock/ci.yml?branch=mane&style=flat&logo=github&logoColor=white&label=CI)](https://github.com/luckydonald/hoass_calendar-alarm-clock/actions/workflows/ci.yml)
+
+![Vue 3.5](https://img.shields.io/badge/Vue-3.5-4FC08D.svg)
+![Typescript 5.6](https://img.shields.io/badge/TypeScript-5.1-3178C6.svg)
+![AI Usage: marked](https://img.shields.io/badge/AI-Usage%20marked-brightgreen.svg)
+
+[![Repo](https://img.shields.io/badge/-Repo-000?style=flat&logo=github&logoColor=white&labelColor=555&color=0088CC)](https://github.com/luckydonald/hoass_calendar-alarm-clock)
+[![Issues](https://img.shields.io/badge/-Issues-000?style=flat&logo=github&logoColor=white&labelColor=555&color=red)](https://github.com/luckydonald/hoass_calendar-alarm-clock/issues)
+[![Releases](https://img.shields.io/badge/-Releases-000?style=flat&logo=github&logoColor=white&labelColor=555&color=4AB197)](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
+
 
 ## Features
 
+<!-- add features implemented -->
 - 📅 **Calendar-based storage**: Alarms are stored as calendar events in your CalDAV calendar
 - 🔁 **Recurring alarms**: Support for daily, weekday, weekend, and weekly repeat patterns
 - 😴 **Snooze support**: Configurable snooze duration and maximum snoozes
@@ -21,7 +34,7 @@ A Home Assistant custom component that provides phone-like alarm clock functiona
 
 ### HACS (Recommended)
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_calendar-alarm-clock&category=integration)
+[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=luckydonald&repository=hoass_calendar-alarm-clock&category=integration)
 
 Or manually:
 
@@ -35,12 +48,14 @@ Or manually:
 
 ### Manual Installation
 
+<!-- update paths and file names -->
 1. Download the latest release from [GitHub Releases](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
 2. Copy the `custom_components/calendar_alarm_clock` folder to your `custom_components` directory
 3. Copy `custom_components/calendar_alarm_clock/www/alarm-clock-card.js` to your `www` folder
 4. Restart Home Assistant
 
 ## Configuration
+<!-- how to configure the plugin after installation -->
 
 ### Automatic Discovery
 When you set up a calendar integration (like CalDAV or Google Calendar), the Alarm Clock integration will automatically be suggested in your notifications. Simply click to configure it.
@@ -349,13 +364,60 @@ make build    # Build frontend
 make release  # Full release workflow
 ```
 
+
+<!-- footer -->
+# Repository Information
+
+## How AI Usage is marked
+This project uses AI-assisted code generation.
+The usage of AI is marked in each comment.
+Additionally, the prompts are kept in the `ai/` folder for reference and transparency.
+Additionally, each commit includes a marker if it was AI-assisted or not:
+
+## Commit Markers Legend
+- **MANUAL:**
+  - <kbd>👩‍💻</kbd> **Code manually written by me**
+  - <kbd>🫥</kbd> **I manually fixed the mess AI made.**
+- TOOLING:
+  - <kbd>⬆️ version: </kbd> Automated bump of this plugin's version. Usually, this will also be a tagged release. Invoked by `make release` script.
+  - <kbd>⚙️</kbd> Automated lockfile updates upon running a normal `install` (usually `yarn.lock` and `uv.lock`)
+  - <kbd>🧹</kbd> or <kbd>🔧</kbd> Automated code formatting changes and fixes through common tools.
+- AI
+  - <kbd>🤌</kbd> I updated the AI prompt in `ai/query.md`.
+  - <kbd>🐞</kbd> I updated the AI prompt in `ai/errors.md`.
+  - <kbd>✨</kbd> Code generated by AI following the earlier modified `ai/query.md` or `ai/errors.md` files.
+- TEMPLATE REPO:
+  - <kbd>🛫</kbd> Initial code generated my plugin _Template Repo_. Basically a lot of automated `ctrl-f`+replace.
+  - <kbd>📄TEMPLATE | </kbd>Commit in the _Template Repo_, which is the starting point or merged into this repo later.
+  - About the _Template Repo_:
+    - I maintain a shared template for all my Home Assistant plugins to make it easier to maintain them, and quicker to get started with a new plugin.
+      - It can be found at the following URL:
+      - <sup><sub><sup><sub>"</sub></sup></sub></sup>`https://github.com/luckydonald/`<sup><sub><sup><sub>"+"</sub></sup></sub></sup>`hoass_plu`<sup><sub><sup><sub>"+"</sub></sup></sub></sup>`gin-temp`<sup><sub><sup><sub>"+"</sub></sup></sub></sup>`late`<sup><sub><sup><sub>"</sub></sup></sub></sup>
+      - You have to piece it together so it's not detected as template placeholder and replaced with the current repo url via the `init.sh` script. Ooopsie woopsie.
+      - But you can paste the whole line into your programming language of choice to quickly concat the parts, lol.
+
+## License
+This project is licensed under the `MIT License` - see the [LICENSE](LICENSE) file for details.
+
+## Tags
+- <kbd>calendar-alarm-clock</kbd>
+- <kbd>home-assistant</kbd>
+- <kbd>hacs</kbd>
+- <kbd>hacs-integration</kbd>
+- <kbd>homeassistant-integration</kbd>
+- <kbd>home-assistant-integration</kbd>
+- <kbd>homeassistant-custom-integration</kbd>
+- <kbd>custom-card</kbd>
+- <kbd>homeassistant-custom-card</kbd>
+- <kbd>lovelace-card</kbd>
+- <kbd>custom-component</kbd>
+- <kbd>homeassistant-custom-component</kbd>
+- <kbd>home-assistant-custom-component-hacs</kbd>
+- <kbd>luckydonald</kbd>
+- <kbd>luckylucy</kbd>
+
 ## Links
 
 - [GitHub Repository](https://github.com/luckydonald/hoass_calendar-alarm-clock)
 - [Issue Tracker](https://github.com/luckydonald/hoass_calendar-alarm-clock/issues)
 - [Releases](https://github.com/luckydonald/hoass_calendar-alarm-clock/releases)
-
-## License
-
-MIT License
-
