@@ -77,7 +77,15 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: yarn install
+        run: |
+          # If a yarn lockfile exists, use immutable install. Otherwise allow updating/creating the lockfile in CI.
+          if [ -f yarn.lock ] || [ -f .yarnrc.yml ] || [ -d .yarn ]; then
+            echo "Lockfile detected or .yarn present: running immutable install"
+            yarn install --immutable
+          else
+            echo "No yarn lockfile detected: running install in update-lockfile mode"
+            yarn install --mode=update-lockfile
+          fi
 
       - name: Type check
         working-directory: frontend
