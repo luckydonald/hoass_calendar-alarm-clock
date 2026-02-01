@@ -1,0 +1,11 @@
+{
+  "display_name": "Calendar backed Alarm Clock",
+  "dash_name": "calendar-alarm-clock",
+  "snake_name": "calendar_alarm_clock",
+  "pascal_name": "CalendarBackedAlarmClock",
+  "github_user": "luckydonald",
+  "github_url": "https://github.com/luckydonald/hoass_calendar-alarm-clock.git",
+  "keep_backend": true,
+  "frontend_choice": "vue",
+  "current_year": 2026
+}
