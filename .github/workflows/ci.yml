@@ -46,9 +46,11 @@ jobs:
       - name: Enable Corepack and prepare Yarn
         run: |
           corepack enable
-          # prefer frontend/package.json if present
+          # prefer frontend/package.json, then frontend_vue/package.json, then root package.json
           if [ -f frontend/package.json ]; then
             pkgfile=frontend/package.json
+          elif [ -f frontend_vue/package.json ]; then
+            pkgfile=frontend_vue/package.json
           elif [ -f package.json ]; then
             pkgfile=package.json
           else
