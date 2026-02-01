@@ -126,6 +126,26 @@ ifeq ($(FRONTEND),1)
 	@echo "Setting up frontend development environment..."
 	@if [ -n "$(FRONTEND_DIR)" ]; then \
 		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+			# Enable corepack if available and prepare the yarn version declared in package.json (if any)
+			if command -v corepack >/dev/null 2>&1; then \
+				corepack enable || true; \
+				if command -v node >/dev/null 2>&1; then \
+					pm=$$(node -e "const p=require('./package.json'); console.log(p.packageManager||'')"); \
+				else \
+					pm=""; \
+				fi; \
+				echo "Detected packageManager: $$pm"; \
+				if echo "$$pm" | grep -q '^yarn@' 2>/dev/null; then \
+					ver=$${pm#yarn@}; corepack prepare yarn@$$ver --activate || true; \
+				elif [ -z "$$pm" ]; then \
+					# no packageManager declared — fall back to stable yarn
+					corepack prepare yarn@stable --activate || true; \
+				else \
+					# packageManager exists but is not yarn (npm/pnpm/etc.) — corepack is enabled but we won't prepare yarn
+					echo "packageManager is not yarn (found: $$pm); skipping yarn prepare"; \
+				fi; \
+			fi; \
+			# Install using the available package manager
 			if command -v yarn >/dev/null 2>&1; then yarn install; elif command -v npm >/dev/null 2>&1; then npm install; else echo "No npm/yarn found"; fi; \
 		fi; \
 	fi
