@@ -14,8 +14,6 @@ from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.start import async_at_started
-from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 
 from .alarm_manager import AlarmManager
 from .const import (
@@ -30,7 +28,6 @@ from .const import (
     UPDATE_INTERVAL,
 )
 from .services import async_setup_services, async_unload_services
-from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

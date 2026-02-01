@@ -1,11 +1,10 @@
 """Constants for Calendar Alarm Clock."""
 
 import json
-from typing import Final, Literal
 from pathlib import Path
+from typing import Final, Literal
 
 from homeassistant.loader import Manifest
-
 
 DIR = Path(__file__).parent
 MANIFEST_FILE = DIR / "manifest.json"
