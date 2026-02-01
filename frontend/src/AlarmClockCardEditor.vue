@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import type { CardConfig, HomeAssistant } from '@/types.ts';
 import { reactive, watch } from 'vue';
 import pkg from '../package.json';
 import ColorPicker from './ColorPicker.vue';
-import type {CardConfig, HomeAssistant} from "@/types.ts";
 
 interface Props {
   hass: HomeAssistant | null;
@@ -16,7 +16,7 @@ const buildVersion = pkg.version || 'unknown';
 
 const emitConfig = (cfg: CardConfig) => {
   if (props.onConfigChanged) {
-    props.onConfigChanged(cfg)
+    props.onConfigChanged(cfg);
   }
 };
 

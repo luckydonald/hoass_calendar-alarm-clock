@@ -10,7 +10,10 @@ import AlarmClockCardEditorVue from './AlarmClockCardEditor.vue';
 import type { App, ComponentPublicInstance } from 'vue';
 
 import type {
-  CardConfig, HomeAssistant, MountedWrapperExtras, Wrapper,
+  CardConfig,
+  HomeAssistant,
+  MountedWrapperExtras,
+  Wrapper,
 } from './types';
 
 type AlarmClockCardConfig = CardConfig;
