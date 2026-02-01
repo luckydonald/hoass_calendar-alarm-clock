@@ -458,3 +458,10 @@ ESLint:
 Error: Error while loading rule '@typescript-eslint/naming-convention': You have used a rule which requires parserServices to be generated. You must therefore provide a value for the "parserOptions.project" property for @typescript-eslint/parser.
 Note: detected a parser other than @typescript-eslint/parser. Make sure the parser is configured to forward "parserOptions.project" to @typescript-eslint/parser.
 Occurred while linting /Users/user/Documents/programming/Python/HomeAssistant/hoass_calendar-alarm-clock/frontend/vite.config.js
+———
+`.github/workflows/release.yml` and `…/ci.yml`:
+error This project's package.json defines "packageManager": "yarn@4.12.0". However the current global version of Yarn is 1.22.22.
+
+Presence of the "packageManager" field indicates that the project is meant to be used with Corepack, a tool included by default with all official Node.js distributions starting from 16.9 and 14.19.
+Corepack must currently be enabled by running corepack enable in your terminal. For more information, check out https://yarnpkg.com/corepack.
+Error: Process completed with exit code 1.
