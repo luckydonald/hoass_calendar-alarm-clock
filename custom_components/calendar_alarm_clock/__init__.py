@@ -27,14 +27,12 @@ from .const import (
     DEFAULT_MAX_SNOOZES,
     DEFAULT_SNOOZE_DURATION,
     DOMAIN,
-    LOG_NAME,
     UPDATE_INTERVAL,
 )
 from .services import async_setup_services, async_unload_services
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
-# _LOGGER = logging.getLogger(LOG_NAME)
 
 # This integration is config entry only (no YAML configuration)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -260,10 +258,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> void:
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Unload a config entry."""
-        hass.data[DOMAIN].pop(entry.entry_id)
+    hass.data[DOMAIN].pop(entry.entry_id)
 
-        # Unload services if no more entries
-        if not hass.data[DOMAIN]:
-            await async_unload_services(hass)
+    # Unload services if no more entries
+    if not hass.data[DOMAIN]:
+        await async_unload_services(hass)
