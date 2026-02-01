@@ -136,7 +136,8 @@ ifeq ($(FRONTEND),1)
 				fi; \
 				echo "Detected packageManager: $$pm"; \
 				if echo "$$pm" | grep -q '^yarn@' 2>/dev/null; then \
-					ver=$${pm#yarn@}; corepack prepare yarn@$$ver --activate || true; \
+					# extract the part after 'yarn@' without using ${..#..} to avoid make parser issues
+					ver=$$(echo "$$pm" | sed -E 's/^yarn@//'); corepack prepare yarn@$$ver --activate || true; \
 				elif [ -z "$$pm" ]; then \
 					# no packageManager declared — fall back to stable yarn
 					corepack prepare yarn@stable --activate || true; \
