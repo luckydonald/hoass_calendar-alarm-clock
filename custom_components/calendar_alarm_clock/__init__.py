@@ -1,4 +1,4 @@
-"""Calendar backed Alarm Clock integration for Home Assistant."""
+"""Calendar based Alarm Clock integration for Home Assistant."""
 
 from __future__ import annotations
 
@@ -14,6 +14,8 @@ from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.start import async_at_started
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
 
 from .alarm_manager import AlarmManager
 from .const import (
@@ -29,8 +31,10 @@ from .const import (
     UPDATE_INTERVAL,
 )
 from .services import async_setup_services, async_unload_services
+from .const import DOMAIN
 
-_LOGGER = logging.getLogger(LOG_NAME)
+_LOGGER = logging.getLogger(__name__)
+# _LOGGER = logging.getLogger(LOG_NAME)
 
 # This integration is config entry only (no YAML configuration)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -187,7 +191,7 @@ async def _async_register_card(hass: HomeAssistant) -> None:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Calendar backed Alarm Clock from a config entry."""
+    """Set up Calendar based Alarm Clock from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
     # Check if this is an auto-discovery entry (doesn't have calendar_entity)
@@ -256,29 +260,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> void:
     """Unload a config entry."""
-    # Check if this is an auto-discovery entry
-    from .const import CONF_AUTO_DISCOVER_CALENDARS
-
-    if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
-        # This is the auto-discovery entry - no platforms to unload
-        hass.data[DOMAIN].pop(entry.entry_id, None)
-
-        # Unload services if no more entries
-        if not hass.data[DOMAIN]:
-            await async_unload_services(hass)
-
-        return True
-
-    # Regular calendar entry
-    unload_ok: bool = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-
-    if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 
         # Unload services if no more entries
         if not hass.data[DOMAIN]:
             await async_unload_services(hass)
-
-    return unload_ok

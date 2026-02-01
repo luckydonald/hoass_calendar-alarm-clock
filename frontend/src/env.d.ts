@@ -61,6 +61,8 @@ declare global {
       dense: boolean;
       slot: string;
       dialogAction: string;
+      // Optional version field embedded from frontend/package.json
+      version?: string;
     };
   }
 

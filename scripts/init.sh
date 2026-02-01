@@ -58,6 +58,32 @@ print_success() {
     echo -e "${GREEN}✓${NC} $1"
 }
 
+# Prompt helper: read from terminal if available, otherwise fall back to default
+# Usage: result=$(prompt_default "Prompt text" "default")
+prompt_default() {
+    local prompt="$1"
+    local default="$2"
+    local ans=""
+
+    # Prefer reading from /dev/tty so we don't consume process-substitution stdin
+    if [ -e /dev/tty ] && [ -r /dev/tty ]; then
+        # shellcheck disable=SC2034
+        if read -r -p "$prompt" ans </dev/tty; then :; else ans="$default"; fi
+    elif [ -t 0 ]; then
+        # fallback: stdin is a TTY
+        if read -r -p "$prompt" ans; then :; else ans="$default"; fi
+    else
+        # Non-interactive: use default
+        ans="$default"
+    fi
+
+    # Apply default when empty
+    if [ -z "$ans" ]; then
+        ans="$default"
+    fi
+    echo "$ans"
+}
+
 # Function to convert string to lowercase-dash format
 to_lowercase_dash() {
     echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//'
@@ -335,7 +361,7 @@ echo "This is used for custom component names and filenames."
 echo "Example: 'my-custom-widget' (for <my-custom-widget-card>, my-custom-widget-card.js, etc.)"
 # Compute default from display name, but respect existing DASH_NAME loaded from settings
 DEFAULT_DASH=$(to_lowercase_dash "$DISPLAY_NAME")
-read -p ""
+echo ""
 read -p "Enter lowercase-dash name [$DEFAULT_DASH]: " INPUT_DASH
 if [ -n "$INPUT_DASH" ]; then
     DASH_NAME="$INPUT_DASH"
@@ -351,7 +377,7 @@ echo "This is used for Python module names, integration domain, sensor names, et
 echo "Example: 'my_custom_widget'"
 # Compute default from dash name, but respect existing SNAKE_NAME loaded from settings
 DEFAULT_SNAKE=$(to_snake_case "$DASH_NAME")
-read -p ""
+echo ""
 read -p "Enter snake_case name [$DEFAULT_SNAKE]: " INPUT_SNAKE
 if [ -n "$INPUT_SNAKE" ]; then
     SNAKE_NAME="$INPUT_SNAKE"
@@ -762,25 +788,68 @@ setup_readme_files
 if [ -d "custom_components/plugin_template" ]; then
     if [ -d "custom_components/$SNAKE_NAME" ]; then
         print_warning "custom_components/$SNAKE_NAME/ already exists"
-        print_info "Merging template files into existing directory..."
 
-        # Copy new files from plugin_template to existing directory
-        while IFS= read -r -d '' file; do
-            rel_path="${file#custom_components/plugin_template/}"
-            dest_file="custom_components/$SNAKE_NAME/$rel_path"
+        # Ask user whether to merge new template files into the existing directory,
+        # backup & replace the existing directory with the template, or skip.
+        print_info "Choose how to handle the existing directory:"
+        echo "  m - merge new files into existing directory (default)"
+        echo "  r - move existing directory to a date-stamped backup and replace with template"
+        echo "  s - skip (leave both directories as-is)"
+        ACTION=$(prompt_default "Action (m/r/s) [m]: " "m")
 
-            if [ ! -f "$dest_file" ]; then
-                read -p "Copy new file $rel_path? (y/n) [y]: " COPY_NEW
-                COPY_NEW=${COPY_NEW:-y}
-                if [[ "$COPY_NEW" =~ ^[Yy]$ ]]; then
-                    mkdir -p "$(dirname "$dest_file")"
-                    cp "$file" "$dest_file"
-                    print_success "Copied: $rel_path"
+        if [[ "$ACTION" =~ ^[Rr]$ ]]; then
+            # Backup-and-replace: move existing to .YYYY-MM-DD.bak (avoid collisions)
+            DATE_STAMP=$(date +%F)
+            BACKUP_BASE="custom_components/${SNAKE_NAME}.${DATE_STAMP}.bak"
+            BACKUP_PATH="$BACKUP_BASE"
+            i=1
+            while [ -e "$BACKUP_PATH" ]; do
+                BACKUP_PATH="${BACKUP_BASE}.${i}"
+                i=$((i+1))
+            done
+
+            print_info "Moving existing directory to: $BACKUP_PATH"
+            mv "custom_components/$SNAKE_NAME" "$BACKUP_PATH"
+            if [ $? -ne 0 ]; then
+                print_error "Failed to move existing directory to $BACKUP_PATH"
+                print_info "Aborting replace operation"
+            else
+                # Now move the template into place
+                mv "custom_components/plugin_template" "custom_components/$SNAKE_NAME"
+                if [ $? -eq 0 ]; then
+                    print_success "Replaced custom_components/$SNAKE_NAME with template (backup at $BACKUP_PATH)"
+                else
+                    print_error "Failed to move plugin_template into place; attempt to roll back"
+                    # Try to restore backup
+                    if [ ! -d "custom_components/$SNAKE_NAME" ] && [ -d "$BACKUP_PATH" ]; then
+                        mv "$BACKUP_PATH" "custom_components/$SNAKE_NAME" || true
+                        print_info "Restored original to custom_components/$SNAKE_NAME"
+                    fi
                 fi
             fi
-        done < <(find "custom_components/plugin_template" -type f -print0)
 
-        rm -rf "custom_components/plugin_template"
+        elif [[ "$ACTION" =~ ^[Ss]$ ]]; then
+            print_info "Skipping merge/replace for custom_components/$SNAKE_NAME. Leaving plugin_template/ in place."
+
+        else
+            # Default: merge new files from plugin_template to existing directory
+            print_info "Merging template files into existing directory..."
+            while IFS= read -r -d '' file; do
+                rel_path="${file#custom_components/plugin_template/}"
+                dest_file="custom_components/$SNAKE_NAME/$rel_path"
+
+                if [ ! -f "$dest_file" ]; then
+                    COPY_NEW=$(prompt_default "Copy new file $rel_path? (y/n) [y]: " "y")
+                    if [[ "$COPY_NEW" =~ ^[Yy]$ ]]; then
+                        mkdir -p "$(dirname "$dest_file")"
+                        cp "$file" "$dest_file"
+                        print_success "Copied: $rel_path"
+                    fi
+                fi
+            done < <(find "custom_components/plugin_template" -type f -print0)
+
+            rm -rf "custom_components/plugin_template"
+        fi
     else
         print_info "Renaming custom_components/plugin_template/ to custom_components/$SNAKE_NAME/"
         mv "custom_components/plugin_template" "custom_components/$SNAKE_NAME"

@@ -149,7 +149,7 @@ DRY_RUN=false
 INTERACTIVE=false
 
 print_usage() {
-    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive]"
+    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive|-i]"
 }
 
 # Helper: check if array contains value (portable)
@@ -276,7 +276,7 @@ while [ "$#" -gt 0 ]; do
             NUMBER_OVERRIDE="$2"; shift 2 || true;;
         --dry-run)
             DRY_RUN=true; shift;;
-        --interactive)
+        --interactive|-i)
             INTERACTIVE=true; shift;;
         -h|--help)
             print_usage; exit 0;;
@@ -468,12 +468,25 @@ if [ -n "$NUMBER_OVERRIDE" ]; then
     DETECTED_STEP="$EDIT_STEP"
 fi
 
-# PADDED_STEP used later for tags and prompts
-PADDED_STEP=$(printf "%03d" "${EDIT_STEP:-0}")
+# PADDED_STEP used later for prompts and tags; leave empty if no EDIT_STEP
+if [ -n "$EDIT_STEP" ]; then
+    PADDED_STEP=$(printf "%03d" "$EDIT_STEP")
+else
+    PADDED_STEP=""
+fi
+
+# Decide selection mode: allow auto-inclusion when non-interactive and a DETECTED_STEP exists
+# EFFECTIVE_IGNORE_BLOCKS will be used instead of raw IGNORE_BLOCKS during selection
+EFFECTIVE_IGNORE_BLOCKS="$IGNORE_BLOCKS"
+# If user didn't pass --number-search and script is non-interactive and we detected a step,
+# include all commits with that detected step (so non-interactive runs act across history)
+if [ "$EFFECTIVE_IGNORE_BLOCKS" = false ] && [ ${#NUMBER_SEARCH[@]} -eq 0 ] && [ -n "$DETECTED_STEP" ] && [ "$INTERACTIVE" = false ]; then
+    EFFECTIVE_IGNORE_BLOCKS=true
+fi
 
 # Build the list of commits to operate on
 COMMIT_HASHES=()
-if [ "$IGNORE_BLOCKS" = true ]; then
+if [ "$EFFECTIVE_IGNORE_BLOCKS" = true ]; then
     # Include all commits in the candidate range that match NUMBER_SEARCH (if provided),
     # otherwise match DETECTED_STEP (the most recent matching step).
     for chash in "${CANDIDATE_COMMITS[@]}"; do
@@ -521,7 +534,13 @@ else
                 st_norm=$(normalize_step "$st")
 
                 # Stop if step differs
-                if [ -z "$st_norm" ] || [ "$st_norm" != "$step_norm" ]; then
+                # If this commit has no step, stop
+                if [ -z "$st_norm" ]; then
+                    break
+                fi
+
+                # If the step is not one of the allowed NUMBER_SEARCH values, stop
+                if ! is_step_allowed "$st_norm"; then
                     break
                 fi
 
@@ -536,12 +555,40 @@ else
                 pch=${CANDIDATE_COMMITS[$pj]}
                 pmsg=$(git log --format=%s -1 "$pch")
 
-                # Stop if parent is query/error or a different ai step
-                if echo "$pmsg" | grep -qE "(ai: updated query|ai: updated errors)"; then
+                # Stop if parent is query/error
+                # If this commit has no step, stop
+                if [ -z "$st_norm" ]; then
                     break
                 fi
-                if echo "$pmsg" | grep -q "ai: \[[0-9]\+\]" && ! echo "$pmsg" | grep -q "ai: \[$step_norm\]"; then
+
+                # If the step is not one of the allowed NUMBER_SEARCH values, stop
+                if ! is_step_allowed "$st_norm"; then
                     break
+                fi
+
+                # Prepend to block (so block will be chronological)
+                block=("$ch" "${block[@]}")
+
+                # Check parent commit message (previous in candidate list)
+                pj=$((j-1))
+                if [ $pj -lt 0 ]; then
+                    break
+                fi
+                pch=${CANDIDATE_COMMITS[$pj]}
+                pmsg=$(git log --format=%s -1 "$pch")
+
+                # Stop if parent is query/error (match broader variants: ai: ... query/error or 'updated query/errors')
+                if echo "$pmsg" | grep -qiE "(ai:[[:space:]]*.*(query|error)s?)|(updated[[:space:]]+(query|error)s?)"; then
+                    break
+                fi
+
+                # If parent has an AI step, only continue if that parent's step is allowed by NUMBER_SEARCH
+                if echo "$pmsg" | grep -q "ai: \[[0-9]\+\]"; then
+                    parent_step=$(extract_step_from_msg "$pmsg")
+                    parent_step_norm=$(normalize_step "$parent_step")
+                    if ! is_step_allowed "$parent_step_norm"; then
+                        break
+                    fi
                 fi
 
                 j=$pj
@@ -599,12 +646,153 @@ fi
 
 COMMIT_COUNT=${#COMMIT_HASHES[@]}
 
+# Re-order COMMIT_HASHES to be chronological (oldest -> newest) using CANDIDATE_COMMITS ordering
+if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
+    ORDERED_COMMITS=()
+    for ch in "${CANDIDATE_COMMITS[@]}"; do
+        for target in "${COMMIT_HASHES[@]}"; do
+            if [ "$ch" = "$target" ]; then
+                ORDERED_COMMITS+=("$ch")
+                break
+            fi
+        done
+    done
+    # Replace COMMIT_HASHES with ordered list
+    COMMIT_HASHES=("${ORDERED_COMMITS[@]}")
+fi
+
+COMMIT_COUNT=${#COMMIT_HASHES[@]}
+
 if [ "$COMMIT_COUNT" -eq 0 ]; then
     print_error "No commits found matching the specified criteria"
     exit 1
 fi
 
 print_success "Found $COMMIT_COUNT commit(s) matching criteria"
+
+# Detect if there's a preceding query/error commit before our batch and show its diff
+# Strategy: 1) If first_hash is inside CANDIDATE_COMMITS, scan backwards up to N commits in that list.
+#           2) Fallback: use git rev-list to examine up to N parent commits before first_hash.
+QUERY_ERROR_COMMIT=""
+SEARCH_LIMIT=20
+if [ ${#COMMIT_HASHES[@]} -gt 0 ]; then
+    first_hash=${COMMIT_HASHES[0]}
+    found=""
+
+    # 1) If present in CANDIDATE_COMMITS, search there first (backwards)
+    first_idx=-1
+    for i in "${!CANDIDATE_COMMITS[@]}"; do
+        if [ "${CANDIDATE_COMMITS[$i]}" = "$first_hash" ]; then
+            first_idx=$i
+            break
+        fi
+    done
+
+    if [ $first_idx -ge 0 ]; then
+        count=0
+        CHECKED_CANDIDATE=()
+        for (( j=first_idx-1; j>=0 && count<SEARCH_LIMIT; j-- )); do
+            ch=${CANDIDATE_COMMITS[$j]}
+            subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
+            CHECKED_CANDIDATE+=("$ch:$subj")
+            # Detect query/error commits more broadly (case-insensitive, allow prefixes/emojis)
+            if echo "$subj" | grep -qiE "(ai:[[:space:]]*.*(query|error)s?)|(updated[[:space:]]+(query|error)s?)"; then
+                QUERY_ERROR_COMMIT="$ch"
+                found=1
+                break
+            fi
+            count=$((count+1))
+        done
+    fi
+
+    # 2) Fallback: use git rev-list to walk history before first_hash
+    if [ -z "$found" ]; then
+        count=0
+        CHECKED_REVLIST=()
+        while IFS= read -r ch && [ $count -lt $SEARCH_LIMIT ]; do
+            subj=$(git log --format=%s -1 "$ch" 2>/dev/null || true)
+            CHECKED_REVLIST+=("$ch:$subj")
+            if echo "$subj" | grep -qiE "(ai:[[:space:]]*.*(query|error)s?)|(updated[[:space:]]+(query|error)s?)"; then
+                QUERY_ERROR_COMMIT="$ch"
+                found=1
+                break
+            fi
+            count=$((count+1))
+        done < <(git rev-list --max-count=$SEARCH_LIMIT "$first_hash^" 2>/dev/null || true)
+    fi
+
+    if [ -n "$QUERY_ERROR_COMMIT" ]; then
+        linebreak
+        print_info "Detected preceding query/error commit:"
+        git log --oneline -1 "$QUERY_ERROR_COMMIT"
+        echo "Showing diff for the query/error commit (context):"
+        # Prefer showing diffs for known AI files under ai/ and ai/plugin_template/
+        git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
+        git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md ai/plugin_template/query.md ai/plugin_template/errors.md 2>/dev/null || git --no-pager show "$QUERY_ERROR_COMMIT" || true
+        linebreak
+    fi
+    # Fallback: if we couldn't find a commit by message, check whether any of the inspected commits modified ai/ files
+    if [ -z "$QUERY_ERROR_COMMIT" ]; then
+        # Check candidate list we inspected first
+        if [ ${#CHECKED_CANDIDATE[@]} -gt 0 ]; then
+            for entry in "${CHECKED_CANDIDATE[@]}"; do
+                ch=$(echo "$entry" | cut -d: -f1)
+                # list files changed in commit and look for ai/ paths
+                if git show --name-only --pretty="" "$ch" 2>/dev/null | grep -qE "^ai/|^ai/plugin_template/"; then
+                    QUERY_ERROR_COMMIT="$ch"
+                    linebreak
+                    print_info "Detected preceding query/error commit by file changes:"
+                    git log --oneline -1 "$QUERY_ERROR_COMMIT"
+                    echo "Showing diff for the query/error commit (context):"
+                    git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
+                    git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md ai/plugin_template/query.md ai/plugin_template/errors.md 2>/dev/null || git --no-pager show "$QUERY_ERROR_COMMIT" || true
+                    linebreak
+                    break
+                fi
+            done
+        fi
+
+        # If still not found, check the rev-list entries we inspected
+        if [ -z "$QUERY_ERROR_COMMIT" ] && [ ${#CHECKED_REVLIST[@]} -gt 0 ]; then
+            for entry in "${CHECKED_REVLIST[@]}"; do
+                ch=$(echo "$entry" | cut -d: -f1)
+                if git show --name-only --pretty="" "$ch" 2>/dev/null | grep -qE "^ai/|^ai/plugin_template/"; then
+                    QUERY_ERROR_COMMIT="$ch"
+                    linebreak
+                    print_info "Detected preceding query/error commit by file changes:"
+                    git log --oneline -1 "$QUERY_ERROR_COMMIT"
+                    echo "Showing diff for the query/error commit (context):"
+                    git --no-pager show --name-only --pretty="%h %s" "$QUERY_ERROR_COMMIT"
+                    git --no-pager show "$QUERY_ERROR_COMMIT" -- ai/query.md ai/errors.md ai/plugin_template/query.md ai/plugin_template/errors.md 2>/dev/null || git --no-pager show "$QUERY_ERROR_COMMIT" || true
+                    linebreak
+                    break
+                fi
+            done
+        fi
+    fi
+fi
+
+# If nothing found, print a diagnostic list of the commits we checked (helps debugging why no query/error commit was found)
+if [ -z "$found" ]; then
+    linebreak
+    print_info "No preceding query/error commit found within $SEARCH_LIMIT commits. Commits inspected (newest->oldest):"
+    if [ ${#CHECKED_CANDIDATE[@]} -gt 0 ]; then
+        for entry in "${CHECKED_CANDIDATE[@]}"; do
+            ch=$(echo "$entry" | cut -d: -f1)
+            subj=$(echo "$entry" | cut -d: -f2-)
+            echo "  $ch - $subj"
+        done
+    elif [ ${#CHECKED_REVLIST[@]} -gt 0 ]; then
+        for entry in "${CHECKED_REVLIST[@]}"; do
+            ch=$(echo "$entry" | cut -d: -f1)
+            subj=$(echo "$entry" | cut -d: -f2-)
+            echo "  $ch - $subj"
+        done
+    else
+        print_info "  (no commits inspected — first_hash may be unreachable)"
+    fi
+    linebreak
+fi
 
 # Show the commits we will fix
 linebreak

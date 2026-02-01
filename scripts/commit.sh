@@ -26,13 +26,12 @@ COMMIT_PREFIX_TEMPLATE="📄TEMPLATE | "
 COMMIT_MSG_ERRORS="🐞 ai: updated errors"
 COMMIT_MSG_QUERY="🤌 ai: updated query"
 COMMIT_MSG_STEP="✨ ai: [{padded_step}] {msg} ({substep}/{total_substeps})"
+COMMIT_MSG_LOCK="🔏 Updated package versions for {lock_type}."
 
 # Detect if we're in the template repository
 REPO_DIR=$(basename "$(cd "$SCRIPT_DIR/.." && pwd)")
-IS_TEMPLATE_REPO=false
 COMMIT_PREFIX=""
 if echo "$REPO_DIR" | grep -qE "^hoass_(plugin[-_])?template"; then
-    IS_TEMPLATE_REPO=true
     COMMIT_PREFIX="${COMMIT_PREFIX_TEMPLATE}"
     echo -e "${YELLOW}Template repository detected - using TEMPLATE prefix${NC}"
 fi
@@ -56,6 +55,23 @@ if [ ! -d "custom_components" ] && [ ! -d "frontend" ] && [ ! -d "frontend_vue" 
     exit 1
 fi
 
+# Print a quick git status summary so user can see if working tree is dirty
+PORCELAIN_OUTPUT=$(git status --porcelain)
+if [ -n "${PORCELAIN_OUTPUT}" ]; then
+    echo -e "${YELLOW}Git working tree has uncommitted changes:${NC}"
+    echo "${PORCELAIN_OUTPUT}"
+    echo ""
+else
+    echo -e "${GREEN}Git working tree is clean${NC}"
+fi
+
+# If there are no unstaged changes and no staged changes, nothing to do -> exit
+STAGED_OUTPUT=$(git diff --cached --name-only)
+if [ -z "${PORCELAIN_OUTPUT}" ] && [ -z "${STAGED_OUTPUT}" ]; then
+    echo -e "${YELLOW}No changes detected (working tree and index clean) — nothing to commit.${NC}"
+    exit 0
+fi
+
 # Save any currently staged changes
 STASH_STAGED=false
 STAGED_FILES=""
@@ -72,14 +88,48 @@ if [ -n "$(git diff --cached --name-only)" ]; then
     STASH_STAGED=true
 fi
 
+# Commit frontend lock files separately (frontend and frontend_vue)
+# This ensures package lock updates are recorded with a focused commit message.
+if git diff --name-only | grep -qE '^(frontend|frontend_vue)/(yarn.lock|package-lock.json)$' || \
+   git ls-files --others --exclude-standard | grep -qE '^(frontend|frontend_vue)/(yarn.lock|package-lock.json)$'; then
+    echo -e "${GREEN}Committing frontend lock files...${NC}"
+    # Add both possible frontend lock files if present; ignore errors if some don't exist
+    git add \
+      frontend/yarn.lock \
+      frontend/package-lock.json \
+      frontend_vue/yarn.lock \
+      frontend_vue/package-lock.json \
+      2>/dev/null || true
+    # Commit with templating
+    git commit -m "${COMMIT_PREFIX}$(lock_type="frontend" tmpl "${COMMIT_MSG_LOCK}")"
+    echo "  Done"
+else
+    echo -e "${YELLOW}No frontend lock file changes to commit${NC}"
+fi
+
+# Commit backend uv.lock separately
+if git diff --name-only | grep -qE '^uv.lock$' || git ls-files --others --exclude-standard | grep -qE '^uv.lock$'; then
+    echo -e "${GREEN}Committing uv.lock...${NC}"
+    git add uv.lock
+    # Commit with templating
+    git commit -m "${COMMIT_PREFIX}$(lock_type="backend" tmpl "${COMMIT_MSG_LOCK}")"
+    echo "  Done"
+else
+    echo -e "${YELLOW}No uv.lock changes to commit${NC}"
+fi
+
 # Commit ai/query.md if it has changes
 if git diff --name-only | grep -q "^ai/query.md$"; then
     echo -e "${GREEN}Committing ai/query.md...${NC}"
+    echo "Showing diff for ai/query.md:"
+    git --no-pager diff -- ai/query.md || true
     git add ai/query.md
     git commit -m "${COMMIT_PREFIX}${COMMIT_MSG_QUERY}"
     echo "  Done"
 elif [ -f "ai/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/query.md$"; then
     echo -e "${GREEN}Committing ai/query.md (new file)...${NC}"
+    echo "Contents of new ai/query.md:"
+    sed -n '1,200p' ai/query.md || true
     git add ai/query.md
     git commit -m "${COMMIT_PREFIX}${COMMIT_MSG_QUERY}"
     echo "  Done"
@@ -90,11 +140,15 @@ fi
 # Commit ai/errors.md if it has changes
 if git diff --name-only | grep -q "^ai/errors.md$"; then
     echo -e "${GREEN}Committing ai/errors.md...${NC}"
+    echo "Showing diff for ai/errors.md:"
+    git --no-pager diff -- ai/errors.md || true
     git add ai/errors.md
     git commit -m "${COMMIT_PREFIX}${COMMIT_MSG_ERRORS}"
     echo "  Done"
 elif [ -f "ai/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/errors.md$"; then
     echo -e "${GREEN}Committing ai/errors.md (new file)...${NC}"
+    echo "Contents of new ai/errors.md:"
+    sed -n '1,200p' ai/errors.md || true
     git add ai/errors.md
     git commit -m "${COMMIT_PREFIX}${COMMIT_MSG_ERRORS}"
     echo "  Done"
@@ -102,14 +156,17 @@ else
     echo -e "${YELLOW}No changes to ai/errors.md${NC}"
 fi
 
-# Commit ai/calendar_alarm_clock/query.md if it has changes
+# Commit calendar_alarm_clock query/errors with diffs shown
 if git diff --name-only | grep -q "^ai/calendar_alarm_clock/query.md$"; then
     echo -e "${GREEN}Committing ai/calendar_alarm_clock/query.md...${NC}"
+    echo "Showing diff for ai/calendar_alarm_clock/query.md:"
+    git --no-pager diff -- ai/calendar_alarm_clock/query.md || true
     git add ai/calendar_alarm_clock/query.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_QUERY}"
     echo "  Done"
 elif [ -f "ai/calendar_alarm_clock/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/calendar_alarm_clock/query.md$"; then
     echo -e "${GREEN}Committing ai/calendar_alarm_clock/query.md (new file)...${NC}"
+    sed -n '1,200p' ai/calendar_alarm_clock/query.md || true
     git add ai/calendar_alarm_clock/query.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_QUERY}"
     echo "  Done"
@@ -117,14 +174,16 @@ elif [ -f "ai/calendar_alarm_clock/query.md" ] && git ls-files --others --exclud
 #     echo -e "${YELLOW}No changes to ai/calendar_alarm_clock/query.md${NC}"
 fi
 
-# Commit ai/calendar_alarm_clock/errors.md if it has changes
 if git diff --name-only | grep -q "^ai/calendar_alarm_clock/errors.md$"; then
     echo -e "${GREEN}Committing ai/calendar_alarm_clock/errors.md...${NC}"
+    echo "Showing diff for ai/calendar_alarm_clock/errors.md:"
+    git --no-pager diff -- ai/calendar_alarm_clock/errors.md || true
     git add ai/calendar_alarm_clock/errors.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_ERRORS}"
     echo "  Done"
 elif [ -f "ai/calendar_alarm_clock/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/calendar_alarm_clock/errors.md$"; then
     echo -e "${GREEN}Committing ai/calendar_alarm_clock/errors.md (new file)...${NC}"
+    sed -n '1,200p' ai/calendar_alarm_clock/errors.md || true
     git add ai/calendar_alarm_clock/errors.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_ERRORS}"
     echo "  Done"
@@ -213,4 +272,3 @@ fi
 
 echo ""
 echo -e "${GREEN}✅ Commits complete!${NC}"
-

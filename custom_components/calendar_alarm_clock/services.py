@@ -32,6 +32,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(LOG_NAME)
 
+# Define your service schemas here
 # Service schemas
 SERVICE_CREATE_ALARM_SCHEMA: vol.Schema = vol.Schema(
     {
@@ -98,6 +99,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def handle_create_alarm(call: ServiceCall) -> dict[str, Any]:
         """Handle create_alarm service call."""
+        _LOGGER.debug("Called handle_create_alarm service called with data: %s", call.data)
         manager: AlarmManager | None = _get_manager(hass)
         if not manager:
             _LOGGER.error("No alarm manager found")
@@ -222,6 +224,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         alarms: list[dict[str, Any]] = manager.list_alarms()
         return {"success": True, "alarms": alarms}
 
+    # Register your services here
     # Register services
     hass.services.async_register(
         DOMAIN,
@@ -285,10 +288,13 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         handle_list_alarms,
         schema=vol.Schema({}),
     )
+    _LOGGER.debug("Services registered")
+
 
 
 async def async_unload_services(hass: HomeAssistant) -> None:
     """Unload services for Calendar Alarm Clock."""
+    # Unregister your services here
     services: list[str] = [
         SERVICE_CREATE_ALARM,
         SERVICE_DELETE_ALARM,
@@ -303,3 +309,6 @@ async def async_unload_services(hass: HomeAssistant) -> None:
 
     for service in services:
         hass.services.async_remove(DOMAIN, service)
+
+    _LOGGER.debug("Services unloaded")
+

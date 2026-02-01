@@ -285,6 +285,12 @@ cd frontend && yarn install
 ```
 
 ### Running Linters
+**Single Alarm View** (shows one specific alarm):
+```yaml
+type: custom:calender-alarm-clock-card
+entity: sensor.alarm_clock_abc123
+title: Wake Up Alarm
+### Running Linters
 
 ```bash
 # Python: Check for lint issues

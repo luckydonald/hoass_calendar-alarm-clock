@@ -26,6 +26,7 @@ from .const import (
     LOG_NAME,
 )
 from .models import Alarm
+from .const import DOMAIN, LOG_NAME
 
 _LOGGER = logging.getLogger(LOG_NAME)
 

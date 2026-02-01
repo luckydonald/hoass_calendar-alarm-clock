@@ -3,15 +3,14 @@ import {
   h,
 } from 'vue';
 
-import CalendarBasedAlarmClockCard from './CalendarBasedAlarmClockCard.vue';
 
 import type { App, ComponentPublicInstance } from 'vue';
 
-import type { CardConfig, HomeAssistant } from './types';
+import type { CardConfig, HomeAssistant, MountedWrapperExtras, Wrapper } from './types';
 import pkg from '../package.json';
-import AlarmClockCard from './AlarmClockCard.vue';
-import AlarmClockCardEditorVue from './AlarmClockCardEditor.vue';
 
+import AlarmClockCard from './AlarmClockCard.vue';
+import AlarmClockCardEditor from './AlarmClockCardEditor.vue';
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;
@@ -100,10 +99,11 @@ class AlarmClockCardElement extends HTMLElement {
   public static getConfigElement(): HTMLElement {
     // Create a wrapper element and mount the Vue editor into it.
     // Define 'hass' and 'setConfig' on the element so Home Assistant can safely set properties.
-    const wrapper = document.createElement('div');
+    const wrapper: Wrapper<AlarmClockCardConfig> = document.createElement('div');
 
     // Mount the Vue editor into the wrapper. Keep a reference to the VM proxy so we can update props.
-    const app = createApp(AlarmClockCardEditorVue, {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const app = createApp(AlarmClockCardEditor, {
       hass: null,
       config: {},
       onConfigChanged: (cfg: AlarmClockCardConfig) => {
@@ -117,7 +117,9 @@ class AlarmClockCardElement extends HTMLElement {
       },
     });
 
-    const vm = app.mount(wrapper) as any;
+    // noinspection UnnecessaryLocalVariableJS
+    const vmOrigForTyping = app.mount(wrapper);
+    const vm = vmOrigForTyping as typeof vmOrigForTyping & MountedWrapperExtras<AlarmClockCardConfig>;
 
     // Define a 'hass' property so HA can set it (and we forward it to the Vue component proxy)
     Object.defineProperty(wrapper, 'hass', {
@@ -130,13 +132,13 @@ class AlarmClockCardElement extends HTMLElement {
           // ignore errors setting on vm
         }
       },
-      get() {
+      get(): HomeAssistant | null {
         return vm?.hass ?? null;
       },
     });
 
     // Provide a setConfig method which HA uses to initialize the editor
-    (wrapper as any).setConfig = (config: AlarmClockCardConfig) => {
+    wrapper.setConfig = (config: AlarmClockCardConfig) => {
       try {
         if (vm) vm.config = config;
       } catch {
@@ -212,7 +214,7 @@ class AlarmClockCardEditor extends HTMLElement {
       },
       render() {
         const data = this as unknown as AppData;
-        return h(AlarmClockCardEditorVue, {
+        return h(AlarmClockCardEditor, {
           hass: data.hass,
           config: data.config,
           onConfigChanged: (cfg: AlarmClockCardConfig) => {
@@ -267,19 +269,6 @@ class AlarmClockCardEditor extends HTMLElement {
       this._app.unmount();
       this._app = null;
     }
-    entityPicker.hass = this._hass;
-    entityPicker.includeDomains = [
-      'sensor',
-    ];
-    entityPicker.style.width = '100%';
-    entityPicker.addEventListener('value-changed', (e: Event) => {
-      const customEvent = e as CustomEvent;
-      this._updateConfig({ entity: customEvent.detail.value ?? '' });
-    });
-
-    row.appendChild(labelEl);
-    row.appendChild(entityPicker);
-    return row;
   }
 
   private _updateConfig(update: Partial<AlarmClockCardConfig>): void {
