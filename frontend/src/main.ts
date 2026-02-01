@@ -3,14 +3,15 @@ import {
   h,
 } from 'vue';
 
+import pkg from '../package.json';
+import AlarmClockCard from './AlarmClockCard.vue';
+import AlarmClockCardEditor from './AlarmClockCardEditor.vue';
 
 import type { App, ComponentPublicInstance } from 'vue';
 
-import type { CardConfig, HomeAssistant, MountedWrapperExtras, Wrapper } from './types';
-import pkg from '../package.json';
-
-import AlarmClockCard from './AlarmClockCard.vue';
-import AlarmClockCardEditor from './AlarmClockCardEditor.vue';
+import type {
+  CardConfig, HomeAssistant, MountedWrapperExtras, Wrapper,
+} from './types';
 
 interface AlarmClockCardConfig extends CardConfig {
   type?: string;
@@ -102,7 +103,7 @@ class AlarmClockCardElement extends HTMLElement {
     const wrapper: Wrapper<AlarmClockCardConfig> = document.createElement('div');
 
     // Mount the Vue editor into the wrapper. Keep a reference to the VM proxy so we can update props.
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
     const app = createApp(AlarmClockCardEditor, {
       hass: null,
       config: {},

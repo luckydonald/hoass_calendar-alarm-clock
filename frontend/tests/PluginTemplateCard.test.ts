@@ -5,7 +5,6 @@ import {
 } from 'vitest';
 
 import AlarmClockCard from '../src/AlarmClockCard.vue';
-import type { HomeAssistant, CardConfig } from '../src/types';
 
 import type { CardConfig, HassEntity, HomeAssistant } from '../src/types';
 

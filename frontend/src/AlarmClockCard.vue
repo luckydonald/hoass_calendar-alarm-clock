@@ -299,8 +299,7 @@ const formattedDate = computed(() =>
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-  })
-);
+  }));
 
 const pad = (v: number) => String(v).padStart(2, '0');
 const current12Hours = computed(() => ((currentHours.value + 11) % 12) + 1);
@@ -597,9 +596,15 @@ function handleAddButtonClick(): void {
           <ha-icon icon="mdi:alarm-note" />
         </div>
         <div class="ringing-alarm-info">
-          <div class="ringing-alarm-label">ALARM RINGING</div>
-          <div class="ringing-alarm-time">{{ formatTime(alarm.time) }}</div>
-          <div class="ringing-alarm-name">{{ alarm.name }}</div>
+          <div class="ringing-alarm-label">
+            ALARM RINGING
+          </div>
+          <div class="ringing-alarm-time">
+            {{ formatTime(alarm.time) }}
+          </div>
+          <div class="ringing-alarm-name">
+            {{ alarm.name }}
+          </div>
         </div>
         <div class="ringing-alarm-actions">
           <ha-button
@@ -641,8 +646,12 @@ function handleAddButtonClick(): void {
         >
           <ha-icon :icon="getAlarmIcon(selectedAlarm)" />
         </div>
-        <div class="single-alarm-time">{{ formatTime(selectedAlarm.time) }}</div>
-        <div class="single-alarm-name">{{ selectedAlarm.name }}</div>
+        <div class="single-alarm-time">
+          {{ formatTime(selectedAlarm.time) }}
+        </div>
+        <div class="single-alarm-name">
+          {{ selectedAlarm.name }}
+        </div>
         <div
           class="single-alarm-status"
           :class="{ ringing: isAlarmRinging(selectedAlarm) }"
@@ -659,7 +668,10 @@ function handleAddButtonClick(): void {
             class="snooze-button"
             @click="snoozeAlarm(selectedAlarm)"
           >
-            <ha-icon icon="mdi:alarm-snooze" slot="icon" />
+            <ha-icon
+              slot="icon"
+              icon="mdi:alarm-snooze"
+            />
             Snooze
           </ha-button>
           <ha-button
@@ -667,7 +679,10 @@ function handleAddButtonClick(): void {
             class="dismiss-button"
             @click="dismissAlarm(selectedAlarm)"
           >
-            <ha-icon icon="mdi:alarm-off" slot="icon" />
+            <ha-icon
+              slot="icon"
+              icon="mdi:alarm-off"
+            />
             Dismiss
           </ha-button>
         </div>
@@ -724,7 +739,10 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('clock')"
         >
-          <div class="section-header" slot="header">
+          <div
+            slot="header"
+            class="section-header"
+          >
             <ha-icon icon="mdi:clock-outline" />
             <span>Current Time</span>
           </div>
@@ -804,7 +822,9 @@ function handleAddButtonClick(): void {
                 </div>
               </div>
 
-              <div class="clock-date">{{ formattedDate }}</div>
+              <div class="clock-date">
+                {{ formattedDate }}
+              </div>
             </div>
 
             <!-- Digital Clock 12h/24h -->
@@ -828,7 +848,9 @@ function handleAddButtonClick(): void {
                   class="digital-sep-sec"
                 >:{{ pad(currentSeconds) }}</span>
               </div>
-              <div class="digital-date">{{ formattedDate }}</div>
+              <div class="digital-date">
+                {{ formattedDate }}
+              </div>
               <div
                 v-if="nextAlarm"
                 class="digital-next-alarm"
@@ -856,7 +878,10 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('quickAlarm')"
         >
-          <div class="section-header" slot="header">
+          <div
+            slot="header"
+            class="section-header"
+          >
             <ha-icon icon="mdi:timer-outline" />
             <span>Quick Alarm</span>
           </div>
@@ -870,7 +895,10 @@ function handleAddButtonClick(): void {
                 dense
                 @click="createQuickAlarm(option.minutes)"
               >
-                <ha-icon :icon="option.icon" slot="icon" />
+                <ha-icon
+                  slot="icon"
+                  :icon="option.icon"
+                />
                 {{ option.label }}
               </ha-button>
             </div>
@@ -901,7 +929,10 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('alarmList')"
         >
-          <div class="section-header" slot="icon">
+          <div
+            slot="icon"
+            class="section-header"
+          >
             <ha-icon icon="mdi:format-list-bulleted" />
             <span>Alarms</span>
             <span class="alarm-count">{{ filteredAlarms.length }}</span>
@@ -1031,7 +1062,10 @@ function handleAddButtonClick(): void {
           outlined
           @expanded-changed="toggleSection('addSection')"
         >
-          <div class="section-header" slot="header">
+          <div
+            slot="header"
+            class="section-header"
+          >
             <ha-icon icon="mdi:alarm-plus" />
             <span>Add Alarm</span>
           </div>
@@ -1069,11 +1103,21 @@ function handleAddButtonClick(): void {
               :value="dialogData.repeat"
               @selected="handleRepeatChange"
             >
-              <ha-list-item value="none">Never</ha-list-item>
-              <ha-list-item value="daily">Daily</ha-list-item>
-              <ha-list-item value="weekdays">Weekdays</ha-list-item>
-              <ha-list-item value="weekends">Weekends</ha-list-item>
-              <ha-list-item value="weekly">Weekly</ha-list-item>
+              <ha-list-item value="none">
+                Never
+              </ha-list-item>
+              <ha-list-item value="daily">
+                Daily
+              </ha-list-item>
+              <ha-list-item value="weekdays">
+                Weekdays
+              </ha-list-item>
+              <ha-list-item value="weekends">
+                Weekends
+              </ha-list-item>
+              <ha-list-item value="weekly">
+                Weekly
+              </ha-list-item>
             </ha-select>
 
             <div class="add-alarm-actions">
@@ -1088,7 +1132,10 @@ function handleAddButtonClick(): void {
                 raised
                 @click="saveAlarm"
               >
-                <ha-icon icon="mdi:check" slot="icon" />
+                <ha-icon
+                  slot="icon"
+                  icon="mdi:check"
+                />
                 Create Alarm
               </ha-button>
             </div>
@@ -1102,7 +1149,10 @@ function handleAddButtonClick(): void {
           label="Add Alarm"
           @click="handleAddButtonClick"
         >
-          <ha-icon icon="mdi:plus" slot="icon" />
+          <ha-icon
+            slot="icon"
+            icon="mdi:plus"
+          />
         </ha-fab>
       </template>
     </div>
@@ -1113,7 +1163,10 @@ function handleAddButtonClick(): void {
       heading=""
       @closed="closeDialog"
     >
-      <div class="dialog-heading" slot="heading">
+      <div
+        slot="heading"
+        class="dialog-heading"
+      >
         <ha-icon :icon="isEditing ? 'mdi:pencil' : 'mdi:alarm-plus'" />
         <span>{{ isEditing ? 'Edit Alarm' : 'Add Alarm' }}</span>
       </div>
@@ -1150,11 +1203,21 @@ function handleAddButtonClick(): void {
           :value="dialogData.repeat"
           @selected="handleRepeatChange"
         >
-          <ha-list-item value="none">Never</ha-list-item>
-          <ha-list-item value="daily">Daily</ha-list-item>
-          <ha-list-item value="weekdays">Weekdays</ha-list-item>
-          <ha-list-item value="weekends">Weekends</ha-list-item>
-          <ha-list-item value="weekly">Weekly</ha-list-item>
+          <ha-list-item value="none">
+            Never
+          </ha-list-item>
+          <ha-list-item value="daily">
+            Daily
+          </ha-list-item>
+          <ha-list-item value="weekdays">
+            Weekdays
+          </ha-list-item>
+          <ha-list-item value="weekends">
+            Weekends
+          </ha-list-item>
+          <ha-list-item value="weekly">
+            Weekly
+          </ha-list-item>
         </ha-select>
 
         <ha-formfield label="Enabled">
@@ -1165,10 +1228,16 @@ function handleAddButtonClick(): void {
         </ha-formfield>
       </div>
 
-      <ha-button dialog-action="cancel" slot="secondaryAction">
+      <ha-button
+        slot="secondaryAction"
+        dialog-action="cancel"
+      >
         Cancel
       </ha-button>
-      <ha-button @click="saveAlarm" slot="primaryAction">
+      <ha-button
+        slot="primaryAction"
+        @click="saveAlarm"
+      >
         Save
       </ha-button>
     </ha-dialog>

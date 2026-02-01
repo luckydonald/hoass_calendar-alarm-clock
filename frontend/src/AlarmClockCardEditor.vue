@@ -212,7 +212,9 @@ const addSectionOptions = [
     </div>
 
     <!-- Section visibility toggles -->
-    <div class="section-header">Section Visibility</div>
+    <div class="section-header">
+      Section Visibility
+    </div>
     <div class="section-toggles">
       <ha-formfield label="Show Clock Section">
         <ha-switch
@@ -261,7 +263,9 @@ const addSectionOptions = [
       </div>
     </div>
 
-    <div class="version">Version: {{ buildVersion }}</div>
+    <div class="version">
+      Version: {{ buildVersion }}
+    </div>
   </div>
 </template>
 
