@@ -44,7 +44,7 @@ fi
 # -------------------------------------------------
 . "${SCRIPT_DIR}/tmpl.sh"
 
-echo -e "${GREEN}📝 Plugin Template - Commit Script${NC}"
+echo -e "${GREEN}📝 Calendar backed Alarm Clock - Commit Script${NC}"
 echo ""
 
 # Check we're in the right directory
@@ -156,33 +156,33 @@ else
     echo -e "${YELLOW}No changes to ai/errors.md${NC}"
 fi
 
-# Commit plugin_template query/errors with diffs shown
-if git diff --name-only | grep -q "^ai/plugin_template/query.md$"; then
-    echo -e "${GREEN}Committing ai/plugin_template/query.md...${NC}"
-    echo "Showing diff for ai/plugin_template/query.md:"
-    git --no-pager diff -- ai/plugin_template/query.md || true
-    git add ai/plugin_template/query.md
+# Commit calendar_alarm_clock query/errors with diffs shown
+if git diff --name-only | grep -q "^ai/calendar_alarm_clock/query.md$"; then
+    echo -e "${GREEN}Committing ai/calendar_alarm_clock/query.md...${NC}"
+    echo "Showing diff for ai/calendar_alarm_clock/query.md:"
+    git --no-pager diff -- ai/calendar_alarm_clock/query.md || true
+    git add ai/calendar_alarm_clock/query.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_QUERY}"
     echo "  Done"
-elif [ -f "ai/plugin_template/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/plugin_template/query.md$"; then
-    echo -e "${GREEN}Committing ai/plugin_template/query.md (new file)...${NC}"
-    sed -n '1,200p' ai/plugin_template/query.md || true
-    git add ai/plugin_template/query.md
+elif [ -f "ai/calendar_alarm_clock/query.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/calendar_alarm_clock/query.md$"; then
+    echo -e "${GREEN}Committing ai/calendar_alarm_clock/query.md (new file)...${NC}"
+    sed -n '1,200p' ai/calendar_alarm_clock/query.md || true
+    git add ai/calendar_alarm_clock/query.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_QUERY}"
     echo "  Done"
 fi
 
-if git diff --name-only | grep -q "^ai/plugin_template/errors.md$"; then
-    echo -e "${GREEN}Committing ai/plugin_template/errors.md...${NC}"
-    echo "Showing diff for ai/plugin_template/errors.md:"
-    git --no-pager diff -- ai/plugin_template/errors.md || true
-    git add ai/plugin_template/errors.md
+if git diff --name-only | grep -q "^ai/calendar_alarm_clock/errors.md$"; then
+    echo -e "${GREEN}Committing ai/calendar_alarm_clock/errors.md...${NC}"
+    echo "Showing diff for ai/calendar_alarm_clock/errors.md:"
+    git --no-pager diff -- ai/calendar_alarm_clock/errors.md || true
+    git add ai/calendar_alarm_clock/errors.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_ERRORS}"
     echo "  Done"
-elif [ -f "ai/plugin_template/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/plugin_template/errors.md$"; then
-    echo -e "${GREEN}Committing ai/plugin_template/errors.md (new file)...${NC}"
-    sed -n '1,200p' ai/plugin_template/errors.md || true
-    git add ai/plugin_template/errors.md
+elif [ -f "ai/calendar_alarm_clock/errors.md" ] && git ls-files --others --exclude-standard | grep -q "^ai/calendar_alarm_clock/errors.md$"; then
+    echo -e "${GREEN}Committing ai/calendar_alarm_clock/errors.md (new file)...${NC}"
+    sed -n '1,200p' ai/calendar_alarm_clock/errors.md || true
+    git add ai/calendar_alarm_clock/errors.md
     git commit -m "${COMMIT_PREFIX_TEMPLATE}${COMMIT_MSG_ERRORS}"
     echo "  Done"
 fi

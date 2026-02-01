@@ -9,8 +9,6 @@
   "frontend_choice": "vue",
   "current_year": 2026,
   "replacements": {
-    "CalendarBackedAlarmClockCardEditor": "AlarmClockCardEditor.vue",
-    "CalendarBasedAlarmClockCard": "AlarmClockCard",
     "": ""
   },
   "": ""

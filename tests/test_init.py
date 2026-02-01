@@ -1,10 +1,10 @@
-"""Tests for Plugin Template integration."""
+"""Tests for Calendar backed Alarm Clock integration."""
 import pytest
 from unittest.mock import Mock, patch, AsyncMock
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
-from custom_components.plugin_template import async_setup_entry, async_unload_entry
-from custom_components.plugin_template.const import DOMAIN
+from custom_components.calendar_alarm_clock import async_setup_entry, async_unload_entry
+from custom_components.calendar_alarm_clock.const import DOMAIN
 
 
 @pytest.fixture
