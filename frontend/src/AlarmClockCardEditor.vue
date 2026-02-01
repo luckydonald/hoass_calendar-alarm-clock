@@ -24,14 +24,19 @@ const emitConfig = (cfg: CardConfig) => {
 const localConfig = reactive({ ...(props.config || {}) });
 
 // Keep in sync when parent updates config
-watch(() => props.config, (v) => {
-  if (!v) return;
-  Object.assign(localConfig, v);
+watch(() => props.config, (cfg) => {
+  if (!cfg) {
+    return;
+  }
+  Object.assign(localConfig, cfg);
 }, { deep: true });
 
 // Whenever localConfig changes, call onConfigChanged
-watch(localConfig, (v) => {
-  emitConfig({ ...(v as Record<string, any>) });
+watch(localConfig, (cfg: CardConfig) => {
+  if (!cfg || JSON.stringify(cfg) === '{}') {
+    return;
+  }
+  emitConfig({ ...cfg });
 }, { deep: true });
 
 // Values for the clock display select
