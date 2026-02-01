@@ -21,6 +21,11 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Enable Corepack and prepare Yarn
+        run: |
+          corepack enable
+          corepack prepare yarn@4.12.0 --activate
+
       - name: Install dependencies
         working-directory: frontend
         run: yarn install
