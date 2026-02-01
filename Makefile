@@ -135,7 +135,7 @@ ifeq ($(FRONTEND),1)
 					pm=""; \
 				fi; \
 				echo "Detected packageManager: $$pm"; \
-				if echo "$$pm" | grep -q '^yarn@' 2>/dev/null; then \
+				if echo "$$pm" | grep -qsetup '^yarn@' 2>/dev/null; then \
 					# extract the part after 'yarn@' without using ${..#..} to avoid make parser issues
 					ver=$$(echo "$$pm" | sed -E 's/^yarn@//'); corepack prepare yarn@$$ver --activate || true; \
 				elif [ -z "$$pm" ]; then \
