@@ -5,7 +5,7 @@ import {
 
 import pkg from '../package.json';
 import AlarmClockCard from './AlarmClockCard.vue';
-import AlarmClockCardEditor from './AlarmClockCardEditor.vue';
+import AlarmClockCardEditorVue from './AlarmClockCardEditor.vue';
 
 import type { App, ComponentPublicInstance } from 'vue';
 
@@ -13,20 +13,7 @@ import type {
   CardConfig, HomeAssistant, MountedWrapperExtras, Wrapper,
 } from './types';
 
-interface AlarmClockCardConfig extends CardConfig {
-  type?: string;
-  // UI/editor related optional properties
-  title?: string;
-  entity?: string;
-  clock_display?: string;
-  alarm_list_mode?: 'days' | 'count';
-  alarm_list_count?: number;
-  alarm_list_days?: number;
-  show_clock?: boolean;
-  show_quick_alarm?: boolean;
-  show_alarm_list?: boolean;
-  show_add_section?: string;
-}
+type AlarmClockCardConfig = CardConfig;
 
 interface AppData {
   hass: HomeAssistant | null;
@@ -104,7 +91,7 @@ class AlarmClockCardElement extends HTMLElement {
 
     // Mount the Vue editor into the wrapper. Keep a reference to the VM proxy so we can update props.
 
-    const app = createApp(AlarmClockCardEditor, {
+    const app = createApp(AlarmClockCardEditorVue, {
       hass: null,
       config: {},
       onConfigChanged: (cfg: AlarmClockCardConfig) => {
@@ -215,7 +202,10 @@ class AlarmClockCardEditor extends HTMLElement {
       },
       render() {
         const data = this as unknown as AppData;
-        return h(AlarmClockCardEditor, {
+        if (!data.hass) {
+          return h('div', 'Home Assistant not connected: `hass` is null');
+        }
+        return h(AlarmClockCardEditorVue, {
           hass: data.hass,
           config: data.config,
           onConfigChanged: (cfg: AlarmClockCardConfig) => {
@@ -223,43 +213,6 @@ class AlarmClockCardEditor extends HTMLElement {
           },
         });
       },
-    });
-
-    row.appendChild(labelEl);
-    row.appendChild(input);
-    return row;
-  }
-
-  private _createSelect(
-    name: string,
-    label: string,
-    value: string,
-    options: {
-      value: string;
-      label: string;
-    }[],
-  ): HTMLDivElement {
-    const row = document.createElement('div');
-
-    const labelEl = document.createElement('label');
-    labelEl.textContent = label;
-    labelEl.style.display = 'block';
-    labelEl.style.marginBottom = '4px';
-    labelEl.style.fontWeight = '500';
-    labelEl.style.color = 'var(--primary-text-color)';
-
-    const select = document.createElement('ha-select') as HTMLSelectElement;
-    select.setAttribute('label', label);
-    select.style.width = '100%';
-
-    options.forEach((opt) => {
-      const optionEl = document.createElement('mwc-list-item');
-      optionEl.setAttribute('value', opt.value);
-      optionEl.textContent = opt.label;
-      if (opt.value === value) {
-        optionEl.setAttribute('selected', '');
-      }
-      select.appendChild(optionEl);
     });
 
     this._app.mount(this._root);

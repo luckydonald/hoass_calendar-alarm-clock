@@ -2,19 +2,22 @@
 import { reactive, watch } from 'vue';
 import pkg from '../package.json';
 import ColorPicker from './ColorPicker.vue';
+import type {CardConfig, HomeAssistant} from "@/types.ts";
 
 interface Props {
-  hass: any;
-  config: Record<string, any>;
-  onConfigChanged?: (cfg: Record<string, any>) => void;
+  hass: HomeAssistant | null;
+  config: CardConfig;
+  onConfigChanged?: (cfg: CardConfig) => void;
 }
 
 const props = defineProps<Props>();
 
 const buildVersion = pkg.version || 'unknown';
 
-const emitConfig = (cfg: Record<string, any>) => {
-  if (props.onConfigChanged) props.onConfigChanged(cfg);
+const emitConfig = (cfg: CardConfig) => {
+  if (props.onConfigChanged) {
+    props.onConfigChanged(cfg)
+  }
 };
 
 // Local reactive copy of config

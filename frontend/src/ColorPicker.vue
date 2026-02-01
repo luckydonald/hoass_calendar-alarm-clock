@@ -43,7 +43,7 @@ function colorToHex(cssColor: string): string | null {
     const r = parseInt(m[1], 10);
     const g = parseInt(m[2], 10);
     const b = parseInt(m[3], 10);
-     
+
     return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   } catch {
     return null;
@@ -83,7 +83,7 @@ const filteredOptions = computed(() => {
 });
 
 function onSelect(e: Event) {
-  const target = e.target as HTMLSelectElement | HTMLElement | any;
+  const target = e.target as HTMLSelectElement;
   // ha-select/ha-list-item may provide value in different places; try common ones
   const val = (target && (target.value ?? target.getAttribute?.('value'))) as string || '';
   if (val) {
