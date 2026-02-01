@@ -291,7 +291,6 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     _LOGGER.debug("Services registered")
 
 
-
 async def async_unload_services(hass: HomeAssistant) -> None:
     """Unload services for Calendar Alarm Clock."""
     # Unregister your services here
@@ -311,4 +310,3 @@ async def async_unload_services(hass: HomeAssistant) -> None:
         hass.services.async_remove(DOMAIN, service)
 
     _LOGGER.debug("Services unloaded")
-
