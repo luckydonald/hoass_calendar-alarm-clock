@@ -104,8 +104,9 @@ init:
 	@./scripts/init.sh
 
 fix-commits:
-	@chmod +x scripts/fix-commits.sh
-	@./scripts/fix-commits.sh $(EXTRA_ARGS) $(VAR_ARGS) $(ARGS)
+	@chmod +x scripts/fix-commits-wrapper.sh || true
+	@chmod +x scripts/fix-commits.sh || true
+	@./scripts/fix-commits-wrapper.sh $(EXTRA_ARGS) $(VAR_ARGS) $(ARGS)
 
 commit-fix: fix-commits
 
@@ -125,30 +126,19 @@ setup-ts:
 ifeq ($(FRONTEND),1)
 	@echo "Setting up frontend development environment..."
 	@if [ -n "$(FRONTEND_DIR)" ]; then \
-		cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
-			# Enable corepack if available and prepare the yarn version declared in package.json (if any)
-			if command -v corepack >/dev/null 2>&1; then \
-				corepack enable || true; \
-				if command -v node >/dev/null 2>&1; then \
-					pm=$$(node -e "const p=require('./package.json'); console.log(p.packageManager||'')"); \
+			cd $(FRONTEND_DIR) && if [ -f package.json ]; then \
+				# Ensure Corepack and package manager are prepared via reusable script
+				if [ -x "$(CURDIR)/scripts/ensure_yarn.sh" ]; then \
+					"$(CURDIR)/scripts/ensure_yarn.sh" $(FRONTEND_DIR) || true; \
 				else \
-					pm=""; \
+					# Fallback: attempt to enable corepack and prepare if possible
+					corepack enable || true; \
+					PM=$$(node -e "console.log(require('./package.json').packageManager || '')") || true; \
+					if [ -n "$$PM" ]; then corepack prepare "$$PM" --activate || true; fi; \
 				fi; \
-				echo "Detected packageManager: $$pm"; \
-				if echo "$$pm" | grep -q '^yarn@' 2>/dev/null; then \
-					# extract the part after 'yarn@' without using ${..#..} to avoid make parser issues
-					ver=$$(echo "$$pm" | sed -E 's/^yarn@//'); corepack prepare yarn@$$ver --activate || true; \
-				elif [ -z "$$pm" ]; then \
-					# no packageManager declared — fall back to stable yarn
-					corepack prepare yarn@stable --activate || true; \
-				else \
-					# packageManager exists but is not yarn (npm/pnpm/etc.) — corepack is enabled but we won't prepare yarn
-					echo "packageManager is not yarn (found: $$pm); skipping yarn prepare"; \
-				fi; \
+				# Prefer yarn when available (corepack may have been activated), fallback to npm
+				if command -v yarn >/dev/null 2>&1; then yarn install; elif command -v npm >/dev/null 2>&1; then npm install; else echo "No npm/yarn found"; fi; \
 			fi; \
-			# Install using the available package manager
-			if command -v yarn >/dev/null 2>&1; then yarn install; elif command -v npm >/dev/null 2>&1; then npm install; else echo "No npm/yarn found"; fi; \
-		fi; \
 	fi
 else
 	@echo "No frontend sources detected – skipping frontend setup."
