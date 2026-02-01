@@ -95,16 +95,14 @@ export interface Alarm extends AlarmAttributes {
   state: AlarmState;
 }
 
-export type AlarmState =
-  | 'before'
+export type AlarmState = | 'before'
   | 'ringing'
   | 'ringing_snooze'
   | 'snoozed'
   | 'dismissed'
   | 'timed_out';
 
-export type RepeatPattern =
-  | 'none'
+export type RepeatPattern = | 'none'
   | 'daily'
   | 'weekdays'
   | 'weekends'
