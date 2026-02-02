@@ -1,0 +1,81 @@
+{
+  "config": {
+    "flow_title": "Wecker für {name}",
+    "step": {
+      "user": {
+        "title": "Kalender Wecker Einrichtung",
+        "description": "Möchten Sie Ihre Kalender automatisch entdecken und als Wecker anbieten lassen?\n\n**Gefundene {calendar_count} Kalender**\n\n**Auto-Erkennung**: Bietet automatisch an, Wecker für alle Kalender einzurichten (kann bei vielen Kalendern unübersichtlich werden).\n\n**Manuelle Einrichtung**: Wählen Sie manuell, welchen Kalender Sie für Wecker verwenden möchten.",
+        "data": {
+          "auto_discover_calendars": "Automatische Kalendersuche aktivieren"
+        },
+        "data_description": {
+          "auto_discover_calendars": "Wenn aktiviert, entdeckt die Integration automatisch Kalender und bietet an, diese einzurichten"
+        }
+      },
+      "manual": {
+        "title": "Kalender auswählen",
+        "description": "Wählen Sie den Kalender, in dem Wecker-Ereignisse gespeichert werden sollen. Stellen Sie sicher, dass ein Kalender-Integrations (z. B. CalDAV) eingerichtet ist.",
+        "data": {
+          "calendar_entity": "Kalender"
+        },
+        "data_description": {
+          "calendar_entity": "Der Kalender, in dem die Wecker-Ereignisse gespeichert werden"
+        }
+      },
+      "discovery_confirm": {
+        "title": "Wecker einrichten",
+        "description": "Ein Kalender **{calendar}** wurde gefunden. Möchten Sie ihn als Wecker verwenden?\n\nWecker werden als Kalenderereignisse gespeichert."
+      },
+      "auto_discovery_confirm": {
+        "title": "Auto-Erkennung für Kalender Wecker aktivieren",
+        "description": "Der Kalender Wecker kann Ihre Kalender automatisch erkennen und anbieten, sie als Wecker einzurichten.\n\nMöchten Sie die Auto-Erkennung aktivieren?\n\n**Hinweis**: Sie können Kalender später auch manuell hinzufügen, indem Sie nach 'Calendar Alarm Clock' in den Integrationen suchen."
+      }
+    },
+    "abort": {
+      "already_configured": "Dieser Kalender ist bereits für den Wecker konfiguriert.",
+      "no_calendars": "Keine Kalender gefunden. Bitte richten Sie zuerst eine Kalender-Integration ein (z. B. CalDAV, Google Kalender)."
+    },
+    "error": {
+      "cannot_connect": "Verbindung zum Kalender fehlgeschlagen."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Wecker Optionen",
+        "description": "Konfigurieren Sie die Standard-Weckeinstellungen.",
+        "data": {
+          "default_snooze_duration": "Standard Schlummerdauer (Minuten)",
+          "default_alarm_timeout": "Standard Weck-Timeout (Minuten)",
+          "default_max_snoozes": "Maximale Anzahl Schlummerzyklen"
+        },
+        "data_description": {
+          "default_snooze_duration": "Wie lange ein Wecker geschlummert wird, wenn der Benutzer 'Schlummern' drückt (Standard: 9 Minuten)",
+          "default_alarm_timeout": "Wie lange ein Wecker klingelt, bevor er abbricht (Standard: 30 Minuten)",
+          "default_max_snoozes": "Maximale Anzahl von Schlummern (0 = unbegrenzt)"
+        }
+      }
+    }
+  },
+  "services": {
+    "create_alarm": {
+      "name": "Wecker erstellen",
+      "description": "Erstellt einen neuen Wecker.",
+      "fields": {
+        "name": {"name": "Name", "description": "Name des Weckers."},
+        "time": {"name": "Zeit", "description": "Zeit für den Wecker (HH:MM)."},
+        "date": {"name": "Datum", "description": "Datum für den Wecker (JJJJ-MM-TT). Standard ist heute."},
+        "repeat": {"name": "Wiederholung", "description": "Wiederholungsmuster (keine, täglich, werktags, wochenende, wöchentlich)."},
+        "enabled": {"name": "Aktiviert", "description": "Ob der Wecker aktiviert ist."}
+      }
+    },
+    "delete_alarm": {"name": "Wecker löschen", "description": "Löscht einen Wecker.", "fields": {"alarm_id": {"name": "Wecker ID", "description": "ID des zu löschenden Weckers."}, "entity_id": {"name": "Entity ID", "description": "Entity ID des zu löschenden Weckers."}}},
+    "snooze_alarm": {"name": "Wecker schlummern", "description": "Schlummert einen klingelnden Wecker.", "fields": {"alarm_id": {"name": "Wecker ID", "description": "ID des zu schlummernden Weckers."}, "entity_id": {"name": "Entity ID", "description": "Entity ID des zu schlummernden Weckers."}, "duration": {"name": "Dauer", "description": "Schlummerdauer in Minuten."}}},
+    "dismiss_alarm": {"name": "Wecker beenden", "description": "Beendet einen klingelnden Wecker.", "fields": {"alarm_id": {"name": "Wecker ID", "description": "ID des zu beendenden Weckers."}, "entity_id": {"name": "Entity ID", "description": "Entity ID des zu beendenden Weckers."}}},
+    "enable_alarm": {"name": "Wecker aktivieren", "description": "Aktiviert einen Wecker.", "fields": {"alarm_id": {"name": "Wecker ID", "description": "ID des zu aktivierenden Weckers."}, "entity_id": {"name": "Entity ID", "description": "Entity ID des zu aktivierenden Weckers."}}},
+    "disable_alarm": {"name": "Wecker deaktivieren", "description": "Deaktiviert einen Wecker.", "fields": {"alarm_id": {"name": "Wecker ID", "description": "ID des zu deaktivierenden Weckers."}, "entity_id": {"name": "Entity ID", "description": "Entity ID des zu deaktivierenden Weckers."}}},
+    "edit_alarm": {"name": "Wecker bearbeiten", "description": "Bearbeitet einen bestehenden Wecker.", "fields": {"alarm_id": {"name": "Wecker ID", "description": "ID des zu bearbeitenden Weckers."}, "entity_id": {"name": "Entity ID", "description": "Entity ID des zu bearbeitenden Weckers."}, "name": {"name": "Name", "description": "Neuer Name für den Wecker."}, "time": {"name": "Zeit", "description": "Neue Zeit für den Wecker (HH:MM)."}, "repeat": {"name": "Wiederholung", "description": "Neues Wiederholungsmuster."}, "enabled": {"name": "Aktiviert", "description": "Ob der Wecker aktiviert ist."}}},
+    "trigger_alarm": {"name": "Wecker auslösen", "description": "Löst manuell einen Wecker aus (zum Testen).", "fields": {"alarm_id": {"name": "Wecker ID", "description": "ID des auszulösenden Weckers."}, "entity_id": {"name": "Entity ID", "description": "Entity ID des auszulösenden Weckers."}}},
+    "list_alarms": {"name": "Wecker auflisten", "description": "Listet alle Wecker auf."}
+  }
+}
