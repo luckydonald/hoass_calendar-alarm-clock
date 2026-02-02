@@ -192,6 +192,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Check if this is an auto-discovery entry (doesn't have calendar_entity)
     from .const import CONF_AUTO_DISCOVER_CALENDARS
 
+    # Migration: update old generic titles to include calendar friendly name
+    try:
+        if not entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False) and CONF_CALENDAR_ENTITY in entry.data:
+            calendar_entity = entry.data[CONF_CALENDAR_ENTITY]
+            # Prefer friendly name from states
+            state = hass.states.get(calendar_entity)
+            calendar_name = state.name if state and getattr(state, "name", None) else calendar_entity.split(".")[-1].replace("_", " ").title()
+            expected_title = f"{calendar_name} Calendar backed Alarm Clock"
+            if entry.title != expected_title:
+                _LOGGER.info("Updating config entry title from '%s' to '%s'", entry.title, expected_title)
+                hass.config_entries.async_update_entry(entry, title=expected_title)
+    except Exception:  # pragma: no cover - best effort only
+        _LOGGER.debug("Failed to migrate config entry title, continuing setup")
+
     if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
         # This is the auto-discovery config entry - it doesn't manage a specific calendar
         # Just mark it as set up and let the discovery mechanism handle finding calendars
