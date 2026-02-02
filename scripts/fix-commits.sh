@@ -147,9 +147,11 @@ NUMBER_SEARCH=()
 NUMBER_OVERRIDE=""
 DRY_RUN=false
 INTERACTIVE=false
+# Default batch message (can be set via --message / -m)
+BATCH_MESSAGE=""
 
 print_usage() {
-    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--dry-run] [--interactive|-i]"
+    echo "Usage: $0 [--start-commit <commit>] [--end-commit <commit>] [--ignore-blocks] [--number-search 10,11,23] [--number-override <number>] [--message <msg>|-m <msg>] [--dry-run] [--interactive|-i]"
 }
 
 # Helper: check if array contains value (portable)
@@ -255,6 +257,30 @@ parse_number_search() {
     fi
 }
 
+# Helper: check if a string is pure ASCII (returns 1 for ascii, 0 for non-ascii)
+is_ascii() {
+    # Use python3 for reliable unicode detection; print 1 if ascii else 0
+    python3 - <<PY "$1"
+import sys
+try:
+    s = sys.argv[1]
+    print(1 if s.isascii() else 0)
+except Exception:
+    print(0)
+PY
+}
+
+# Helper: base64-encode a UTF-8 string (no newline)
+b64_of() {
+    python3 - <<PY "$1"
+import sys,base64
+try:
+    print(base64.b64encode(sys.argv[1].encode('utf-8')).decode())
+except Exception:
+    print('')
+PY
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --start-commit)
@@ -274,6 +300,24 @@ while [ "$#" -gt 0 ]; do
             ;;
         --number-override)
             NUMBER_OVERRIDE="$2"; shift 2 || true;;
+        --message|-m)
+            # Default message for the batch (may be overridden interactively)
+            BATCH_MESSAGE="$2"; shift 2 || true;;
+        --message-base64|--message-b64)
+            # Accept message as base64 to avoid shell/Make quoting issues; decode using python3 to preserve UTF-8
+            if [ -n "$2" ]; then
+                MESSAGE_B64="$2"; shift 2 || true
+                # decode safely via python3 into BATCH_MESSAGE
+                BATCH_MESSAGE=$(python3 - <<PY
+import sys,base64
+sys.stdout.write(base64.b64decode('$MESSAGE_B64').decode('utf-8'))
+PY
+) || BATCH_MESSAGE=""
+            else
+                print_error "--message-base64 requires a base64 value"
+                exit 1
+            fi
+            ;;
         --dry-run)
             DRY_RUN=true; shift;;
         --interactive|-i)
@@ -380,27 +424,133 @@ if [ "$INTERACTIVE" = true ]; then
         display_args+=("--number-search" "$ns")
     fi
     if [ -n "$NUMBER_OVERRIDE" ]; then
-        display_args+=("--number-override" "$NUMBER_OVERRIDE")
+        # Normalize and only include the override in the printed command if it differs from the detected step
+        no_norm=$(normalize_step "$NUMBER_OVERRIDE")
+        if [ -z "$DETECTED_STEP" ] || [ "$no_norm" != "$DETECTED_STEP" ]; then
+            display_args+=("--number-override" "$no_norm")
+        fi
+    fi
+    if [ -n "$BATCH_MESSAGE" ]; then
+        # If user provided an original base64, prefer including that in displayed make command
+        if [ -n "$MESSAGE_B64" ]; then
+            display_args+=("--message-base64" "$MESSAGE_B64")
+        else
+            display_args+=("-m" "$BATCH_MESSAGE")
+        fi
     fi
     if [ "$DRY_RUN" = true ]; then
         display_args+=("--dry-run")
     fi
 
-    # Join with safe single-quoting for display
-    joined=""
-    for a in "${display_args[@]}"; do
-        # escape single quotes in argument
-        esc=$(printf "%s" "$a" | sed "s/'/'\\''/g")
-        joined="$joined '$esc'"
-    done
+    # Do not precompute a printf-escaped 'joined' (it can produce $'...' for non-ASCII).
+    # We'll use SHELL_JOINED / MAKE_JOINED below which handle base64 encoding when needed.
 
     linebreak
     print_info "Calculated command based on your interactive choices:"
-    print_code "$cmd_path$joined"
+    # Build a shell-friendly invocation for direct script running and convert non-ASCII messages
+    SHELL_JOINED=""
+    skip_next=false
+    i=0
+    while [ $i -lt ${#display_args[@]} ]; do
+        a="${display_args[$i]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            i=$((i+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${display_args[$((i+1))]}"
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                SHELL_JOINED="$SHELL_JOINED $esc $vesc"
+            else
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                SHELL_JOINED="$SHELL_JOINED $esc $vesc"
+            fi
+            skip_next=true
+        else
+            esc=$(printf "%q" "$a")
+            SHELL_JOINED="$SHELL_JOINED $esc"
+        fi
+        i=$((i+1))
+    done
+
+    print_code "$cmd_path$SHELL_JOINED"
+    # Build a Make-friendly invocation but omit any -m <msg> that contains non-ASCII
+    MAKE_JOINED=""
+    skip_next=false
+    omitted_message=false
+    i=0
+    while [ $i -lt ${#display_args[@]} ]; do
+        a="${display_args[$i]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            i=$((i+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            # lookahead to value
+            val="${display_args[$((i+1))]}"
+            # Use helper to check ascii-ness robustly
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                MAKE_JOINED="$MAKE_JOINED $esc $vesc"
+                skip_next=true
+            else
+                # include base64-safe message flag
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                MAKE_JOINED="$MAKE_JOINED $esc $vesc"
+                omitted_message=true
+                skip_next=true
+            fi
+        else
+            esc=$(printf "%q" "$a")
+            MAKE_JOINED="$MAKE_JOINED $esc"
+        fi
+        i=$((i+1))
+    done
+
     print_info "Equivalent make invocation (wrapper supports positional shortcut forms):"
-    print_code "make fix-commits --$joined"
+    if [ -n "$MAKE_JOINED" ]; then
+        print_code "make fix-commits --$MAKE_JOINED"
+    else
+        print_code "make fix-commits"
+    fi
+    if [ "$omitted_message" = true ]; then
+        print_warning "Note: message contained non-ASCII characters and was omitted from the make invocation; use the 'Safe (Unicode) reproducible command' shown below to run exactly."
+    fi
+    # Also print a Unicode-safe python runner that decodes base64 arguments and invokes the script.
+    # This avoids problems with non-ASCII characters (e.g. ellipsis) and exotic quoting.
+    py_b64_args=()
+    for a in "${display_args[@]}"; do
+        # base64-encode each argument (no newlines)
+        b64=$(printf "%s" "$a" | base64 | tr -d '\n') || b64=""
+        py_b64_args+=("$b64")
+    done
+    if [ ${#py_b64_args[@]} -gt 0 ]; then
+        linebreak
+        print_info "Safe (Unicode) reproducible command using python3:"
+        # Build a small heredoc that decodes and runs the script; print without executing
+        printf "»%s %s\n" "" "python3 - <<'PY'" >/dev/null 2>&1 || true
+        # Construct printed heredoc content
+        PY_CONTENT="import base64,subprocess\nargs=["
+        for b in "${py_b64_args[@]}"; do
+            PY_CONTENT+="base64.b64decode('$b').decode('utf-8'),"
+        done
+        PY_CONTENT+="]\nsubprocess.run(['./scripts/fix-commits.sh']+args)\n"
+        # Use print_code to show the heredoc (preserve newlines)
+        # Surround with PY markers as printed to the user
+        print_code "python3 - <<'PY'\n${PY_CONTENT}PY"
+        linebreak
+    fi
     linebreak
-fi
+ fi
 
 # Validate commits if provided
 if [ -n "$START_COMMIT" ]; then
@@ -845,10 +995,6 @@ linebreak
 
 # Ask for the message once for all commits in this batch
 linebreak
-# If dry-run requested, print a prominent red headline now (the user wanted the dry-run delayed until after the message input)
-#if [ "$DRY_RUN" = true ]; then
-#    echo -e "${RED}⚠ DRY RUN: No changes will be made. This will only simulate the rebase operations. Press Enter to continue or Ctrl+C to abort.${NC}"
-#fi
 print_info "Enter a message for all commits in this batch"
 print_warning "Leave empty to keep individual 'running…' messages"
 print_warning "Press Ctrl+C to cancel"
@@ -857,7 +1003,19 @@ linebreak
 if [ "$DRY_RUN" = true ]; then
     echo -e "${RED}⚠ DRY RUN: No changes will be made. A simulated rebase will be shown after you enter the message.${NC}"
 fi
-read -p "Message for step [$PADDED_STEP]: " BATCH_MESSAGE
+# If a message was provided via CLI, show it as the current default and allow edit
+if [ -n "$BATCH_MESSAGE" ]; then
+    read -p "Message for step [$PADDED_STEP] (current: $BATCH_MESSAGE) [Enter to keep]: " __input
+    if [ -n "${__input}" ]; then
+        BATCH_MESSAGE="$__input"
+    fi
+else
+    read -p "Message for step [$PADDED_STEP]: " __input
+    if [ -n "${__input}" ]; then
+        BATCH_MESSAGE="$__input"
+    fi
+fi
+unset __input
 linebreak
 
 # If dry-run requested, now show simulated rebase operations and exit before any destructive actions
@@ -1542,7 +1700,148 @@ if git rebase -i "$REBASE_PARENT"; then
         print_info "Delete it manually when no longer needed: "
         print_code "git tag -d $RECOVERY_TAG"
     fi
+    linebreak
 
+    # Print the final reproducible command (always) so the user can repeat it.
+    # This appears before the recovery-tag cleanup prompt so it's visible in logs.
+    FINAL_CMD_PATH="./scripts/fix-commits.sh"
+    FINAL_ARGS=()
+    if [ -n "$START_COMMIT" ]; then
+        FINAL_ARGS+=("--start-commit" "$START_COMMIT")
+    fi
+    if [ -n "$END_COMMIT" ]; then
+        FINAL_ARGS+=("--end-commit" "$END_COMMIT")
+    fi
+    if [ "$IGNORE_BLOCKS" = true ]; then
+        FINAL_ARGS+=("--ignore-blocks")
+    fi
+
+    # Compute effective number-search string (ns): prefer explicit NUMBER_SEARCH, else DETECTED_STEP
+    ns=""
+    if [ ${#NUMBER_SEARCH[@]} -gt 0 ]; then
+        ns=$(IFS=,; echo "${NUMBER_SEARCH[*]}")
+    elif [ -n "$DETECTED_STEP" ]; then
+        ns="$DETECTED_STEP"
+    fi
+
+    # If we have an effective ns, always include it in the final reproducible args
+    if [ -n "$ns" ]; then
+        FINAL_ARGS+=("--number-search" "$ns")
+    fi
+
+    # Only include an explicit --number-override if the user provided one and it's different
+    # from the effective ns (and the effective ns is non-empty). This avoids redundant
+    # --number-override when it would be identical to the --number-search used above.
+    if [ -n "$NUMBER_OVERRIDE" ]; then
+        no_norm=$(normalize_step "$NUMBER_OVERRIDE")
+        include_override=true
+        if [ -n "$ns" ]; then
+            # If ns contains multiple values (comma), treat override as different.
+            if echo "$ns" | grep -q ','; then
+                include_override=true
+            else
+                ns_norm=$(normalize_step "$ns")
+                if [ "$no_norm" = "$ns_norm" ]; then
+                    include_override=false
+                fi
+            fi
+        fi
+        if [ "$include_override" = true ]; then
+            FINAL_ARGS+=("--number-override" "$no_norm")
+        fi
+    fi
+    if [ -n "$BATCH_MESSAGE" ]; then
+        if [ -n "$MESSAGE_B64" ]; then
+            FINAL_ARGS+=("--message-base64" "$MESSAGE_B64")
+        else
+            FINAL_ARGS+=("-m" "$BATCH_MESSAGE")
+        fi
+    fi
+    if [ "$DRY_RUN" = true ]; then
+        FINAL_ARGS+=("--dry-run")
+    fi
+
+    # Do not build a printf-escaped FINAL_JOINED as it can produce $'...' for non-ASCII.
+    # Use SHELL_FINAL_JOINED / MAKE_FINAL_JOINED below which handle base64 encoding when needed.
+    linebreak
+    print_info "Final command to reproduce this operation:"
+    # Build a shell-friendly final invocation similarly and convert non-ASCII messages to base64 flags
+    SHELL_FINAL_JOINED=""
+    skip_next=false
+    j=0
+    while [ $j -lt ${#FINAL_ARGS[@]} ]; do
+        a="${FINAL_ARGS[$j]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            j=$((j+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${FINAL_ARGS[$((j+1))]}"
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+            else
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc $vesc"
+                omitted_message=true
+            fi
+            skip_next=true
+        else
+            esc=$(printf "%q" "$a")
+            SHELL_FINAL_JOINED="$SHELL_FINAL_JOINED $esc"
+        fi
+        j=$((j+1))
+    done
+
+    print_code "$FINAL_CMD_PATH$SHELL_FINAL_JOINED"
+    # Build Make-friendly final joined similarly (omit -m if non-ASCII)
+    MAKE_FINAL_JOINED=""
+    omitted_message=false
+    skip_next=false
+    j=0
+    while [ $j -lt ${#FINAL_ARGS[@]} ]; do
+        a="${FINAL_ARGS[$j]}"
+        if [ "$skip_next" = true ]; then
+            skip_next=false
+            j=$((j+1))
+            continue
+        fi
+        if [ "$a" = "-m" ] || [ "$a" = "--message" ]; then
+            val="${FINAL_ARGS[$((j+1))]}"
+            if [ "$(is_ascii "$val")" -eq 1 ]; then
+                esc=$(printf "%q" "-m")
+                vesc=$(printf "%q" "$val")
+                MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                skip_next=true
+            else
+                b64=$(b64_of "$val")
+                esc=$(printf "%q" "--message-base64")
+                vesc=$(printf "%q" "$b64")
+                MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc $vesc"
+                omitted_message=true
+                skip_next=true
+            fi
+        else
+            esc=$(printf "%q" "$a")
+            MAKE_FINAL_JOINED="$MAKE_FINAL_JOINED $esc"
+        fi
+        j=$((j+1))
+    done
+
+    print_info "Or via make (positional shortcuts supported):"
+    if [ -n "$MAKE_FINAL_JOINED" ]; then
+        print_code "make fix-commits --$MAKE_FINAL_JOINED"
+    else
+        print_code "make fix-commits"
+    fi
+    if [ "$omitted_message" = true ]; then
+        print_warning "Note: message contained non-ASCII characters and was omitted from the make invocation; use the 'Safe (Unicode) reproducible command' shown above to run exactly."
+    fi
+    linebreak
 else
     # Restore the original core.editor on failure as well
     if [ -n "$ORIGINAL_CORE_EDITOR" ]; then
