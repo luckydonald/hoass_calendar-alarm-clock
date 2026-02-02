@@ -299,7 +299,8 @@ const formattedDate = computed(() =>
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-  }));
+  })
+);
 
 const pad = (v: number) => String(v).padStart(2, '0');
 const current12Hours = computed(() => ((currentHours.value + 11) % 12) + 1);
