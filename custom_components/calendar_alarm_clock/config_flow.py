@@ -81,6 +81,18 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Create the options flow and pass the config_entry to the handler."""
         return OptionsFlowHandler(config_entry)
 
+    def _get_calendar_name(self, entity_id: str) -> str:
+        """Return a friendly name for the calendar entity.
+
+        Prefer the entity's friendly name (state.name) when available, otherwise
+        fall back to a cleaned version of the entity_id (split, replace underscores,
+        title-case).
+        """
+        state = self.hass.states.get(entity_id) if hasattr(self, "hass") else None
+        if state is not None and getattr(state, "name", None):
+            return state.name
+        return entity_id.split(".")[-1].replace("_", " ").title()
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the initial step - ask about auto-discovery."""
         if user_input is not None:
@@ -124,7 +136,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.hass.async_create_task(_trigger_discovery(self.hass))
 
         return self.async_create_entry(
-            title="Calendar Alarm Clock (Auto-Discovery)",
+            title="Calendar backed Alarm Clock (Auto-Discovery)",
             data={CONF_AUTO_DISCOVER_CALENDARS: True},
         )
 
@@ -139,8 +151,10 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(calendar_entity)
             self._abort_if_unique_id_configured()
 
+            friendly_name = self._get_calendar_name(calendar_entity)
+
             return self.async_create_entry(
-                title=f"Alarm Clock ({calendar_entity.split('.')[-1]})",
+                title=f"{friendly_name} Calendar backed Alarm Clock",
                 data={CONF_CALENDAR_ENTITY: calendar_entity},
             )
 
@@ -184,7 +198,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not is_onboarded:
                 _LOGGER.info("Creating auto-discovery entry automatically (onboarding)")
                 return self.async_create_entry(
-                    title="Calendar Alarm Clock (Auto-Discovery)",
+                    title="Calendar backed Alarm Clock (Auto-Discovery)",
                     data={CONF_AUTO_DISCOVER_CALENDARS: True},
                 )
 
@@ -218,7 +232,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Confirm the auto-discovery setup."""
         if user_input is not None:
             return self.async_create_entry(
-                title="Calendar Alarm Clock (Auto-Discovery)",
+                title="Calendar backed Alarm Clock (Auto-Discovery)",
                 data={CONF_AUTO_DISCOVER_CALENDARS: True},
             )
 
@@ -234,9 +248,9 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None or not onboarding.async_is_onboarded(self.hass):
             # User confirmed or onboarding is not complete (auto-setup)
             assert self._discovered_calendar is not None
-            calendar_name = self._discovered_calendar.split(".")[-1].replace("_", " ").title()
+            calendar_name = self._get_calendar_name(self._discovered_calendar)
             return self.async_create_entry(
-                title=f"Alarm Clock ({calendar_name})",
+                title=f"{calendar_name} Calendar backed Alarm Clock",
                 data={CONF_CALENDAR_ENTITY: self._discovered_calendar},
             )
 
