@@ -67,6 +67,7 @@ class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Calendar Alarm Clock."""
 
     VERSION: int = 1
+    MINOR_VERSION = 0
 
     def __init__(self) -> None:
         """Initialize the config flow."""

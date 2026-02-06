@@ -299,7 +299,10 @@ const formattedDate = computed(() =>
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-  }));
+    // eslint-disable-next-line comma-dangle
+  })
+// eslint-disable-next-line function-paren-newline
+);
 
 const pad = (v: number) => String(v).padStart(2, '0');
 const current12Hours = computed(() => ((currentHours.value + 11) % 12) + 1);
