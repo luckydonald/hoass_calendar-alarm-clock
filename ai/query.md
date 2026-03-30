@@ -256,3 +256,78 @@ Remember to keep html attributes and the next child (element or text) on their o
 Fix `check_slot.js` script to also allow parent element checks.
 Could you read `.eslintrc.cjs` for that, `const [error, config] = eslintrc.rules["vue/no-deprecated-slot-attribute"]` and `const { ignore, ignoreParents } = config;` with value being `string[]` for both.
 Then with that check if it's either in the ignore list, or if the parent is in the ignoreParents list.
+———
+Alright, It's getting to confusing.
+
+I want to extract stuff into packages.
+- custom_components.calendar_backed_alarm_clock.autodiscovery (the first autodiscovery asking you if you want to autodiscover calendars)
+- custom_components.calendar_backed_alarm_clock.alarm.core (the standard previous/current/next alarms)
+- custom_components.calendar_backed_alarm_clock.alarm.entries (per-calendar entry created entities)
+
+In there would be basically separate files for:
+- HA autodiscovery 
+- config flow (if possible one per config flow, i.e. user, the one for later config changes, etc.)
+
+I also want to change the way it is structured in terms of devices and entities.
+- The suffix of the id (after the type (e.g. `sensor.`)) will be `{integration_name}`, so `calendar_backed_alarm_clock`. I will mention below (ID-SUFFIX) how the rest of the id will be structured, but the main point is that the integration name is the first suffix, and then after that comes the rest of the structure, appended with dots.
+- A integration is created per calendar by the user, selecting a calendar.* in the config flow (already working)
+  - ID-SUFFIX: `calendar.my_calendar` -> `.my_calendar`
+- In there the following devices will be created
+  - Overview  (ID-SUFFIX: `.overview`)
+    - Those Overview will have summarizing entities `.previous`, `.current`, `.next` like normal alarm entities, and the following additional ones (first add those, then the normal ones):
+      - Previous (ID-SUFFIX: `.previous`) / Current (ID-SUFFIX: `.current`) / Next (ID-SUFFIX: `.next`)
+        - Name (ID-SUFFIX: `.name`)
+          And the following properties:
+          - `type`: `sensor` (`homeassistant.components.sensor.SensorEntity`; because read-only)
+          - `device_class`: `enum` (`SensorDeviceClass.ENUM`) the available event's ids
+          - `last_reset`: `None` (not an int)
+          - `native_value`: `None` (not an int)
+          - `options`: `list[str]` (The nice looking names of the events, e.g. "Alarm 1", "Early Shower", etc.)
+          - `state_class`: `None` (not an int)
+          - `suggested_display_precision`: `None` (not an int)
+          - `suggested_unit_of_measurement`: `None` (not an int)
+    - Additionally there are non-calendar(-event) entities in there:    
+      - Total Today  (ID-SUFFIX: `.today.total`)
+        - Count (ID-SUFFIX: `.total`)
+          - `type`: `sensor` (read only number)
+          - `device_class`: `None` (there's nothing that fits, and it's not a number with a common unit)
+          - `last_reset`: `None` (not accumulative)
+          - `native_unit_of_measurement`: `None` (If a unit translation is provided, native_unit_of_measurement should not be defined.) -> In translation put `"alarms"`.
+          - `native_value`: `int` (the number of alarms today, both past and future of current time)
+          - `options`: `None` (not an enum)
+          - `state_class`: `SensorStateClass.MEASUREMENT` (because it's a current measurement, not a total **increasing** count)
+          - `suggested_display_precision`: `0` (because it's a count, so no decimals)
+          - `suggested_unit_of_measurement`: `None` (because `native_unit_of_measurement` is not defined)
+        - Upcoming Today (ID-SUFFIX: `.today.upcoming`)
+          - `type`: `sensor` (read only number)
+          - Same as `.total`, but the `native_value` is only the number of upcoming alarms, excluding past/current ones on this day.
+        - Past Today (ID-SUFFIX: `.today.past`)
+          - `type`: `sensor` (read only number)
+          - Same as `.total`, but the `native_value` is only the number of past alarms, excluding current/upcoming ones on this day.
+  - Alarm Entry (Name = Calender entry date) (ID-SUFFIX: `.entry.{event_id}` where event_id is the calendar event's id, which is unique for each event)
+    - Note that calendar entries have their own entities, because they can be enabled/disabled/snoozed/dismissed individually, and also have their own attributes like time, name, etc. that are changing independently of the overview entities.
+    - E.g. a weekly alarm you can turn on and off additionally, is a single calendar entry (recurring event). With `RRULE:FREQ=WEEKLY;BYDAY=MO,DI` or something like that. (The recurring events may be updated: (Specifying uid, recurrence_id, and a recurrence_range value may update a range of events starting at recurrence_id. Currently rfc5545 allows the range value of THISANDFUTURE.)
+    - The repeat shall be canceled _after_ the next occurrence. The next occurrence (not deleted) shall be `STATUS:CANCELLED`. This would be syncronized with the toggle, so if that 's toggled off, the next occurrence is cancelled, and if toggled on again, the next occurrence is uncancelled again, and the repeat is restored.
+    - An event has the following entities:
+      - Alarm (ID-SUFFIX: `.entry.{event_id}.ringing`)
+        - `type`: `binary_sensor` (because it's basically "is this alarm ringing or not", even though it has more states than just on/off, but those states are represented in the attributes)
+        - `is_on`: `bool` (true if the alarm is currently ringing, false otherwise)
+        - `device_class`: `None` (there's no fitting device class for this)
+      - 
+        
+        - `device_class`: `None` (there's no fitting device class for this)
+        - `state`: `str` (one of "before", "ringing", "snoozed", "dismissed", "timed_out")
+        - `attributes`:
+          - `id`: `str` (the calendar event's id, which is unique for each event)
+          - `name`: `str`
+          - `time`: `datetime`
+          - `enabled`: `bool`
+          - `repeat`: `bool`
+          - `next_snooze_time`: `datetime | None`
+          - `snooze_count`: `int`
+          - `timeout`: `float` (in minutes)
+
+
+
+
+
