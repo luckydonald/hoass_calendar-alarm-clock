@@ -8,8 +8,9 @@ link to overview), is_on for every alarm state, extra_state_attributes
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from datetime import timedelta
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from homeassistant.util import dt as dt_util
@@ -20,6 +21,13 @@ from custom_components.calendar_alarm_clock.models import Alarm
 
 CALENDAR_ENTITY = "calendar.my_cal"
 CALENDAR_SUFFIX = "my_cal"
+
+
+@contextmanager
+def _no_ha_state_write(sensor: AlarmEntryBinarySensor):
+    """Suppress async_write_ha_state for entities not registered in HA."""
+    with patch.object(sensor, "async_write_ha_state"):
+        yield
 
 # ---------------------------------------------------------------------------
 # Fixtures & helpers
@@ -198,7 +206,8 @@ class TestAvailability:
 
     def test_set_unavailable_marks_unavailable(self, mock_manager, mock_entry) -> None:
         sensor = AlarmEntryBinarySensor(mock_manager, mock_entry, _alarm())
-        sensor.async_set_unavailable()
+        with _no_ha_state_write(sensor):
+            sensor.async_set_unavailable()
         assert sensor.available is False
 
 
@@ -211,24 +220,30 @@ class TestUpdateHelpers:
     def test_update_from_alarm_changes_state(self, mock_manager, mock_entry) -> None:
         sensor = AlarmEntryBinarySensor(mock_manager, mock_entry, _alarm(state="before"))
         assert sensor.is_on is False
-        sensor.async_update_from_alarm(_alarm(state="ringing"))
+        with _no_ha_state_write(sensor):
+            sensor.async_update_from_alarm(_alarm(state="ringing"))
         assert sensor.is_on is True
 
     def test_update_from_alarm_restores_availability(self, mock_manager, mock_entry) -> None:
         sensor = AlarmEntryBinarySensor(mock_manager, mock_entry, _alarm())
-        sensor.async_set_unavailable()
+        with _no_ha_state_write(sensor):
+            sensor.async_set_unavailable()
         assert sensor.available is False
-        sensor.async_update_from_alarm(_alarm())
+        with _no_ha_state_write(sensor):
+            sensor.async_update_from_alarm(_alarm())
         assert sensor.available is True
 
     def test_update_from_alarm_updates_name(self, mock_manager, mock_entry) -> None:
         sensor = AlarmEntryBinarySensor(mock_manager, mock_entry, _alarm(name="Old"))
-        sensor.async_update_from_alarm(_alarm(name="New"))
+        with _no_ha_state_write(sensor):
+            sensor.async_update_from_alarm(_alarm(name="New"))
         assert sensor.extra_state_attributes["name"] == "New"
 
     def test_set_unavailable_then_update_recovers(self, mock_manager, mock_entry) -> None:
         sensor = AlarmEntryBinarySensor(mock_manager, mock_entry, _alarm())
-        sensor.async_set_unavailable()
-        sensor.async_update_from_alarm(_alarm(state="ringing"))
+        with _no_ha_state_write(sensor):
+            sensor.async_set_unavailable()
+        with _no_ha_state_write(sensor):
+            sensor.async_update_from_alarm(_alarm(state="ringing"))
         assert sensor.available is True
         assert sensor.is_on is True
