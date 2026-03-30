@@ -24,7 +24,7 @@
   Run it multiple times if you need to change multiple files or the same file multiple times - after each file change.
   Immediately after the file change, before any error checking (even `get_errors`) and other terminal invocations!
   Ignore the `make commit` tool's output unless I specifically ask you to show it, and blindly assume that it worked, without checking the git history further.
-  Briefly mention it when listing next steps or similar. 
+  Briefly mention it when listing next steps or similar.
 
 
 Generate me a Homeassistant plugin based on the following description.
@@ -268,7 +268,7 @@ I want to extract stuff into packages.
 - custom_components.calendar_backed_alarm_clock.alarm.entries (per-calendar entry created entities)
 
 In there would be basically separate files for:
-- HA autodiscovery 
+- HA autodiscovery
 - config flow (if possible one per config flow, i.e. user, the one for later config changes, etc.)
 
 I also want to change the way it is structured in terms of devices and entities.
@@ -289,7 +289,7 @@ I also want to change the way it is structured in terms of devices and entities.
           - `state_class`: `None` (not an int)
           - `suggested_display_precision`: `None` (not an int)
           - `suggested_unit_of_measurement`: `None` (not an int)
-    - Additionally there are non-calendar(-event) entities in there:    
+    - Additionally there are non-calendar(-event) entities in there:
       - Total Today  (ID-SUFFIX: `.today.total`)
         - Count (ID-SUFFIX: `.total`)
           - `type`: `sensor` (read only number)
@@ -327,7 +327,7 @@ I also want to change the way it is structured in terms of devices and entities.
           - `snooze_count`: `int`
           - `timeout`: `float` (in minutes)
 
-❯ Imlement the selection, (query.md:260-330), it was not started yet. 
+❯ Imlement the selection, (query.md:260-330), it was not started yet.
 
 >> Restructured into packages: autodiscovery, alarm/core, alarm/entries; added Overview + AlarmEntry entities
 >
@@ -351,3 +351,63 @@ I also want to change the way it is structured in terms of devices and entities.
 > Created top-level binary_sensor.py as the HA platform entry point.
 > Updated sensor.py to call async_setup_overview_sensors.
 > Added Platform.BINARY_SENSOR to PLATFORMS in __init__.py.
+
+———
+
+❯ What are automated test options for HACS plugins?
+
+> <details><summary>Answer</summary>
+>
+> ⏺ For HA custom components, the main options are:
+>  pytest-homeassistant-custom-component
+>  The standard choice — already in your pyproject.toml. Provides:
+>  - A real (but lightweight) HA instance via hass fixture
+>  - Mocks for config entries, entity registry, states
+>  - async_setup_component / async_setup_entry helpers
+>  - Works with pytest-asyncio (which you also have)
+>
+>  async def test_setup(hass: HomeAssistant) -> None:
+>      entry = MockConfigEntry(domain=DOMAIN, data={...})
+>      entry.add_to_hass(hass)
+>      await hass.config_entries.async_setup(entry.entry_id)
+>      assert hass.states.get("sensor.my_entity") is not None
+>
+>  What you can test well
+>
+>  - Config flow steps (use hass.config_entries.flow.async_init)
+>  - AlarmManager logic (mock the calendar service call with AsyncMock)
+>  - Sensor/binary sensor state after manager updates
+>  - Service calls and their side effects
+>  - Event firing (async_capture_events)
+>
+>  What's harder / not worth automating
+>
+>  - Actual CalDAV round-trips — mock hass.services.async_call for calendar.*
+>  - Lovelace card rendering (no headless browser in this stack)
+>
+>  Integration / E2E option
+>
+>  pytest-socket + a real CalDAV server (e.g. Radicale in a Docker container in CI) — overkill for most cases but possible. The existing .github/workflows/ci.yml is the right place for this.
+>
+>  Current gap in your test suite
+>
+>  Your tests/ directory has the files but they likely need the calendar service mocked. The pattern is:
+>
+>  hass.services.async_register(
+>      "calendar", "get_events",
+>      AsyncMock(return_value={calendar_entity: {"events": [...]}})
+>  )
+>
+>  HACS-specific validation
+>
+>  hacs/action GitHub Action (already referenced in your release workflow) validates manifest.json, hacs.json, and integration structure — not logic, but required for HACS listing.
+>
+>  Bottom line: pytest-homeassistant-custom-component + mocked calendar services is the practical sweet spot for this integration. You already have the stack wired up; the main work is writing fixtures that return realistic
+>  calendar event dicts for AlarmManager to parse.
+>❯ Alright, I want you to build unittests for the alarm clock logic and the topics you stated. Ignore existing tests completely, just add new ones as if they are not there. Do not even read them. Just concentrate on the concepts
+> </details>
+
+———
+
+❯ Alright, I want you to build unittests for the alarm logic. Ignore existing tests completely, just add new ones as if they are not there. Do not even read them. Just concentrate on the concepts outlined in @ai/query.md .
+  Btw, it shall be a device or how it's called which groups all the sensors and toggles and entities and whatnot into one, if it is not yet.
