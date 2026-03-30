@@ -313,9 +313,6 @@ I also want to change the way it is structured in terms of devices and entities.
         - `type`: `binary_sensor` (because it's basically "is this alarm ringing or not", even though it has more states than just on/off, but those states are represented in the attributes)
         - `is_on`: `bool` (true if the alarm is currently ringing, false otherwise)
         - `device_class`: `None` (there's no fitting device class for this)
-      - 
-        
-        - `device_class`: `None` (there's no fitting device class for this)
         - `state`: `str` (one of "before", "ringing", "snoozed", "dismissed", "timed_out")
         - `attributes`:
           - `id`: `str` (the calendar event's id, which is unique for each event)
