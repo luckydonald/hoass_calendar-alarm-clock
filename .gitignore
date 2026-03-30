@@ -84,3 +84,6 @@ home-assistant_v2.db
 # AI/docs
 ai/apis/
 
+
+# Ours
+debug
