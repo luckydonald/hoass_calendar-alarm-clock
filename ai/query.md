@@ -127,7 +127,7 @@ After creating that file, start implementing!
 
 —————————
 
-use yarn, vue 3 <script setup lang="ts">, typescript, full types in python 3.12.
+use yarn, vue 3 `<script setup lang="ts">`, typescript, full types in python 3.12.
 UV is nice, I wanna use that.
 
 —————————
@@ -252,6 +252,7 @@ Remember to keep html attributes and the next child (element or text) on their o
     Bold
   </b>
 </my-element>
+```
 ———
 Fix `check_slot.js` script to also allow parent element checks.
 Could you read `.eslintrc.cjs` for that, `const [error, config] = eslintrc.rules["vue/no-deprecated-slot-attribute"]` and `const { ignore, ignoreParents } = config;` with value being `string[]` for both.
