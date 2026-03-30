@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .alarm.core import async_setup_overview_sensors
 from .alarm_manager import AlarmManager
 from .const import (
     ATTR_ALARM_ID,
@@ -43,6 +44,9 @@ async def async_setup_entry(
         return
 
     manager: AlarmManager = entry_data["manager"]
+
+    # Overview device: previous/current/next name sensors + today count sensors
+    await async_setup_overview_sensors(hass, entry, async_add_entities, manager)
 
     entities: dict[str, AlarmSensor] = {}
 

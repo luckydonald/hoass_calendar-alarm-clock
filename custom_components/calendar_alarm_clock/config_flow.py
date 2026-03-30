@@ -11,7 +11,6 @@ from homeassistant.components import onboarding
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.selector import (
     EntitySelector,
     EntitySelectorConfig,
@@ -20,6 +19,7 @@ from homeassistant.helpers.selector import (
     NumberSelectorMode,
 )
 
+from .autodiscovery import async_discover_calendars, get_calendar_entities
 from .const import (
     CONF_AUTO_DISCOVER_CALENDARS,
     CONF_CALENDAR_ENTITY,
@@ -34,33 +34,6 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(LOG_NAME)
-
-
-def get_calendar_entities(hass: HomeAssistant) -> list[str]:
-    """Get list of calendar entities."""
-    # Get calendars from hass.states (more reliable than entity registry)
-    calendar_entities: list[str] = list(hass.states.async_entity_ids("calendar"))
-
-    # Also check entity registry for any that might not have state yet
-    registry = er.async_get(hass)
-    for entity in registry.entities.values():
-        if entity.entity_id.startswith("calendar.") and entity.entity_id not in calendar_entities:
-            calendar_entities.append(entity.entity_id)
-
-    return sorted(calendar_entities)
-
-
-def get_unconfigured_calendars(hass: HomeAssistant) -> list[str]:
-    """Get calendar entities that are not yet configured for alarm clock."""
-    all_calendars = get_calendar_entities(hass)
-
-    # Get already configured calendars
-    configured_calendars: set[str] = set()
-    for entry in hass.config_entries.async_entries(DOMAIN):
-        if CONF_CALENDAR_ENTITY in entry.data:
-            configured_calendars.add(entry.data[CONF_CALENDAR_ENTITY])
-
-    return [cal for cal in all_calendars if cal not in configured_calendars]
 
 
 class CalendarAlarmClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -334,36 +307,3 @@ async def _trigger_discovery(hass: HomeAssistant) -> None:
     # Wait a bit for the entry to be fully set up
     await asyncio.sleep(2)
     await async_discover_calendars(hass)
-
-
-async def async_discover_calendars(hass: HomeAssistant) -> None:
-    """Discover calendars and create discovery flows."""
-    # Check if auto-discovery is enabled
-    auto_discovery_enabled = False
-    for entry in hass.config_entries.async_entries(DOMAIN):
-        if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
-            auto_discovery_enabled = True
-            break
-
-    if not auto_discovery_enabled:
-        _LOGGER.debug("Auto-discovery is disabled, skipping calendar discovery")
-        return
-
-    unconfigured = get_unconfigured_calendars(hass)
-
-    for calendar_entity in unconfigured:
-        # Check if there's already a pending flow for this calendar
-        existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
-        if any(
-            flow.get("context", {}).get("unique_id") == calendar_entity for flow in existing_flows
-        ):
-            continue
-
-        # Create a discovery flow
-        hass.async_create_task(
-            hass.config_entries.flow.async_init(
-                DOMAIN,
-                context={"source": config_entries.SOURCE_INTEGRATION_DISCOVERY},
-                data={CONF_CALENDAR_ENTITY: calendar_entity},
-            )
-        )

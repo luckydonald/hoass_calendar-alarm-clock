@@ -328,3 +328,26 @@ I also want to change the way it is structured in terms of devices and entities.
           - `timeout`: `float` (in minutes)
 
 ❯ Imlement the selection, (query.md:260-330), it was not started yet. 
+
+>> Restructured into packages: autodiscovery, alarm/core, alarm/entries; added Overview + AlarmEntry entities
+>
+> Extracted discovery helpers (get_calendar_entities, get_unconfigured_calendars,
+> async_discover_calendars, async_auto_create_discovery_entry) into a new
+> `autodiscovery/` package. Both `__init__.py` and `config_flow.py` now import
+> from there instead of defining the logic locally.
+>
+> Added `alarm/core/` with six new sensor entities grouped under an "Overview"
+> device per calendar integration:
+> - OverviewNameSensor (SensorDeviceClass.ENUM) for previous / current / next
+>   alarm name (unique-ID suffix: .overview.<role>.name)
+> - TodayCountSensor (SensorStateClass.MEASUREMENT) for today's alarm counts:
+>   total / upcoming / past (unique-ID suffix: .overview.today.<role>)
+>
+> Added `alarm/entries/` with AlarmEntryBinarySensor: one BinarySensorEntity per
+> calendar event, grouped under its own device (.entry.{event_id}). is_on reflects
+> whether the alarm is ringing; the full state string is exposed as the
+> alarm_state extra attribute.
+>
+> Created top-level binary_sensor.py as the HA platform entry point.
+> Updated sensor.py to call async_setup_overview_sensors.
+> Added Platform.BINARY_SENSOR to PLATFORMS in __init__.py.

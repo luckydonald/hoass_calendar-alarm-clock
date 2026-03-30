@@ -16,6 +16,7 @@ from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.start import async_at_started
 
 from .alarm_manager import AlarmManager
+from .autodiscovery import async_auto_create_discovery_entry, async_discover_calendars
 from .const import (
     CONF_CALENDAR_ENTITY,
     CONF_DEFAULT_ALARM_TIMEOUT,
@@ -35,7 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 # List the platforms that your integration supports
-PLATFORMS: list[Platform] = [Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR]
 LOVELACE_CARD_URL = "/local/community/calendar_alarm_clock/alarm-clock-card.js"
 LOVELACE_CARD_URL_ALT = "/hacsfiles/calendar_alarm_clock/alarm-clock-card.js"
 
@@ -75,10 +76,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     async def async_discover_on_start(_: HomeAssistant) -> None:
         """Discover calendars when HA starts."""
         _LOGGER.info("Home Assistant started, checking for auto-discovery opportunity...")
-        # First, check if we need to auto-create the auto-discovery entry
-        await _async_auto_create_discovery_entry(hass)
-        # Then discover calendars
-        await _async_discover_calendars(hass)
+        await async_auto_create_discovery_entry(hass)
+        await async_discover_calendars(hass)
 
     async_at_started(hass, async_discover_on_start)
 
@@ -93,74 +92,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             # Only trigger discovery if this is a new entity (old_state was None)
             if old_state is None and new_state is not None:
                 _LOGGER.info("New calendar entity detected: %s, triggering discovery", entity_id)
-                hass.async_create_task(_async_auto_create_discovery_entry(hass))
-                hass.async_create_task(_async_discover_calendars(hass))
+                hass.async_create_task(async_auto_create_discovery_entry(hass))
+                hass.async_create_task(async_discover_calendars(hass))
 
     hass.bus.async_listen(EVENT_STATE_CHANGED, async_state_changed)
 
     return True
-
-
-async def _async_auto_create_discovery_entry(hass: HomeAssistant) -> None:
-    """Auto-create the auto-discovery entry if calendars exist and it's not configured."""
-    from homeassistant import config_entries
-
-    from .config_flow import get_calendar_entities
-    from .const import CONF_AUTO_DISCOVER_CALENDARS
-
-    # Check if we already have an auto-discovery entry
-    has_auto_discovery = False
-    has_manual_entries = False
-
-    for entry in hass.config_entries.async_entries(DOMAIN):
-        if entry.data.get(CONF_AUTO_DISCOVER_CALENDARS, False):
-            has_auto_discovery = True
-        else:
-            # This is a manually configured calendar entry
-            has_manual_entries = True
-        # end if
-    # end for
-
-    if has_auto_discovery:
-        _LOGGER.debug("Auto-discovery entry already exists")
-        return
-
-    if has_manual_entries:
-        _LOGGER.debug("User has manually configured calendar entries, skipping auto-discovery")
-        return
-
-    # Check if there are any calendars available
-    calendars = get_calendar_entities(hass)
-    if not calendars:
-        _LOGGER.debug("No calendars found, skipping auto-discovery entry creation")
-        return
-
-    _LOGGER.info("Found %d calendar(s), will create auto-discovery entry", len(calendars))
-
-    # Check if there's already a pending flow for auto-discovery
-    existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
-    _LOGGER.debug(
-        f"Existing flows: {existing_flows!r}",
-    )
-    if any(flow.get("context", {}).get("unique_id") == "auto_discovery" for flow in existing_flows):
-        _LOGGER.debug("Auto-discovery flow already in progress")
-        return
-
-    _LOGGER.info("Creating auto-discovery flow...")
-
-    # Create the auto-discovery entry via a discovery flow
-    await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={"source": config_entries.SOURCE_INTEGRATION_DISCOVERY},
-        data={CONF_AUTO_DISCOVER_CALENDARS: True},
-    )
-
-
-async def _async_discover_calendars(hass: HomeAssistant) -> None:
-    """Discover calendars and offer to set up alarm clock."""
-    from .config_flow import async_discover_calendars
-
-    await async_discover_calendars(hass)
 
 
 async def _async_register_card(hass: HomeAssistant) -> None:
@@ -223,7 +160,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         }
         _LOGGER.info("Auto-discovery enabled for Calendar Alarm Clock")
         # Trigger a discovery run now that auto-discovery is enabled
-        hass.async_create_task(_async_discover_calendars(hass))
+        hass.async_create_task(async_discover_calendars(hass))
         return True
 
     # This is a regular calendar entry
