@@ -327,7 +327,4 @@ I also want to change the way it is structured in terms of devices and entities.
           - `snooze_count`: `int`
           - `timeout`: `float` (in minutes)
 
-
-
-
-
+❯ Imlement the selection, (query.md:260-330), it was not started yet. 
