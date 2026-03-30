@@ -258,6 +258,8 @@ Fix `check_slot.js` script to also allow parent element checks.
 Could you read `.eslintrc.cjs` for that, `const [error, config] = eslintrc.rules["vue/no-deprecated-slot-attribute"]` and `const { ignore, ignoreParents } = config;` with value being `string[]` for both.
 Then with that check if it's either in the ignore list, or if the parent is in the ignoreParents list.
 ———
+❯ I want you to append summary to `ai/query.md`, formatted ">> short single line summary\n>\n> multilined\n> detailed summary". For that write the summary into `ai/summary.md` and run `./scripts/append_and_clear_summary.sh`, which will copy it over and reset `summary.md` to just a single linebreak. Then run `make commit`.
+———
 Alright, It's getting to confusing.
 
 I want to extract stuff into packages.
