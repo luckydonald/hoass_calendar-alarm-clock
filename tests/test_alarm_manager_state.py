@@ -288,8 +288,8 @@ class TestSnooze:
 
     async def test_snooze_sets_state_to_snoozed(self, manager, mock_hass) -> None:
         alarm_id = await self._setup_ringing(manager, mock_hass)
-        mock_hass.services.async_call.return_value = _calendar_response()
-        with _patch_timer:
+        # Prevent async_update() from wiping _alarms with an empty calendar response
+        with patch.object(manager, "async_update", new=AsyncMock()), _patch_timer:
             await manager.async_snooze_alarm(alarm_id)
         assert manager.alarms[alarm_id].state == "snoozed"
 
