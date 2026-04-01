@@ -73,9 +73,7 @@ class AlarmEntryBinarySensor(BinarySensorEntity):
         calendar_entity: str = entry.data[CONF_CALENDAR_ENTITY]
         self._calendar_suffix = _calendar_suffix(calendar_entity)
 
-        self._attr_unique_id = (
-            f"{DOMAIN}.{self._calendar_suffix}.entry.{alarm.id}.ringing"
-        )
+        self._attr_unique_id = f"{DOMAIN}.{self._calendar_suffix}.entry.{alarm.id}.ringing"
         self._attr_name = "Ringing"
 
     # ------------------------------------------------------------------
@@ -102,9 +100,7 @@ class AlarmEntryBinarySensor(BinarySensorEntity):
             ATTR_ENABLED: self._alarm.enabled,
             ATTR_REPEAT: self._alarm.repeat,
             ATTR_NEXT_SNOOZE_TIME: (
-                self._alarm.next_snooze_time.isoformat()
-                if self._alarm.next_snooze_time
-                else None
+                self._alarm.next_snooze_time.isoformat() if self._alarm.next_snooze_time else None
             ),
             ATTR_SNOOZE_COUNT: self._alarm.snooze_count,
             ATTR_TIMEOUT: self._alarm.timeout,
@@ -115,13 +111,9 @@ class AlarmEntryBinarySensor(BinarySensorEntity):
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info grouping this entity under its own alarm device."""
-        alarm_time_str = (
-            self._alarm.time.strftime("%Y-%m-%d") if self._alarm.time else "unknown"
-        )
+        alarm_time_str = self._alarm.time.strftime("%Y-%m-%d") if self._alarm.time else "unknown"
         return DeviceInfo(
-            identifiers={
-                (DOMAIN, f"{DOMAIN}.{self._calendar_suffix}.entry.{self._alarm.id}")
-            },
+            identifiers={(DOMAIN, f"{DOMAIN}.{self._calendar_suffix}.entry.{self._alarm.id}")},
             name=f"{self._alarm.name} ({alarm_time_str})",
             manufacturer="Calendar backed Alarm Clock",
             model="Alarm Entry",

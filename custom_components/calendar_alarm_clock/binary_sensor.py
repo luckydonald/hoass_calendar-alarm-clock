@@ -23,9 +23,7 @@ async def async_setup_entry(
     """Set up Calendar backed Alarm Clock binary sensors."""
     entry_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if not entry_data or "manager" not in entry_data:
-        _LOGGER.debug(
-            "No manager found for entry %s, skipping binary sensor setup", entry.entry_id
-        )
+        _LOGGER.debug("No manager found for entry %s, skipping binary sensor setup", entry.entry_id)
         return
 
     manager: AlarmManager = entry_data["manager"]

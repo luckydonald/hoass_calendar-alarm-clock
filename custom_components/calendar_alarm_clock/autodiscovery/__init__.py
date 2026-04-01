@@ -94,8 +94,7 @@ async def async_discover_calendars(hass: HomeAssistant) -> None:
     for calendar_entity in unconfigured:
         existing_flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
         if any(
-            flow.get("context", {}).get("unique_id") == calendar_entity
-            for flow in existing_flows
+            flow.get("context", {}).get("unique_id") == calendar_entity for flow in existing_flows
         ):
             continue
 
